@@ -264,8 +264,7 @@ class Package:
 
         package_dir = os.path.join(Package.cache_dir, self.package_base_name)
 
-        if subprocess.run("makepkg -odc --noprepare --skipinteg", shell=True, stdout=subprocess.DEVNULL,
-                          stderr=subprocess.DEVNULL, cwd=package_dir).returncode != 0:
+        if subprocess.run("makepkg -odc --noprepare --skipinteg", shell=True, cwd=package_dir).returncode != 0:
             logging.info("silent extraction failed")
             raise Exceptions.InvalidInput("silent extraction failed")
 
