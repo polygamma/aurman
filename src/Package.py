@@ -141,7 +141,7 @@ class Package:
                 raise Exceptions.InvalidInput("install file not available")
 
         # install
-        if subprocess.run("sudo pacman --noconfirm " + pacman_prefix + " -U " + install_file, shell=True,
+        if subprocess.run("sudo pacman " + pacman_prefix + " -U " + install_file, shell=True,
                           cwd=package_dir).returncode != 0:
             logging.info("install failed")
             raise Exceptions.InvalidInput("install failed")
