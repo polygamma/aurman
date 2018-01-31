@@ -514,29 +514,42 @@ class Package:
         """
 
         # remove versioning from input names and remove duplicates
-        new_names = [Utils.strip_versioning(name) for name in set(names)]
-
-        to_classify = [Package(name) for name in new_names]
+        new_names = list(set([Utils.strip_versioning(name) for name in names]))
         return_dict = {"repo_or_group": [], "aur": [], "devel": [], "not_valid": []}
 
-        for package in to_classify[:]:
-            if known_not_repo:
-                package.in_repo_or_group = False
-            else:
-                # if package in repo
-                package.in_repo_or_group = subprocess.run("expac -S '' " + package.name, shell=True,
+        # we do not know more than that they are not in repo
+        if known_not_repo:
+            to_classify = []
+            for name in new_names:
+                new_package = Package(name)
+                new_package.in_repo_or_group = False
+                to_classify.append(new_package)
+
+        # we do not know anything
+        else:
+            expac_query = "expac -S '%n %v' " + " ".join(new_names)
+            result_lines = subprocess.run(expac_query, shell=True, stdout=subprocess.PIPE,
+                                          universal_newlines=True).stdout.strip().splitlines()
+
+            # every line represents a repo package
+            for line in result_lines:
+                name = line.split()[0]
+                version = line.split()[1]
+                new_package = Package(name)
+                new_package.in_repo_or_group = True
+                new_package.in_aur = False
+                new_package.is_devel = False
+                new_package.upstream_version = version
+                return_dict["repo_or_group"].append(new_package)
+                new_names.remove(name)
+
+            # all not yet classified packages
+            to_classify = [Package(name) for name in new_names]
+
+            for package in to_classify[:]:
+                # if package is group
+                package.in_repo_or_group = subprocess.run("expac -Sg '' " + package.name, shell=True,
                                                           stdout=subprocess.DEVNULL).returncode == 0
-
-                # get repo packages version
-                if package.in_repo_or_group:
-                    package.upstream_version = subprocess.run("expac -S '%v' " + package.name, shell=True,
-                                                              stdout=subprocess.PIPE,
-                                                              universal_newlines=True).stdout.strip()
-
-                # if package in repo or package is group
-                package.in_repo_or_group = package.in_repo_or_group or (
-                        subprocess.run("expac -Sg '' " + package.name, shell=True,
-                                       stdout=subprocess.DEVNULL).returncode == 0)
 
                 if package.in_repo_or_group:
                     package.in_aur = False
@@ -551,7 +564,6 @@ class Package:
                 package.in_aur = False
                 package.is_devel = False
                 return_dict["not_valid"].append(package)
-                to_classify.remove(package)
                 continue
             elif Utils.is_devel(package.name):
                 package.is_devel = True
@@ -570,15 +582,28 @@ class Package:
             package.dependencies.extend(package_dict["MakeDepends"])
 
         # check if packages are installed and if so, which version
-        valid_packages = to_classify
+        dummy_dict = {}
+        valid_packages = return_dict["aur"][:]
+        valid_packages.extend(return_dict["devel"])
         valid_packages.extend(return_dict["repo_or_group"])
+
         for package in valid_packages:
-            package.installed = subprocess.run("expac -Q '' " + package.name, shell=True,
-                                               stdout=subprocess.DEVNULL).returncode == 0
-            if package.installed:
-                package.installed_version = subprocess.run("expac -Q '%v' " + package.name, shell=True,
-                                                           stdout=subprocess.PIPE,
-                                                           universal_newlines=True).stdout.strip()
+            dummy_dict[package.name] = package
+
+        expac_query = "expac -Q '%n %v' " + " ".join([package.name for package in valid_packages])
+        result_lines = subprocess.run(expac_query, shell=True, stdout=subprocess.PIPE,
+                                      universal_newlines=True).stdout.strip().splitlines()
+
+        for line in result_lines:
+            name = line.split()[0]
+            version = line.split()[1]
+            curr_package = dummy_dict[name]
+            curr_package.installed = True
+            curr_package.installed_version = version
+            del dummy_dict[name]
+
+        for package in dummy_dict.values():
+            package.installed = False
 
         logging.debug("%s parsed without errors", str(names))
         return return_dict
