@@ -514,7 +514,7 @@ class Package:
         """
 
         # remove versioning from input names and remove duplicates
-        new_names = [Utils.strip_versioning(name) for name in set(names)]
+        new_names = list(set([Utils.strip_versioning(name) for name in names]))
         return_dict = {"repo_or_group": [], "aur": [], "devel": [], "not_valid": []}
 
         # we do not know more than that they are not in repo
@@ -583,7 +583,7 @@ class Package:
 
         # check if packages are installed and if so, which version
         dummy_dict = {}
-        valid_packages = return_dict["aur"]
+        valid_packages = return_dict["aur"][:]
         valid_packages.extend(return_dict["devel"])
         valid_packages.extend(return_dict["repo_or_group"])
 
