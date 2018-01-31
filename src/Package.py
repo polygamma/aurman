@@ -324,6 +324,8 @@ class Package:
 
         :return:    The newest version available
         """
+
+        # maybe there is a nicer way, but those ifs do it for now
         if self.in_repo_or_group:
             if self.is_group():
                 logging.info("Package is a group")
