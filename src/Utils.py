@@ -84,9 +84,9 @@ def install_packages(package_names):
     # find aur packages that are only needed as deps
     for aur_package in ordered_aur_packages:
         if aur_package.name in package_names:
-            aur_package.install_package("--noconfirm")
+            aur_package.install_package()
         else:
-            aur_package.install_package("--noconfirm", "--asdeps")
+            aur_package.install_package("--asdeps")
 
 
 def all_installed_not_repo_packages():
