@@ -602,7 +602,7 @@ class Package:
             curr_package.installed_version = version
             del dummy_dict[name]
 
-        for package in dummy_dict.keys():
+        for package in dummy_dict.values():
             package.installed = False
 
         logging.debug("%s parsed without errors", str(names))
