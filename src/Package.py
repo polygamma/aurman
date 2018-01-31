@@ -52,7 +52,6 @@ class Package:
     def install_repo_packages(explicit_packages, as_deps_packages, *args):
         """
         Installs repo packages and groups via pacman.
-        If called without packages - pacman -Su
         Pass additional parameters for pacman via *args.
 
         Exception: Exceptions.InvalidInput
@@ -64,23 +63,16 @@ class Package:
 
         pacman_prefix = " ".join(args)
 
-        if not explicit_packages and not as_deps_packages:
-            if subprocess.run("sudo pacman -Su", shell=True).returncode != 0:
-                logging.info("system update failed")
-                raise Exceptions.InvalidInput("system update failed")
-
-            return
-
         if explicit_packages:
             if subprocess.run("sudo pacman " + pacman_prefix + " -S " + " ".join(explicit_packages),
                               shell=True).returncode != 0:
-                logging.info("install failed")
+                logging.info("install of %s failed", str(explicit_packages))
                 raise Exceptions.InvalidInput("install failed")
 
         if as_deps_packages:
             if subprocess.run("sudo pacman --needed --asdeps " + pacman_prefix + " -S " + " ".join(as_deps_packages),
                               shell=True).returncode != 0:
-                logging.info("install failed")
+                logging.info("install of %s failed", str(as_deps_packages))
                 raise Exceptions.InvalidInput("install failed")
 
     def install_package(self, *args):
