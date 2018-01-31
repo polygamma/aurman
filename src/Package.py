@@ -645,8 +645,8 @@ class Package:
 
             aur_and_devel = classified_dict["aur"]
             aur_and_devel.extend(classified_dict["devel"])
-            to_classify_names = [dep for package in aur_and_devel if not package.is_installed_and_latest() for dep in
-                                 package.dependencies if Utils.strip_versioning(dep) not in classified_names]
+            to_classify_names = [dep for package in aur_and_devel for dep in package.dependencies if
+                                 Utils.strip_versioning(dep) not in classified_names]
 
         logging.debug("%s parsed without errors", str(names))
         return return_dict
