@@ -519,9 +519,12 @@ class Package:
 
         # we do not know anything
         else:
-            expac_query = "expac -S '%n %v' " + " ".join(new_names)
-            result_lines = subprocess.run(expac_query, shell=True, stdout=subprocess.PIPE,
-                                          universal_newlines=True).stdout.strip().splitlines()
+            if new_names:
+                expac_query = "expac -S '%n %v' " + " ".join(new_names)
+                result_lines = subprocess.run(expac_query, shell=True, stdout=subprocess.PIPE,
+                                              universal_newlines=True).stdout.strip().splitlines()
+            else:
+                result_lines = []
 
             # every line represents a repo package
             for line in result_lines:
@@ -582,9 +585,13 @@ class Package:
         for package in valid_packages:
             dummy_dict[package.name] = package
 
-        expac_query = "expac -Q '%n %v' " + " ".join([package.name for package in valid_packages])
-        result_lines = subprocess.run(expac_query, shell=True, stdout=subprocess.PIPE,
-                                      universal_newlines=True).stdout.strip().splitlines()
+        valid_packages_names = [package.name for package in valid_packages]
+        if valid_packages_names:
+            expac_query = "expac -Q '%n %v' " + " ".join(valid_packages_names)
+            result_lines = subprocess.run(expac_query, shell=True, stdout=subprocess.PIPE,
+                                          universal_newlines=True).stdout.strip().splitlines()
+        else:
+            result_lines = []
 
         for line in result_lines:
             name = line.split()[0]
