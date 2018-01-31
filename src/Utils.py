@@ -127,19 +127,24 @@ def check_conflicts_and_order(packages_dict, repo_package_names, aur_package_nam
     """
 
     aur_order = []
+
+    # sort the input
     aur_package_names = list(aur_package_names)
     repo_packages = [packages_dict[name] for name in repo_package_names]
     aur_packages = [packages_dict[name] for name in aur_package_names]
     all_packages = repo_packages
     all_packages.extend(aur_packages)
 
+    # look for conflicts
     conflict_return = Package.Package.is_any_conflict(all_packages)
     if conflict_return[0]:
         logging.info("Conflict between %s and %s", conflict_return[1], conflict_return[2])
         raise Exceptions.InvalidInput("conflict detected")
 
+    # while there are packages which need to get installed
     while aur_packages:
         for current_package in aur_packages[:]:
+            # all dependencies fulfilled
             if current_package.ready_to_install(aur_package_names):
                 aur_packages.remove(current_package)
                 aur_package_names.remove(current_package.name)
@@ -197,10 +202,13 @@ def what_to_install(packages, packages_dict, packages_ordered_dict):
                             First: A set containing all repo packages and groups (names of the packages)
                             Second: A set containing all aur/devel packages    (names of the packages)
     """
+
+    # sort input
     package_tuples_to_check = [split_name_with_versioning(package) for package in packages]
     repo_or_group_packages = []
     aur_or_devel_packages = []
 
+    # while there are packages which need to be checked
     while package_tuples_to_check:
         new_package_tuples_to_check = []
 
@@ -211,6 +219,7 @@ def what_to_install(packages, packages_dict, packages_ordered_dict):
                 logging.info("package %s not found", current_package_name)
                 raise Exceptions.InvalidInput("package not found")
 
+            # pacman needs to handle this
             if current_package_name in [package.name for package in packages_ordered_dict["not_valid"]]:
                 logging.debug("package %s not valid", current_package_name)
                 repo_or_group_packages.append(current_package_tuple)
@@ -219,11 +228,13 @@ def what_to_install(packages, packages_dict, packages_ordered_dict):
 
             current_package = packages_dict[current_package_name]
 
+            # fine, nothing to do here
             if current_package.is_installed_and_latest():
                 continue
 
             current_package_comparator = current_package_tuple[1]
             current_package_version_needed = current_package_tuple[2]
+            # dirty hack to find out, if we need to do a version check
             needs_specific_package_version = bool(current_package_comparator)
 
             # if no version requirement or requirement fulfilled
@@ -235,6 +246,7 @@ def what_to_install(packages, packages_dict, packages_ordered_dict):
                     repo_or_group_packages.append(current_package_tuple)
                 else:
                     assert current_package.in_aur or current_package.is_devel
+                    # for aur and devel packages we need to check the dependencies if we havent checked them
                     for dependency in current_package.dependencies:
                         dep_tuple = split_name_with_versioning(dependency)
                         if (dep_tuple not in repo_or_group_packages) and (dep_tuple not in aur_or_devel_packages) and (
@@ -249,6 +261,7 @@ def what_to_install(packages, packages_dict, packages_ordered_dict):
 
         package_tuples_to_check = new_package_tuples_to_check
 
+    # now we only need the names
     return set([curr_tuple[0] for curr_tuple in repo_or_group_packages]), set(
         [curr_tuple[0] for curr_tuple in aur_or_devel_packages])
 
