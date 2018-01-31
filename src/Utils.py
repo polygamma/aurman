@@ -28,7 +28,7 @@ def install_packages(package_names):
 
     # get sudo and fetch latest databases
     acquire_sudo()
-    fetch_current_databases()
+    pacman_system_update()
 
     # remove duplicate names
     package_names = list(set(package_names))
@@ -78,8 +78,8 @@ def install_packages(package_names):
         else:
             implicit_repo_packages.append(repo_package_name)
 
-    # install repo packages with --sysupgrade
-    Package.Package.install_repo_packages(explicit_repo_packages, implicit_repo_packages, "--sysupgrade")
+    # install repo packages
+    Package.Package.install_repo_packages(explicit_repo_packages, implicit_repo_packages)
 
     # find aur packages that are only needed as deps
     for aur_package in ordered_aur_packages:
@@ -99,9 +99,6 @@ def all_installed_not_repo_packages():
     """
     pacman_return = subprocess.run("pacman -Qm", shell=True, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
                                    universal_newlines=True)
-    if pacman_return.returncode != 0:
-        logging.info("could not fetch the list of installed aur packages")
-        raise Exceptions.InvalidInput("could not fetch the list of installed aur packages")
 
     pacman_lines = pacman_return.stdout.strip().splitlines()
 
@@ -345,17 +342,17 @@ def strip_versioning(name):
     return split_name_with_versioning(name)[0]
 
 
-def fetch_current_databases():
+def pacman_system_update():
     """
-    Fetches the current package databases
+    Fetches the current package databases and updates the system
 
     Exception: Exceptions.ConnectionProblem
     """
-    if subprocess.run("sudo pacman -Sy", shell=True).returncode != 0:
-        logging.info("Pacman was not able to update the databases")
-        raise Exceptions.ConnectionProblem("Pacman was not able to update the databases")
+    if subprocess.run("sudo pacman -Syu", shell=True).returncode != 0:
+        logging.info("Pacman was not able to update the system")
+        raise Exceptions.ConnectionProblem("Pacman was not able to update the system")
 
-    logging.debug("Fetched databases successfully")
+    logging.debug("System update successful")
 
 
 def acquire_sudo():
