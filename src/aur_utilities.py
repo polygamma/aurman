@@ -2,6 +2,7 @@ import json
 import logging
 import requests
 from own_exceptions import InvalidInput, ConnectionProblem
+from urllib.parse import quote_plus
 
 
 def get_aur_info(package_names):
@@ -15,7 +16,7 @@ def get_aur_info(package_names):
     query_prefix = "&arg[]="
 
     for package_name in package_names:
-        query_url += query_prefix + package_name.replace('+', '%2B')
+        query_url += query_prefix + quote_plus(package_name)
 
     try:
         return json.loads(requests.get(query_url, timeout=5).text)
