@@ -124,7 +124,8 @@ class AURPackage(ArchPackage):
         files_in_build_dir = [f for f in os.listdir(package_dir) if os.path.isfile(os.path.join(package_dir, f))]
         install_file = None
         for file in files_in_build_dir:
-            if file.startswith(self.name + "-" + build_version) and file.endswith(".pkg.tar"):
+            if file.startswith(self.name + "-" + build_version) and ".pkg." in \
+                    file.split(self.name + "-" + build_version)[1]:
                 install_file = file
                 break
 
@@ -144,7 +145,8 @@ class AURPackage(ArchPackage):
         files_in_build_dir = [f for f in os.listdir(package_dir) if os.path.isfile(os.path.join(package_dir, f))]
         install_file = None
         for file in files_in_build_dir:
-            if file.startswith(self.name + "-" + build_version) and file.endswith(".pkg.tar"):
+            if file.startswith(self.name + "-" + build_version) and ".pkg." in \
+                    file.split(self.name + "-" + build_version)[1]:
                 install_file = file
                 break
 
