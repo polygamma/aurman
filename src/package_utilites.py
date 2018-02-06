@@ -208,7 +208,7 @@ def what_to_install_with_deps(packages_to_install, packages_dict):
         for line in subprocess_return:
             name = utilities.strip_versioning_from_name(line)
             if (name not in return_list) and (name not in next_packages):
-                next_packages.append(name)
+                next_packages.append(packages_dict[name])
                 return_list.append(packages_dict[name])
 
         # get deps of packages
