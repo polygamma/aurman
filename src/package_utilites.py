@@ -181,6 +181,7 @@ def get_installed_aur_packages(packages_dict):
 
 def what_to_install_with_deps(packages_to_install, packages_dict):
     return_list = packages_to_install[:]
+    names_used = [package.name for package in return_list]
 
     # get deps of packages
     deps = []
@@ -207,9 +208,10 @@ def what_to_install_with_deps(packages_to_install, packages_dict):
 
         for line in subprocess_return:
             name = utilities.strip_versioning_from_name(line)
-            if (name not in return_list) and (name not in next_packages):
+            if name not in names_used:
                 next_packages.append(packages_dict[name])
                 return_list.append(packages_dict[name])
+                names_used.append(name)
 
         # get deps of packages
         deps = []
