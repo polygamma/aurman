@@ -227,7 +227,7 @@ def what_to_install_with_deps(packages_to_install, packages_dict):
                     for dep in package.depends:
                         deps.append(dep)
 
-    return return_list
+    return list(set(return_list))
 
 
 def check_versioning_and_conflicts(packages_to_change, packages_dict):
