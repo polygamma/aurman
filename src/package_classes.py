@@ -3,7 +3,7 @@ from own_exceptions import InvalidInput, ConnectionProblem
 import logging
 import os
 from subprocess import run, PIPE, DEVNULL
-from package_utilites import call_pacman
+from package_utilites import call_pacman, get_build_dir
 from parse_args import args_to_string
 from copy import deepcopy
 
@@ -118,10 +118,11 @@ class AURPackage(ArchPackage):
                              "aurman")
 
     def install(self, args_as_dict):
-        package_dir = os.path.join(AURPackage.cache_dir, self.package_base_name)
+        build_dir = get_build_dir(os.path.join(AURPackage.cache_dir, self.package_base_name))
+
         # get name of install file
         build_version = self.version_from_srcinfo()
-        files_in_build_dir = [f for f in os.listdir(package_dir) if os.path.isfile(os.path.join(package_dir, f))]
+        files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
         install_file = None
         for file in files_in_build_dir:
             if file.startswith(self.name + "-" + build_version) and ".pkg." in \
@@ -130,19 +131,21 @@ class AURPackage(ArchPackage):
                 break
 
         if install_file is None:
-            logging.error("install file of %s not available", str(self.name))
+            logging.error("package file of %s not available", str(self.name))
             raise InvalidInput()
 
         # install
         args = deepcopy(args_as_dict)
         args[''] = [install_file]
-        call_pacman('U', args_to_string(args), package_dir)
+        call_pacman('U', args_to_string(args), build_dir)
 
     def build(self):
         # check if build needed
         build_version = self.version_from_srcinfo()
         package_dir = os.path.join(AURPackage.cache_dir, self.package_base_name)
-        files_in_build_dir = [f for f in os.listdir(package_dir) if os.path.isfile(os.path.join(package_dir, f))]
+        build_dir = get_build_dir(package_dir)
+
+        files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
         install_file = None
         for file in files_in_build_dir:
             if file.startswith(self.name + "-" + build_version) and ".pkg." in \
