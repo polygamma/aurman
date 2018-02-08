@@ -165,5 +165,9 @@ def process(args):
 if __name__ == '__main__':
     try:
         process(argv[1:])
+    except SystemExit:
+        pass
     except:
-        logging.error("Unknown exception occurred.", exc_info=True)
+        logging.error(
+            "Exception handling has to be done right in the next rewrite. Just catching almost everything here.",
+            exc_info=True)
