@@ -315,8 +315,15 @@ def check_versioning_and_conflicts(packages_to_change, packages_dict):
         dep_name, dep_cmp, dep_version = utilities.split_name_with_versioning(dep)
         if (dep_name not in all_packages) or (not isinstance(all_packages[dep_name], package_classes.ArchPackage)):
             if run("pacman -Sp " + dep_name, shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
-                logging.error("Dep %s not fulfilled", dep)
-                raise InvalidInput()
+                for package_name in all_packages:
+                    package = all_packages[package_name]
+                    if isinstance(package, package_classes.ArchPackage) and (
+                            package.installed_version is not None) and (package.provides is not None):
+                        if dep_name in [utilities.strip_versioning_from_name(name) for name in package.provides]:
+                            break
+                else:
+                    logging.error("Dep %s not fulfilled", dep)
+                    raise InvalidInput()
 
         else:
             if dep_cmp != "":
