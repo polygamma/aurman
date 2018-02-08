@@ -130,7 +130,7 @@ class AURPackage(ArchPackage):
                 break
 
         if install_file is None:
-            logging.error("install file of %s not available", str(self.name))
+            logging.error("package file of %s not available", str(self.name))
             raise InvalidInput()
 
         # install
