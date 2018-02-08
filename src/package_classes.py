@@ -210,9 +210,27 @@ class AURPackage(ArchPackage):
 
         package_dir = os.path.join(AURPackage.cache_dir, self.package_base_name)
         git_aurman_dir = os.path.join(package_dir, ".git", "aurman")
+        reviewed_file = os.path.join(git_aurman_dir, ".reviewed")
+
+        # if package dir does not exist - abort
+        if not os.path.isdir(package_dir):
+            logging.error("Package dir of %s does not exist", self.name)
+            raise InvalidInput()
+
+        # if aurman dir does not exist - create
+        if not os.path.isdir(git_aurman_dir):
+            if run("install -dm700 '" + git_aurman_dir + "'", shell=True, stdout=DEVNULL,
+                   stderr=DEVNULL).returncode != 0:
+                logging.error("Creating git_aurman_dir of %s failed", self.name)
+                raise InvalidInput()
+
+        # if reviewed file does not exist - create
+        if not os.path.isfile(reviewed_file):
+            with open(reviewed_file, "w") as f:
+                f.write("0")
 
         # if files have been reviewed
-        with open(os.path.join(git_aurman_dir, ".reviewed"), "r") as f:
+        with open(reviewed_file, "r") as f:
             to_review = f.read().strip() == "0"
 
         if not to_review:
@@ -258,7 +276,7 @@ class AURPackage(ArchPackage):
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
         if ask_user("Do you want to use the files as they are now?", True):
-            with open(os.path.join(git_aurman_dir, ".reviewed"), "w") as f:
+            with open(reviewed_file, "w") as f:
                 f.write("1")
 
             for file in relevant_files:
