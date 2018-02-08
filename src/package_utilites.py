@@ -5,6 +5,24 @@ import utilities
 import package_classes
 import aur_utilities
 import copy
+import os
+
+
+def get_build_dir(package_dir):
+    makepkg_conf = os.path.join("/etc", "makepkg.conf")
+    if not os.path.isfile(makepkg_conf):
+        logging.error("makepkg.conf not found")
+        raise InvalidInput()
+
+    with open(makepkg_conf, "r") as f:
+        makepkg_conf_lines = f.read().strip().splitlines()
+
+    for line in makepkg_conf_lines:
+        line_stripped = line.strip()
+        if line_stripped.startswith("PKGDEST="):
+            return os.path.expandvars(os.path.expanduser(line_stripped.split("PKGDEST=")[1].strip()))
+    else:
+        return package_dir
 
 
 def call_pacman(operation, args_as_string, dir_to_execute=None):
