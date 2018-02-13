@@ -99,3 +99,40 @@ class System:
                         return_list.append(package)
 
         return return_list
+
+    def conflicting_with(self, package: 'Package') -> List['Package']:
+        """
+        Returns the packages conflicting with "package"
+
+        :param package:     The package to check for conflicts with
+        :return:            List containing the conflicting packages
+        """
+        name = package.name
+        version = package.version
+
+        return_list = []
+
+        if name in self.all_packages_dict:
+            possible_conflict_package = self.all_packages_dict[name]
+            if version != possible_conflict_package.version:
+                return_list.append(possible_conflict_package)
+
+        if name in self.conflicts_dict:
+            possible_conflict_packages = self.conflicts_dict[name]
+            for possible_conflict_package in possible_conflict_packages:
+
+                if possible_conflict_package in return_list:
+                    continue
+
+                for conflict in possible_conflict_package.conflicts:
+                    conflict_name, conflict_cmp, conflict_version = split_name_with_versioning(conflict)
+
+                    if conflict_name != name:
+                        continue
+
+                    if conflict_cmp == "":
+                        return_list.append(possible_conflict_package)
+                    elif version_comparison(version, conflict_cmp, conflict_version):
+                        return_list.append(possible_conflict_package)
+
+        return return_list
