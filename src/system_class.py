@@ -21,6 +21,11 @@ class System:
         self.append_packages(packages)
 
     def append_packages(self, packages: Sequence['Package']):
+        """
+        Appends packages to this system.
+
+        :param packages:    The packages to append in a sequence
+        """
         for package in packages:
             if package.name in self.all_packages_dict:
                 logging.error("Package {} already known".format(package))
