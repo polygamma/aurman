@@ -1,6 +1,6 @@
-from typing import Sequence
+from typing import Sequence, List
 from package_class import Package, PossibleTypes
-from utilities import strip_versioning_from_name
+from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
 import logging
 from own_exceptions import InvalidInput
 
@@ -58,3 +58,44 @@ class System:
                     dict_to_append_to[value_name].append(package)
                 else:
                     dict_to_append_to[value_name] = [package]
+
+    def provided_by(self, dep: str) -> List['Package']:
+        """
+        Providers for the dep
+
+        :param dep:     The dep to be provided
+        :return:        List containing the providing packages
+        """
+
+        dep_name, dep_cmp, dep_version = split_name_with_versioning(dep)
+        return_list = []
+
+        if dep_name in self.all_packages_dict:
+            package = self.all_packages_dict[dep_name]
+            if dep_cmp == "":
+                return_list.append(package)
+            elif version_comparison(package.version, dep_cmp, dep_version):
+                return_list.append(package)
+
+        if dep_name in self.provides_dict:
+            possible_packages = self.provides_dict[dep_name]
+            for package in possible_packages:
+
+                if package in return_list:
+                    continue
+
+                for provide in package.provides:
+                    provide_name, provide_cmp, provide_version = split_name_with_versioning(provide)
+
+                    if provide_name != dep_name:
+                        continue
+
+                    if dep_cmp == "":
+                        return_list.append(package)
+                    elif (provide_cmp == "=" or provide_cmp == "==") and version_comparison(provide_version, dep_cmp,
+                                                                                            dep_version):
+                        return_list.append(package)
+                    elif (provide_cmp == "") and version_comparison(package.version, dep_cmp, dep_version):
+                        return_list.append(package)
+
+        return return_list
