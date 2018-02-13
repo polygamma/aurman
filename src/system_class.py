@@ -38,10 +38,10 @@ class System:
                 assert package.type_of is PossibleTypes.PACKAGE_NOT_REPO_NOT_AUR
                 self.not_repo_not_aur_packages_list.append(package)
 
-        self.append_to_x_dict(packages, 'provides')
-        self.append_to_x_dict(packages, 'conflicts')
+        self.__append_to_x_dict(packages, 'provides')
+        self.__append_to_x_dict(packages, 'conflicts')
 
-    def append_to_x_dict(self, packages: Sequence['Package'], dict_name: str):
+    def __append_to_x_dict(self, packages: Sequence['Package'], dict_name: str):
         dict_to_append_to = getattr(self, "{}_dict".format(dict_name))
 
         for package in packages:
