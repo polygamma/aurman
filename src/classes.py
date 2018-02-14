@@ -6,7 +6,7 @@ from typing import Sequence, List, Tuple, Union
 from aur_utilities import is_devel, get_aur_info
 from own_exceptions import InvalidInput
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
-from wrappers import expac
+from wrappers import expac, pacman
 
 
 class PossibleTypes(Enum):
@@ -279,47 +279,14 @@ class Package:
 
 
 class System:
-    def append_packages_to_system(self, packages: Sequence['Package']) -> 'System':
-        """
-        hypothetically appends packages to this system (only makes sense for the installed system)
-        and removes all conflicting packages and packages whose deps are not fulfilled anymore.
+    __groups_names = None
 
-        :param packages:    The packages to append
-        :return:            The new system
-        """
-        system_copy = deepcopy(self)
+    @staticmethod
+    def get_groups_names():
+        if System.__groups_names is None:
+            System.__groups_names = pacman("-Sg", True, sudo=False)
 
-        for package in packages:
-            deleted_packages = []
-
-            if package.name in system_copy.all_packages_dict:
-                deleted_packages.append(system_copy.all_packages_dict[package.name])
-                del system_copy.all_packages_dict[package.name]
-                system_copy = System(list(system_copy.all_packages_dict.values()))
-
-            to_delete_packages = system_copy.conflicting_with(package)
-            system_copy.append_packages((package,))
-
-            while to_delete_packages or deleted_packages:
-                for to_delete_package in to_delete_packages:
-                    deleted_packages.append(to_delete_package)
-                    del system_copy.all_packages_dict[to_delete_package.name]
-                system_copy = System(list(system_copy.all_packages_dict.values()))
-
-                to_delete_packages = []
-                was_required_by_packages = []
-                for deleted_package in deleted_packages:
-                    was_required_by_packages.extend(
-                        [system_copy.all_packages_dict[required_by] for required_by in deleted_package.required_by if
-                         required_by in system_copy.all_packages_dict])
-                deleted_packages = []
-
-                for was_required_by_package in was_required_by_packages:
-                    if not system_copy.are_all_deps_fulfilled(was_required_by_package):
-                        if was_required_by_package not in to_delete_packages:
-                            to_delete_packages.append(was_required_by_package)
-
-        return system_copy
+        return System.__groups_names
 
     @staticmethod
     def get_installed_packages() -> List['Package']:
@@ -529,17 +496,3 @@ class System:
             relevant_deps = list(set([strip_versioning_from_name(dep) for dep in deps_of_the_fetched_packages]))
 
             packages_names_to_fetch = [dep for dep in relevant_deps if dep not in self.all_packages_dict]
-
-    def are_all_deps_fulfilled(self, package: 'Package') -> bool:
-        """
-        if all deps of the package are fulfilled on the system
-
-        :param package:     the package to check the deps of
-        :return:            True if the deps are fulfilled, False otherwise
-        """
-
-        for dep in package.relevant_deps():
-            if not self.provided_by(dep):
-                return False
-        else:
-            return True
