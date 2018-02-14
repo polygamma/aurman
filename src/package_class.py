@@ -1,4 +1,4 @@
-from typing import Sequence, List
+from typing import Sequence, List, Tuple
 from enum import Enum, auto
 from wrappers import expac
 from aur_utilities import is_devel, get_aur_info
@@ -12,6 +12,28 @@ class PossibleTypes(Enum):
 
 
 class Package:
+    @staticmethod
+    def user_input_to_categories(user_input: Sequence[str]) -> Tuple[Sequence[str], Sequence[str]]:
+        """
+        Categorizes user input in: For our AUR helper and for pacman
+
+        :param user_input:  A sequence containing the user input as str
+        :return:            Tuple containing two elements
+                            First item: List containing the user input for our AUR helper
+                            Second item: List containing the user input for pacman
+        """
+        for_us = []
+        for_pacman = []
+
+        found_in_aur_names = set([package.name for package in Package.get_packages_from_aur(user_input)])
+        for _user_input in user_input:
+            if _user_input in found_in_aur_names:
+                for_us.append(_user_input)
+            else:
+                for_pacman.append(_user_input)
+
+        return for_us, for_pacman
+
     @staticmethod
     def get_packages_from_aur(packages_names: Sequence[str]) -> List['Package']:
         """
