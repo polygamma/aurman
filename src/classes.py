@@ -251,6 +251,32 @@ class Package:
 
         return solution_visited_list
 
+    @staticmethod
+    def dep_solving(packages: Sequence['Package'], installed_system: 'System', upstream_system: 'System',
+                    only_unfulfilled_deps: bool) -> List[List['Package']]:
+        """
+        Solves deps for packages.
+
+        :param packages:                The packages in a sequence
+        :param installed_system:        The system containing the installed packages
+        :param upstream_system:         The system containing the known upstream packages
+        :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
+        :return:                        A list containing the solutions.
+                                        Every inner list contains the packages for the solution topologically sorted
+        """
+
+        current_solutions = [([], [])]
+
+        for package in packages:
+            new_solutions = []
+            for solution in current_solutions:
+                new_solutions.extend(
+                    package.solutions_for_dep_problem(solution[1], solution[0], installed_system, upstream_system,
+                                                      only_unfulfilled_deps))
+            current_solutions = new_solutions
+
+        return [solution[0] for solution in current_solutions]
+
 
 class System:
     __groups_names = None
