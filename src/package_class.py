@@ -159,3 +159,22 @@ class Package:
 
     def __repr__(self):
         return "Name: {}, Version: {}".format(self.name, self.version)
+
+    def relevant_deps(self) -> List[str]:
+        """
+        Fetches the relevant deps of this package.
+        self.depends for not aur packages,
+        otherwise also self.makedepends and self.checkdepends
+
+        :return:
+        """
+        to_return = []
+
+        if self.depends is not None:
+            to_return.extend(self.depends)
+        if self.makedepends is not None:
+            to_return.extend(self.makedepends)
+        if self.checkdepends is not None:
+            to_return.extend(self.checkdepends)
+
+        return to_return
