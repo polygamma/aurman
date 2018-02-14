@@ -164,7 +164,7 @@ class Package:
         return hash((self.name, self.version))
 
     def __repr__(self):
-        return "Name: {}, Version: {}".format(self.name, self.version)
+        return "{}-{}".format(self.name, self.version)
 
     def relevant_deps(self) -> List[str]:
         """
