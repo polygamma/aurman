@@ -1,5 +1,6 @@
-from typing import Sequence, List, Tuple, Any
+from typing import Sequence, List, Tuple, Union
 from enum import Enum, auto
+from copy import deepcopy
 from wrappers import expac
 from aur_utilities import is_devel, get_aur_info
 from system_class import System
@@ -180,14 +181,14 @@ class Package:
 
         return to_return
 
-    def solutions_for_dep_problem(self, visited_list: Sequence[Any], current_solution: Sequence['Package'],
+    def solutions_for_dep_problem(self, visited_list: List[Union[str, 'Package']], current_solution: List['Package'],
                                   installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool) -> \
-            List[List['Package']]:
+            List[Tuple[List['Package'], List[Union[str, 'Package']]]]:
         """
         Heart of this AUR helper. Algorithm for dependency solving.
         Also checks for conflicts, dep-cycles and topologically sorts the solutions.
 
-        :param visited_list:            Sequence containing the visited nodes for the solution.
+        :param visited_list:            List containing the visited nodes for the solution.
                                         May be "names" or packages.
         :param current_solution:        The packages in the current solution.
                                         Always topologically sorted
@@ -195,6 +196,54 @@ class Package:
         :param upstream_system:         The system containing the known upstream packages
         :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
         :return:                        A list containing the solutions.
-                                        Every solution is a list of topologically sorted packages.
+                                        Every solution is a tuple containing two items:
+                                        First item:
+                                        A list of topologically sorted packages.
+                                        Second item:
+                                        The visited list for the solution
         """
-        return []
+        if self in current_solution:
+            return [(deepcopy(current_solution), deepcopy(visited_list))]
+
+        # dep cycle
+        if self in visited_list:
+            return []
+
+        # conflict
+        if System(current_solution).conflicting_with(self):
+            return []
+
+        visited_list = deepcopy(visited_list)
+        visited_list.append(self)
+        solution_visited_list = [(deepcopy(current_solution), visited_list)]
+
+        # AND - every dep has to be fulfilled
+        for dep in self.relevant_deps():
+            if only_unfulfilled_deps and installed_system.provided_by(dep):
+                continue
+
+            dep_providers = upstream_system.provided_by(dep)
+            # dep not fulfillable, solutions not valid
+            if not dep_providers:
+                return []
+
+            # OR - at least one of the dep providers needs to provide the dep
+            finished_solutions = [solution_tuple for solution_tuple in solution_visited_list if
+                                  dep in solution_tuple[1]]
+            not_finished_solutions = [solution_tuple for solution_tuple in solution_visited_list if
+                                      dep not in solution_tuple[1]]
+
+            for solution_tuple in not_finished_solutions:
+                solution_tuple[1].append(dep)
+
+            solution_visited_list = finished_solutions
+            for solution_tuple in not_finished_solutions:
+                for dep_provider in dep_providers:
+                    solution_visited_list.extend(
+                        dep_provider.solutions_for_dep_problem(solution_tuple[1], solution_tuple[0], installed_system,
+                                                               upstream_system, only_unfulfilled_deps))
+
+        for solution_tuple in solution_visited_list:
+            solution_tuple[0].append(self)
+
+        return solution_visited_list
