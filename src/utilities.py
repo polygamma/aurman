@@ -1,11 +1,12 @@
+import logging
+import threading
+import time
 from pyalpm import vercmp
 from subprocess import run, DEVNULL
-import logging
-import time
-import threading
-from own_exceptions import InvalidInput
-from colors import color_string, Colors
 from typing import Tuple
+
+from colors import color_string, Colors
+from own_exceptions import InvalidInput
 
 
 def split_name_with_versioning(name: str) -> Tuple[str, str, str]:

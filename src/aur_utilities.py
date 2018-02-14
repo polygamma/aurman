@@ -1,9 +1,11 @@
 import json
 import logging
-import requests
-from own_exceptions import InvalidInput, ConnectionProblem
-from urllib.parse import quote_plus
 from typing import Sequence, List, Dict
+from urllib.parse import quote_plus
+
+import requests
+
+from own_exceptions import InvalidInput, ConnectionProblem
 from wrappers import split_query_helper
 
 

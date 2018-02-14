@@ -1,10 +1,11 @@
-from typing import Sequence, List, Tuple, Union
-from enum import Enum, auto
-from copy import deepcopy
-from aur_utilities import is_devel, get_aur_info
-from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
 import logging
+from copy import deepcopy
+from enum import Enum, auto
+from typing import Sequence, List, Tuple, Union
+
+from aur_utilities import is_devel, get_aur_info
 from own_exceptions import InvalidInput
+from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
 from wrappers import expac, pacman
 
 
