@@ -5,8 +5,9 @@ from typing import Sequence, List, Tuple, Union, Set
 
 from aur_utilities import is_devel, get_aur_info
 from own_exceptions import InvalidInput
-from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
+from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
 from wrappers import expac
+from colors import Colors, color_string
 
 
 class PossibleTypes(Enum):
@@ -623,7 +624,7 @@ class System:
 
         return first_return_tuple, return_list
 
-    def validate_and_choose_solution(self, solutions: Sequence[Sequence['Package']],
+    def validate_and_choose_solution(self, solutions: List[List['Package']],
                                      needed_packages: Sequence['Package']) -> Union[List['Package'], None]:
         """
         Validates solutions and lets the user choose a solution
@@ -633,6 +634,7 @@ class System:
         :return:                    A chosen and valid solution or None
         """
 
+        # calculating new systems and finding valid systems
         new_systems = [self.hypothetical_append_packages_to_system(solution) for solution in solutions]
         valid_systems = []
         valid_solutions_indices = []
@@ -644,7 +646,70 @@ class System:
                 valid_systems.append(new_system)
                 valid_solutions_indices.append(i)
 
+        # no valid solutions
         if not valid_systems:
             return None
 
+        # only one valid solution - just return
+        if len(valid_systems) == 1:
+            return solutions[valid_solutions_indices[0]]
+
+        # calculate the differences between the solutions
         systems_differences = self.differences_between_systems(valid_systems)
+        system_solution_dict = {}
+        for i, index in enumerate(valid_solutions_indices):
+            system_solution_dict[index] = (valid_systems[i], systems_differences[1][i])
+
+        # prints for the user
+        print(color_string((Colors.DEFAULT, "{} different solutions have been found.".format(len(valid_systems)))))
+        print(color_string((Colors.DEFAULT,
+                            "All of the solutions are going to install/update the following {} packages:".format(
+                                len(systems_differences[0][0])))))
+        print(color_string((Colors.DEFAULT, "\n", ", ".join([str(package) for package in systems_differences[0][0]]))))
+        if systems_differences[0][1]:
+            print(color_string((Colors.DEFAULT,
+                                "\nAll of the solutions are going to remove the following {} packages:".format(
+                                    len(systems_differences[0][1])))))
+            print(color_string(
+                (Colors.DEFAULT, "\n", ", ".join([str(package) for package in systems_differences[0][1]]))))
+
+        print(color_string((Colors.DEFAULT,
+                            "You are going to choose one solution by answering which packages to install/remove from the packages which differ between the solutions.\n")))
+
+        # while we have more than 0 valid solution
+        while len(system_solution_dict) > 1:
+            # calculate the differences between the solutions left
+            installed_different_packages = set.union(
+                *[system_solution_dict[index][1][0] for index in system_solution_dict]) - set.intersection(
+                *[system_solution_dict[index][1][0] for index in system_solution_dict])
+            uninstalled_different_packages = set.union(
+                *[system_solution_dict[index][1][1] for index in system_solution_dict]) - set.intersection(
+                *[system_solution_dict[index][1][1] for index in system_solution_dict])
+
+            # packages to be uninstalled are more relevant, so check those first
+            if uninstalled_different_packages:
+                rand_package = list(uninstalled_different_packages)[0]
+                user_answer = ask_user("Do you want the package {} to be removed?".format(rand_package), False)
+                for index in list(system_solution_dict.keys())[:]:
+                    current_tuple = system_solution_dict[index]
+                    if user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
+                        del system_solution_dict[index]
+                    elif not user_answer and (rand_package.name not in current_tuple[0].all_packages_dict):
+                        del system_solution_dict[index]
+                continue
+
+            # packages to be installed
+            rand_package = list(installed_different_packages)[0]
+            user_answer = ask_user("Do you want the package {} to be installed?".format(rand_package), True)
+            for index in list(system_solution_dict.keys())[:]:
+                current_tuple = system_solution_dict[index]
+                if user_answer and (rand_package.name not in current_tuple[0].all_packages_dict):
+                    del system_solution_dict[index]
+                elif not user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
+                    del system_solution_dict[index]
+
+        if len(system_solution_dict) == 0:
+            logging.error("This should really never happen. We had solutions, but lost them all...")
+            raise InvalidInput()
+
+        return solutions[int(list(system_solution_dict.keys())[0])]
