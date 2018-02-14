@@ -548,8 +548,9 @@ class System:
         while True:
             to_delete_packages = []
             for package in packages:
-                if not new_system.are_all_deps_fulfilled(package):
-                    to_delete_packages.append(package)
+                if package.name in new_system.all_packages_dict:
+                    if not new_system.are_all_deps_fulfilled(package):
+                        to_delete_packages.append(package)
 
             if not to_delete_packages:
                 return new_system
