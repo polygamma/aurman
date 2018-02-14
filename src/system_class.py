@@ -3,9 +3,41 @@ from package_class import Package, PossibleTypes
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
 import logging
 from own_exceptions import InvalidInput
+from wrappers import expac
 
 
 class System:
+    @staticmethod
+    def get_installed_packages() -> List['Package']:
+        """
+        Returns the installed packages on the system
+
+        :return:    A list containing the installed packages
+        """
+        repo_packages_names = set(expac("-S", ('n',), ()))
+        installed_packages_names = set(expac("-Q", ('n',), ()))
+        installed_repo_packages_names = installed_packages_names & repo_packages_names
+        unclassified_installed_names = installed_packages_names - installed_repo_packages_names
+
+        return_list = []
+
+        # installed repo packages
+        return_list.extend(
+            Package.get_packages_from_expac("-Q", list(installed_repo_packages_names), PossibleTypes.REPO_PACKAGE))
+
+        # installed aur packages
+        installed_aur_packages_names = set(
+            [package.name for package in Package.get_packages_from_aur(list(unclassified_installed_names))])
+        return_list.extend(
+            Package.get_packages_from_expac("-Q", list(installed_aur_packages_names), PossibleTypes.AUR_PACKAGE))
+        unclassified_installed_names -= installed_aur_packages_names
+
+        # installed not repo not aur packages
+        return_list.extend(Package.get_packages_from_expac("-Q", list(unclassified_installed_names),
+                                                           PossibleTypes.PACKAGE_NOT_REPO_NOT_AUR))
+
+        return return_list
+
     @staticmethod
     def get_repo_packages() -> List['Package']:
         """
