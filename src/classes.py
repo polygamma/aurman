@@ -6,7 +6,7 @@ from typing import Sequence, List, Tuple, Union
 from aur_utilities import is_devel, get_aur_info
 from own_exceptions import InvalidInput
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
-from wrappers import expac, pacman
+from wrappers import expac
 
 
 class PossibleTypes(Enum):
@@ -279,14 +279,16 @@ class Package:
 
 
 class System:
-    __groups_names = None
+    def append_packages_to_system(self, packages: Sequence['Package']) -> 'System':
+        """
+        hypothetically appends packages to this system (only makes sense for the installed system)
+        and removes all conflicting packages and packages whose deps are not fulfilled anymore.
 
-    @staticmethod
-    def get_groups_names():
-        if System.__groups_names is None:
-            System.__groups_names = pacman("-Sg", True, sudo=False)
+        :param packages:    the packages to append
+        :return:            the new system
+        """
 
-        return System.__groups_names
+        return
 
     @staticmethod
     def get_installed_packages() -> List['Package']:
@@ -496,3 +498,16 @@ class System:
             relevant_deps = list(set([strip_versioning_from_name(dep) for dep in deps_of_the_fetched_packages]))
 
             packages_names_to_fetch = [dep for dep in relevant_deps if dep not in self.all_packages_dict]
+
+    def are_all_deps_fulfilled(self, package: 'Package') -> bool:
+        """
+        if all deps of the package are fulfilled on the system
+        :param package:     the package to check the deps of
+        :return:            True if the deps are fulfilled, False otherwise
+        """
+
+        for dep in package.relevant_deps():
+            if not self.provided_by(dep):
+                return False
+        else:
+            return True
