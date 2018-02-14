@@ -1,5 +1,6 @@
 from own_exceptions import InvalidInput
 import logging
+from typing import Sequence, Dict, Tuple
 
 parameters = {
     ('S', 'sync', 'U', 'upgrade'): (
@@ -20,7 +21,7 @@ parameters = {
 }
 
 
-def args_to_string(args):
+def args_to_string(args: Dict) -> str:
     """
     Parsed arguments back to a string.
 
@@ -50,7 +51,7 @@ def args_to_string(args):
     return return_string.strip()
 
 
-def group_args(args):
+def group_args(args: Sequence[str]) -> Tuple[str, Dict]:
     """
     Parses and groups args.
 
@@ -135,7 +136,7 @@ def group_args(args):
     return operation_found, ordered_dict
 
 
-def parse_args(args):
+def parse_args(args: Sequence[str]) -> Dict:
     """
     Parses arguments.
     No positional arguments allowed. All parameters belong to the
