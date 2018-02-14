@@ -589,4 +589,36 @@ class System:
                                             which are in the i-th system but not in all systems
         """
 
-        return (set(), set()), []
+        differences_tuples = []
+        own_packages = set(self.all_packages_dict.values())
+
+        for other_system in other_systems:
+            current_difference_tuple = (set(), set())
+            differences_tuples.append(current_difference_tuple)
+            other_packages = set(other_system.all_packages_dict.values())
+            difference = own_packages ^ other_packages
+
+            for differ in difference:
+                if differ not in own_packages:
+                    current_difference_tuple[0].add(differ)
+                else:
+                    current_difference_tuple[1].add(differ)
+
+        first_return_tuple = (set.intersection(*[difference_tuple[0] for difference_tuple in differences_tuples]),
+                              set.intersection(*[difference_tuple[1] for difference_tuple in differences_tuples]))
+
+        return_list = []
+
+        for difference_tuple in differences_tuples:
+            current_tuple = (set(), set())
+            return_list.append(current_tuple)
+
+            for installed_package in difference_tuple[0]:
+                if installed_package not in first_return_tuple[0]:
+                    current_tuple[0].add(installed_package)
+
+            for uninstalled_package in difference_tuple[1]:
+                if uninstalled_package not in first_return_tuple[1]:
+                    current_tuple[1].add(uninstalled_package)
+
+        return first_return_tuple, return_list
