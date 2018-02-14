@@ -622,3 +622,29 @@ class System:
                     current_tuple[1].add(uninstalled_package)
 
         return first_return_tuple, return_list
+
+    def validate_and_choose_solution(self, solutions: Sequence[Sequence['Package']],
+                                     needed_packages: Sequence['Package']) -> Union[List['Package'], None]:
+        """
+        Validates solutions and lets the user choose a solution
+
+        :param solutions:           The solutions
+        :param needed_packages:     Packages which need to be in the solutions
+        :return:                    A chosen and valid solution or None
+        """
+
+        new_systems = [self.hypothetical_append_packages_to_system(solution) for solution in solutions]
+        valid_systems = []
+        valid_solutions_indices = []
+        for i, new_system in enumerate(new_systems):
+            for package in needed_packages:
+                if package.name not in new_system.all_packages_dict:
+                    break
+            else:
+                valid_systems.append(new_system)
+                valid_solutions_indices.append(i)
+
+        if not valid_systems:
+            return None
+
+        systems_differences = self.differences_between_systems(valid_systems)
