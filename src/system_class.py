@@ -6,6 +6,15 @@ from own_exceptions import InvalidInput
 
 
 class System:
+    @staticmethod
+    def get_repo_packages() -> List['Package']:
+        """
+        Returns the current repo packages.
+
+        :return:    A list containing the current repo packages
+        """
+        return Package.get_packages_from_expac("-S", (), PossibleTypes.REPO_PACKAGE)
+
     def __init__(self, packages: Sequence['Package']):
         self.all_packages_dict = {}  # names as keys and packages as values
         self.repo_packages_list = []  # list containing the repo packages
