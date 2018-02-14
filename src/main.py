@@ -17,11 +17,9 @@ if __name__ == '__main__':
 
     print("calculating solutions...")
     solutions = Package.dep_solving(concrete_packages, installed_system, upstream_system, only_unfulfilled_deps)
-    print("found {} solution(s)...\n".format(len(solutions)))
-    for i, solution in enumerate(solutions, start=1):
-        print(color_string((Colors.MAGENTA, "Solution {}: {}".format(i, solution))))
+    print("found {} solution(s)...".format(len(solutions)))
 
-    print("\ncalculating new systems...")
+    print("calculating new systems...")
     new_systems = [installed_system.hypothetical_append_packages_to_system(solution) for solution in solutions]
     print("validating new systems...")
     valid_systems = []
@@ -33,6 +31,7 @@ if __name__ == '__main__':
         else:
             valid_systems.append(new_system)
             valid_solutions_indices.append(i)
+    print("{} solutions of the {} found solution(s) are actually valid".format(len(valid_systems), len(solutions)))
 
     print("finding differences between systems...\n")
     systems_differences = installed_system.differences_between_systems(valid_systems)
@@ -54,10 +53,10 @@ if __name__ == '__main__':
     else:
         print(color_string((Colors.RED, "No valid solutions found!")))
 
-    print("\n")
     for i, difference_tuple in enumerate(systems_differences[1]):
         if difference_tuple[0] or difference_tuple[1]:
-            print(color_string((Colors.LIGHT_CYAN,
-                                "Solution {}\ninstalled: {}\nuninstalled: {}\n".format(valid_solutions_indices[i] + 1,
-                                                                                       difference_tuple[0],
-                                                                                       difference_tuple[1]))))
+            print(
+                "The valid solution {} differs in the following from the others...\n".format(
+                    valid_solutions_indices[i] + 1))
+            print(color_string((Colors.LIGHT_MAGENTA,
+                                "installed: {}\nuninstalled: {}\n".format(difference_tuple[0], difference_tuple[1]))))
