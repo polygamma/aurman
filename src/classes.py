@@ -663,7 +663,7 @@ class System:
         # prints for the user
         print(color_string((Colors.DEFAULT, "{} different solutions have been found.".format(len(valid_systems)))))
         print(color_string((Colors.DEFAULT,
-                            "All of the solutions are going to install/update the following {} packages:".format(
+                            "\nAll of the solutions are going to install/update the following {} packages:".format(
                                 len(systems_differences[0][0])))))
         print(color_string((Colors.DEFAULT, "\n", ", ".join([str(package) for package in systems_differences[0][0]]))))
         if systems_differences[0][1]:
@@ -674,7 +674,7 @@ class System:
                 (Colors.DEFAULT, "\n", ", ".join([str(package) for package in systems_differences[0][1]]))))
 
         print(color_string((Colors.DEFAULT,
-                            "You are going to choose one solution by answering which packages to install/remove from the packages which differ between the solutions.\n")))
+                            "\nYou are going to choose one solution by answering which packages to install/remove from the packages which differ between the solutions.\n")))
 
         # while we have more than 1 valid solutions
         while len(system_solution_dict) > 1:
