@@ -502,7 +502,7 @@ class System:
         else:
             return True
 
-    def append_packages_to_system(self, packages: Sequence['Package']) -> 'System':
+    def hypothetical_append_packages_to_system(self, packages: Sequence['Package']) -> 'System':
         """
         hypothetically appends packages to this system (only makes sense for the installed system)
         and removes all conflicting packages and packages whose deps are not fulfilled anymore.
