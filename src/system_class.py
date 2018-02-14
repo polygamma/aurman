@@ -3,10 +3,19 @@ from package_class import Package, PossibleTypes
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison
 import logging
 from own_exceptions import InvalidInput
-from wrappers import expac
+from wrappers import expac, pacman
 
 
 class System:
+    __groups_names = None
+
+    @staticmethod
+    def getGroups_Names():
+        if System.__groups_names is None:
+            System.__groups_names = pacman("-Sg", True, sudo=False)
+
+        return System.__groups_names
+
     @staticmethod
     def get_installed_packages() -> List['Package']:
         """
