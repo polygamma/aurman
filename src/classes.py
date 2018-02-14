@@ -291,7 +291,6 @@ class System:
 
         for package in packages:
             deleted_packages = []
-            first_run = True
 
             if package.name in system_copy.all_packages_dict:
                 deleted_packages.append(system_copy.all_packages_dict[package.name])
@@ -301,21 +300,18 @@ class System:
             to_delete_packages = system_copy.conflicting_with(package)
             system_copy.append_packages((package,))
 
-            while to_delete_packages or first_run:
-                first_run = False
-
+            while to_delete_packages or deleted_packages:
                 for to_delete_package in to_delete_packages:
                     deleted_packages.append(to_delete_package)
                     del system_copy.all_packages_dict[to_delete_package.name]
                 system_copy = System(list(system_copy.all_packages_dict.values()))
 
                 to_delete_packages = []
-                was_required_by_packages = [package]
+                was_required_by_packages = []
                 for deleted_package in deleted_packages:
-                    if deleted_package.required_by is not None:
-                        was_required_by_packages.extend(
-                            [system_copy.all_packages_dict[required_by] for required_by in deleted_package.required_by
-                             if required_by in system_copy.all_packages_dict])
+                    was_required_by_packages.extend(
+                        [system_copy.all_packages_dict[required_by] for required_by in deleted_package.required_by if
+                         required_by in system_copy.all_packages_dict])
                 deleted_packages = []
 
                 for was_required_by_package in was_required_by_packages:
