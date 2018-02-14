@@ -676,7 +676,7 @@ class System:
         print(color_string((Colors.DEFAULT,
                             "You are going to choose one solution by answering which packages to install/remove from the packages which differ between the solutions.\n")))
 
-        # while we have more than 0 valid solution
+        # while we have more than 0 valid solutions
         while len(system_solution_dict) > 1:
             # calculate the differences between the solutions left
             installed_different_packages = set.union(
