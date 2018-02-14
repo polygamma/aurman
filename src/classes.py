@@ -288,7 +288,52 @@ class System:
         :return:            the new system
         """
 
-        return
+        new_system = deepcopy(self)
+
+        deleted_packages = []
+        for package in packages:
+            if package.name in new_system.all_packages_dict:
+                deleted_packages.append(new_system.all_packages_dict[package.name])
+                del new_system.all_packages_dict[package.name]
+        new_system = System(list(new_system.all_packages_dict.values()))
+
+        to_delete_packages = []
+        for package in packages:
+            to_delete_packages.extend(new_system.conflicting_with(package))
+        to_delete_packages = list(set(to_delete_packages))
+        new_system.append_packages(packages)
+
+        while to_delete_packages or deleted_packages:
+            for to_delete_package in to_delete_packages:
+                deleted_packages.append(to_delete_package)
+                del new_system.all_packages_dict[to_delete_package.name]
+            new_system = System(list(new_system.all_packages_dict.values()))
+
+            to_delete_packages = []
+            was_required_by_packages = []
+            for deleted_package in deleted_packages:
+                was_required_by_packages.extend(
+                    [new_system.all_packages_dict[required_by] for required_by in deleted_package.required_by if
+                     required_by in new_system.all_packages_dict])
+            deleted_packages = []
+
+            for was_required_by_package in was_required_by_packages:
+                if not new_system.are_all_deps_fulfilled(was_required_by_package):
+                    if was_required_by_package not in to_delete_packages:
+                        to_delete_packages.append(was_required_by_package)
+
+        while True:
+            to_delete_packages = []
+            for package in packages:
+                if not new_system.are_all_deps_fulfilled(package):
+                    to_delete_packages.append(package)
+
+            if not to_delete_packages:
+                return new_system
+
+            for to_delete_package in to_delete_packages:
+                del new_system.all_packages_dict[to_delete_package.name]
+            new_system = System(list(new_system.all_packages_dict.values()))
 
     @staticmethod
     def get_installed_packages() -> List['Package']:
