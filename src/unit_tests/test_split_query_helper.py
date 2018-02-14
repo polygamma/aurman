@@ -1,6 +1,7 @@
 from unittest import TestCase
-from wrappers import split_query_helper
+
 from own_exceptions import InvalidInput
+from wrappers import split_query_helper
 
 
 class TestSplit_query_helper(TestCase):
