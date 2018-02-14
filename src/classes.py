@@ -439,6 +439,22 @@ class System:
             if version != possible_conflict_package.version:
                 return_list.append(possible_conflict_package)
 
+        for conflict in package.conflicts:
+            conflict_name, conflict_cmp, conflict_version = split_name_with_versioning(conflict)
+
+            if conflict_name not in self.all_packages_dict:
+                continue
+
+            possible_conflict_package = self.all_packages_dict[conflict_name]
+
+            if possible_conflict_package in return_list:
+                continue
+
+            if conflict_cmp == "":
+                return_list.append(possible_conflict_package)
+            elif version_comparison(possible_conflict_package.version, conflict_cmp, conflict_version):
+                return_list.append(possible_conflict_package)
+
         if name in self.conflicts_dict:
             possible_conflict_packages = self.conflicts_dict[name]
             for possible_conflict_package in possible_conflict_packages:
