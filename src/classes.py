@@ -1,7 +1,7 @@
 import logging
 from copy import deepcopy
 from enum import Enum, auto
-from typing import Sequence, List, Tuple, Union
+from typing import Sequence, List, Tuple, Union, Set
 
 from aur_utilities import is_devel, get_aur_info
 from own_exceptions import InvalidInput
@@ -558,3 +558,35 @@ class System:
             for to_delete_package in to_delete_packages:
                 del new_system.all_packages_dict[to_delete_package.name]
             new_system = System(list(new_system.all_packages_dict.values()))
+
+    def differences_between_systems(self, other_systems: Sequence['System']) -> Tuple[
+        Tuple[Set['Package'], Set['Package']], List[Tuple[Set['Package'], Set['Package']]]]:
+        """
+        Evaluates differences between this system and other systems.
+
+        :param other_systems:   The other systems.
+        :return:                A tuple containing two items:
+
+                                First item:
+                                    Tuple containing two items:
+
+                                    First item:
+                                        installed packages in respect to this system,
+                                        which are in all other systems
+                                    Second item:
+                                        uninstalled packages in respect to this system,
+                                        which are in all other systems
+
+                                Second item:
+                                    List containing tuples with two items each:
+
+                                    For the i-th tuple (all in all as many tuples as other systems):
+                                        First item:
+                                            installed packages in respect to this system,
+                                            which are in the i-th system but not in all systems
+                                        Second item:
+                                            uninstalled packages in respect to this system,
+                                            which are in the i-th system but not in all systems
+        """
+
+        return (set(), set()), []
