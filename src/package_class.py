@@ -1,7 +1,8 @@
-from typing import Sequence, List, Tuple
+from typing import Sequence, List, Tuple, Any
 from enum import Enum, auto
 from wrappers import expac
 from aur_utilities import is_devel, get_aur_info
+from system_class import System
 
 
 class PossibleTypes(Enum):
@@ -178,3 +179,22 @@ class Package:
             to_return.extend(self.checkdepends)
 
         return to_return
+
+    def solutions_for_dep_problem(self, visited_list: Sequence[Any], current_solution: Sequence['Package'],
+                                  installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool) -> \
+            List[List['Package']]:
+        """
+        Heart of this AUR helper. Algorithm for dependency solving.
+        Also checks for conflicts, dep-cycles and topologically sorts the solutions.
+
+        :param visited_list:            Sequence containing the visited nodes for the solution.
+                                        May be "names" or packages.
+        :param current_solution:        The packages in the current solution.
+                                        Always topologically sorted
+        :param installed_system:        The system containing the installed packages
+        :param upstream_system:         The system containing the known upstream packages
+        :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
+        :return:                        A list containing the solutions.
+                                        Every solution is a list of topologically sorted packages.
+        """
+        return []
