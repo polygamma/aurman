@@ -75,7 +75,7 @@ def expac(option: str, formatting: Sequence[str], targets: Sequence[str]) -> Lis
     return return_list
 
 
-def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = None) -> List[str]:
+def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = None, sudo: bool = True) -> List[str]:
     """
     pacman wrapper. see: https://www.archlinux.org/pacman/pacman.8.html
     provide the pacman options as string via "options_as_string".
@@ -84,10 +84,15 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
     :param options_as_string:   the pacman options as string
     :param fetch_output:        True if you want to receive the output of pacman, False otherwise
     :param dir_to_execute:      if you want to execute the pacman command in a specific directory, provide the directory
+    :param sudo:                True if you want to execute pacman with sudo, False otherwise
     :return:                    empty list in case of "fetch_output"=False, otherwise the lines of the pacman output as list.
                                 one line of output is one item in the list.
     """
-    pacman_query = "sudo pacman {}".format(options_as_string)
+    if sudo:
+        pacman_query = "sudo pacman {}".format(options_as_string)
+    else:
+        pacman_query = "pacman {}".format(options_as_string)
+
     if fetch_output:
         if dir_to_execute is not None:
             pacman_return = run(pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True,
