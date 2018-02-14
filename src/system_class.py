@@ -10,7 +10,7 @@ class System:
     __groups_names = None
 
     @staticmethod
-    def getGroups_Names():
+    def get_groups_names():
         if System.__groups_names is None:
             System.__groups_names = pacman("-Sg", True, sudo=False)
 
