@@ -186,3 +186,36 @@ class System:
                         return_list.append(possible_conflict_package)
 
         return return_list
+
+    def append_packages_by_name(self, packages_names: Sequence[str], installed_system: 'System',
+                                only_unfulfilled_deps: bool):
+        """
+        Appends packages to this system by names.
+
+        :param packages_names:          The names of the packages
+        :param installed_system:        The system containing the already installed packages
+        :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
+        """
+
+        packages_names = set([strip_versioning_from_name(name) for name in packages_names])
+        packages_names_to_fetch = [name for name in packages_names if name not in self.all_packages_dict]
+
+        while packages_names_to_fetch:
+            fetched_packages = Package.get_packages_from_aur(packages_names_to_fetch)
+            self.append_packages(fetched_packages)
+
+            deps_of_the_fetched_packages = []
+            for package in fetched_packages:
+                deps_of_the_fetched_packages.extend(package.relevant_deps())
+
+            if only_unfulfilled_deps:
+                relevant_deps = []
+                for dep in deps_of_the_fetched_packages:
+                    if not installed_system.provided_by(dep):
+                        stripped_dep = strip_versioning_from_name(dep)
+                        if stripped_dep not in relevant_deps:
+                            relevant_deps.append(stripped_dep)
+            else:
+                relevant_deps = list(set([strip_versioning_from_name(dep) for dep in deps_of_the_fetched_packages]))
+
+            packages_names_to_fetch = [dep for dep in relevant_deps if dep not in self.all_packages_dict]
