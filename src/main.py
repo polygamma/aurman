@@ -76,13 +76,13 @@ def process(args):
     if 'refresh' in s_dict:
         del s_dict['refresh']
 
-    print("installed system fetching...")
+    print("\nanalyzing installed packages...")
     installed_system = System(System.get_installed_packages())
 
-    print("upstream system fetching...")
+    print("fetching upstream repo packages...")
     upstream_system = System(System.get_repo_packages())
 
-    print("own packages fetching...")
+    print("fetching needed aur packages...")
     upstream_system.append_packages_by_name(for_us)
     names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
     names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
