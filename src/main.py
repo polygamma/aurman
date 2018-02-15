@@ -17,5 +17,6 @@ if __name__ == '__main__':
     print("calculating solutions...")
     solutions = Package.dep_solving(concrete_packages, installed_system, upstream_system, only_unfulfilled_deps)
 
-    print("You chose the solution:\n{}".format(
-        installed_system.validate_and_choose_solution(solutions, concrete_packages)))
+    chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages)
+
+    installed_system.show_solution_differences_to_user(chosen_solution)
