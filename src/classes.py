@@ -634,6 +634,15 @@ class System:
         :return:                    A chosen and valid solution or None
         """
 
+        # needed strings
+        different_solutions_found = "{} different solutions have been found"
+        install_update_info = "\nAll of the solutions are going to install/update the following {} packages:"
+        remove_info = "\nAll of the solutions are going to remove the following {} packages:"
+        choose_info = "\nChoose between the following options to find one solution"
+        which_package_remove = "\nDo you want the package {} to be removed?"
+        which_package_install = "\nWhich of the following {} packages do you want to install? Enter the corresponding number.\n"
+        choice_not_valid = color_string((Colors.LIGHT_RED, "That was not a valid choice!"))
+
         # calculating new systems and finding valid systems
         new_systems = [self.hypothetical_append_packages_to_system(solution) for solution in solutions]
         valid_systems = []
@@ -661,20 +670,15 @@ class System:
             system_solution_dict[index] = (valid_systems[i], systems_differences[1][i])
 
         # prints for the user
-        print(color_string((Colors.DEFAULT, "{} different solutions have been found.".format(len(valid_systems)))))
-        print(color_string((Colors.DEFAULT,
-                            "\nAll of the solutions are going to install/update the following {} packages:".format(
-                                len(systems_differences[0][0])))))
-        print(color_string((Colors.DEFAULT, "\n", ", ".join([str(package) for package in systems_differences[0][0]]))))
+        print(color_string((Colors.DEFAULT, different_solutions_found.format(len(valid_systems)))))
+        print(color_string((Colors.DEFAULT, install_update_info.format(len(systems_differences[0][0])))))
+        print("\n" + ", ".join([color_string((Colors.DEFAULT, str(package))) for package in systems_differences[0][0]]))
         if systems_differences[0][1]:
-            print(color_string((Colors.DEFAULT,
-                                "\nAll of the solutions are going to remove the following {} packages:".format(
-                                    len(systems_differences[0][1])))))
-            print(color_string(
-                (Colors.DEFAULT, "\n", ", ".join([str(package) for package in systems_differences[0][1]]))))
+            print(color_string((Colors.DEFAULT, remove_info.format(len(systems_differences[0][1])))))
+            print("\n" + ", ".join(
+                [color_string((Colors.DEFAULT, str(package))) for package in systems_differences[0][1]]))
 
-        print(color_string((Colors.DEFAULT,
-                            "\nYou are going to choose one solution by answering which packages to install/remove from the packages which differ between the solutions.\n")))
+        print(color_string((Colors.DEFAULT, choose_info)))
 
         # while we have more than 1 valid solutions
         while len(system_solution_dict) > 1:
@@ -689,7 +693,7 @@ class System:
             # packages to be uninstalled are more relevant, so check those first
             if uninstalled_different_packages:
                 rand_package = list(uninstalled_different_packages)[0]
-                user_answer = ask_user("Do you want the package {} to be removed?".format(rand_package), False)
+                user_answer = ask_user(color_string((Colors.DEFAULT, which_package_remove.format(rand_package))), False)
                 for index in list(system_solution_dict.keys())[:]:
                     current_tuple = system_solution_dict[index]
                     if user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
@@ -701,13 +705,13 @@ class System:
             # packages to be installed
             packages_to_install = [package for package in installed_different_packages]
             package_count = len(packages_to_install)
-            print(color_string((Colors.DEFAULT,
-                                "\nWhich of the following {} packages do you want to install? Enter the corresponding number.\n".format(
-                                    package_count))))
+            print(color_string((Colors.DEFAULT, which_package_install.format(package_count))))
             while True:
                 try:
-                    print(", ".join(["{} - {}".format(packages_to_install[i], i + 1) for i in range(0, package_count)]))
-                    user_input = int(input("Enter the number: "))
+                    print(''.join(
+                        ["{}: {}\n".format(i + 1, color_string((Colors.DEFAULT, str(packages_to_install[i])))) for i in
+                         range(0, package_count)]))
+                    user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
                     if 1 <= user_input <= package_count:
                         for index in list(system_solution_dict.keys())[:]:
                             current_tuple = system_solution_dict[index]
@@ -715,9 +719,9 @@ class System:
                                 del system_solution_dict[index]
                         break
                 except ValueError:
-                    print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
+                    print(choice_not_valid)
                 else:
-                    print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
+                    print(choice_not_valid)
 
         if len(system_solution_dict) == 0:
             logging.error("This should really never happen. We had solutions, but lost them all...")
