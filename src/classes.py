@@ -4,10 +4,10 @@ from enum import Enum, auto
 from typing import Sequence, List, Tuple, Union, Set
 
 from aur_utilities import is_devel, get_aur_info
+from colors import Colors, color_string
 from own_exceptions import InvalidInput
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
 from wrappers import expac
-from colors import Colors, color_string
 
 
 class PossibleTypes(Enum):
