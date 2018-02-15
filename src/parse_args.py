@@ -1,6 +1,7 @@
-from own_exceptions import InvalidInput
 import logging
 from typing import Sequence, Dict, Tuple
+
+from own_exceptions import InvalidInput
 
 parameters = {
     ('S', 'sync', 'U', 'upgrade'): (

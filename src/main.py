@@ -1,12 +1,12 @@
+import logging
 from copy import deepcopy
+from sys import argv
 
 from classes import System, Package
-from sys import argv
-import logging
 from own_exceptions import InvalidInput
 from parse_args import group_args, args_to_string
-from wrappers import pacman
 from utilities import acquire_sudo, version_comparison
+from wrappers import pacman
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
 
