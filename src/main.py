@@ -135,6 +135,8 @@ def process(args):
                                     only_unfulfilled_deps)
 
     chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
+    if not chosen_solution:
+        return
 
     installed_system.show_solution_differences_to_user(chosen_solution)
 
