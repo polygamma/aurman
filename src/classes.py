@@ -219,7 +219,8 @@ class Package:
 
         # conflict
         possible_conflict_packages = deepcopy(current_solution)
-        possible_conflict_packages.extend([thing for thing in deepcopy(visited_list) if isinstance(thing, Package)])
+        possible_conflict_packages.extend([thing for thing in deepcopy(visited_list) if
+                                           isinstance(thing, Package) and (thing not in possible_conflict_packages)])
         if System(possible_conflict_packages).conflicting_with(self):
             return []
 
