@@ -211,11 +211,16 @@ class Package:
             return [(deepcopy(current_solution), deepcopy(visited_list))]
 
         # dep cycle
-        if self in visited_list:
+        # dirty... thanks to dep cycle between mesa and libglvnd
+        if self in visited_list and not (self.type_of is PossibleTypes.REPO_PACKAGE):
             return []
+        elif self in visited_list:
+            return [(deepcopy(current_solution), deepcopy(visited_list))]
 
         # conflict
-        if System(current_solution).conflicting_with(self):
+        possible_conflict_packages = deepcopy(current_solution)
+        possible_conflict_packages.extend([thing for thing in deepcopy(visited_list) if isinstance(thing, Package)])
+        if System(possible_conflict_packages).conflicting_with(self):
             return []
 
         visited_list = deepcopy(visited_list)
