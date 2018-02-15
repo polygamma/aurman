@@ -100,7 +100,6 @@ def process(args):
             package.show_pkgbuild()
     if devel:
         for package in upstream_system.devel_packages_list:
-            break
             package.get_devel_version()
 
     # checking which packages need to be installed

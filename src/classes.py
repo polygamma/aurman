@@ -9,7 +9,7 @@ from aur_utilities import is_devel, get_aur_info
 from colors import Colors, color_string
 from own_exceptions import InvalidInput, ConnectionProblem
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
-from wrappers import expac
+from wrappers import expac, makepkg
 
 
 class PossibleTypes(Enum):
@@ -415,6 +415,57 @@ class Package:
         else:
             logging.error("Files of %s are not okay", str(self.name))
             raise InvalidInput()
+
+    def version_from_srcinfo(self):
+        """
+        Returns the version from the srcinfo
+        :return:    The version read from the srcinfo
+        """
+
+        if self.pkgbase is None:
+            logging.error("base package name of %s not known", str(self.name))
+            raise InvalidInput()
+
+        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+        if not os.path.isdir(package_dir):
+            logging.error("package dir of %s does not exist", str(self.name))
+            raise InvalidInput()
+
+        src_lines = makepkg("--printsrcinfo", True, package_dir)
+        pkgver = None
+        pkgrel = None
+        epoch = None
+        for line in src_lines:
+            if "pkgver =" in line:
+                pkgver = line.split("=")[1].strip()
+            elif "pkgrel =" in line:
+                pkgrel = line.split("=")[1].strip()
+            elif "epoch =" in line:
+                epoch = line.split("=")[1].strip()
+
+        version = ""
+        if epoch is not None:
+            version += epoch + ":"
+        if pkgver is not None:
+            version += pkgver
+        else:
+            logging.info("version of %s must be there", str(self.name))
+            raise InvalidInput()
+        if pkgrel is not None:
+            version += "-" + pkgrel
+
+        return version
+
+    def get_devel_version(self):
+        """
+        Fetches the current sources of this package.
+        devel packages only!
+        """
+
+        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+        makepkg("-odc --noprepare --skipinteg", False, package_dir)
+
+        self.version = self.version_from_srcinfo()
 
 
 class System:
