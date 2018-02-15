@@ -636,10 +636,8 @@ class System:
         """
 
         # needed strings
-        different_solutions_found = "{} different solutions have been found"
-        install_update_info = "\nAll of the solutions are going to install/update the following {} packages:"
-        remove_info = "\nAll of the solutions are going to remove the following {} packages:"
-        choose_info = "\nChoose between the following options to find one solution"
+        different_solutions_found = "\n{} different solution(s) have been found"
+        choose_info = "Choose between the following options to find one solution"
         which_package_remove = "\nDo you want the package {} to be removed?"
         which_package_install = "\nWhich of the following {} packages do you want to install? Enter the corresponding number.\n"
         choice_not_valid = color_string((Colors.LIGHT_RED, "That was not a valid choice!"))
@@ -673,13 +671,6 @@ class System:
 
         # prints for the user
         print(color_string((Colors.DEFAULT, different_solutions_found.format(len(valid_systems)))))
-        print(color_string((Colors.DEFAULT, install_update_info.format(len(systems_differences[0][0])))))
-        print("\n" + ", ".join([color_string((Colors.DEFAULT, str(package))) for package in systems_differences[0][0]]))
-        if systems_differences[0][1]:
-            print(color_string((Colors.DEFAULT, remove_info.format(len(systems_differences[0][1])))))
-            print("\n" + ", ".join(
-                [color_string((Colors.DEFAULT, str(package))) for package in systems_differences[0][1]]))
-
         print(color_string((Colors.DEFAULT, choose_info)))
 
         # while we have more than 1 valid solution
@@ -739,7 +730,7 @@ class System:
         """
 
         # needed strings
-        package_to_install = "The following {} package(s) are getting installed:\n"
+        package_to_install = "\nThe following {} package(s) are getting installed:\n"
         packages_to_uninstall = "\nThe following {} package(s) are getting removed:\n"
         packages_to_upgrade = "\nThe following {} package(s) are getting updated:\n"
         user_question = "\nDo you want to continue?"
@@ -754,21 +745,19 @@ class System:
         to_uninstall_names -= to_upgrade_names
 
         print(color_string((Colors.DEFAULT, package_to_install.format(len(to_install_names)))))
-        print("\n" + ", ".join(
+        print(", ".join(
             [color_string((Colors.DEFAULT, str(new_system.all_packages_dict[package_name]))) for package_name in
              to_install_names]))
 
         print(color_string((Colors.DEFAULT, packages_to_uninstall.format(len(to_uninstall_names)))))
-        print("\n" + ", ".join(
-            [color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))) for package_name in
-             to_uninstall_names]))
+        print(", ".join([color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))) for package_name in
+                         to_uninstall_names]))
 
         print(color_string((Colors.DEFAULT, packages_to_upgrade.format(len(to_upgrade_names)))))
-        print("\n" + ''.join(
-            ["{} -> {}\n".format(color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))),
-                                 color_string(
-                                     (Colors.DEFAULT, str(new_system.all_packages_dict[package_name])))) for
-             package_name in to_upgrade_names]))
+        print(''.join(["{} -> {}\n".format(color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))),
+                                           color_string(
+                                               (Colors.DEFAULT, str(new_system.all_packages_dict[package_name])))) for
+                       package_name in to_upgrade_names]))
 
         if not ask_user(color_string((Colors.DEFAULT, user_question)), True):
             raise InvalidInput()
