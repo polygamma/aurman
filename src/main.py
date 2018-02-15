@@ -142,7 +142,8 @@ def process(args):
     if not only_unfulfilled_deps:
         for package in chosen_solution[:]:
             if (package.name not in for_us) and (package.name in installed_system.all_packages_dict) and (
-            version_comparison(installed_system.all_packages_dict[package.name].version, ">=", package.version)):
+                    version_comparison(installed_system.all_packages_dict[package.name].version, ">=",
+                                       package.version)):
                 chosen_solution.remove(package)
 
     installed_system.show_solution_differences_to_user(chosen_solution)
