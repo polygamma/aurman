@@ -88,7 +88,7 @@ def process(args):
     names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
     upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
-    print("fetching pkgbuilds...")
+    print("looking for new pkgbuilds and fetch them...")
     for package in upstream_system.aur_packages_list:
         package.fetch_pkgbuild()
     for package in upstream_system.devel_packages_list:
@@ -141,6 +141,8 @@ def process(args):
 
     # solution contains no packages
     if not chosen_solution:
+        print("nothing to do... everything is up to date or we could not find a solution")
+        print("if you think that there should be something to do, rerun aurman with the --deep_search flag")
         return
 
     installed_system.show_solution_differences_to_user(chosen_solution)
