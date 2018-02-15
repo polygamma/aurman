@@ -717,8 +717,7 @@ class System:
                         print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
                     break
                 except ValueError:
-                    pass
-                print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
+                    print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
 
         if len(system_solution_dict) == 0:
             logging.error("This should really never happen. We had solutions, but lost them all...")
