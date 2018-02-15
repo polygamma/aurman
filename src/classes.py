@@ -680,7 +680,7 @@ class System:
 
         print(color_string((Colors.DEFAULT, choose_info)))
 
-        # while we have more than 1 valid solutions
+        # while we have more than 1 valid solution
         while len(system_solution_dict) > 1:
             # calculate the differences between the solutions left
             installed_different_packages = set.union(
