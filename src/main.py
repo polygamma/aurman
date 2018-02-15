@@ -1,7 +1,8 @@
 from classes import System, Package
+from sys import argv
 
 if __name__ == '__main__':
-    packages_interested_in = ["ros-indigo-desktop-full"]
+    packages_interested_in = argv[1:]
     only_unfulfilled_deps = True
 
     print("installed system fetching...")
