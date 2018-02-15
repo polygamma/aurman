@@ -135,8 +135,6 @@ def process(args):
                                     only_unfulfilled_deps)
 
     chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
-    if not chosen_solution:
-        return
 
     # needed because deep_search ignores installed packages
     if not only_unfulfilled_deps:
@@ -145,6 +143,10 @@ def process(args):
                     version_comparison(installed_system.all_packages_dict[package.name].version, ">=",
                                        package.version)):
                 chosen_solution.remove(package)
+
+    # solution contains no packages
+    if not chosen_solution:
+        return
 
     installed_system.show_solution_differences_to_user(chosen_solution)
 
