@@ -166,12 +166,13 @@ def process(args):
     if not sudo_acquired:
         acquire_sudo()
 
-    relevant_args = deepcopy(grouped_args['S'])
-    relevant_args[''] = repo_packages_names
-    relevant_args[operation] = []
-    relevant_args['asdeps'] = []
-    args_as_string = args_to_string(relevant_args)
-    pacman(args_as_string, False)
+    if repo_packages_names:
+        relevant_args = deepcopy(grouped_args['S'])
+        relevant_args[''] = repo_packages_names
+        relevant_args[operation] = []
+        relevant_args['asdeps'] = []
+        args_as_string = args_to_string(relevant_args)
+        pacman(args_as_string, False)
 
     # generate pacman args for the aur packages
     relevant_args = deepcopy(grouped_args['U'])
