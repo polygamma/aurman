@@ -735,6 +735,7 @@ class System:
         package_to_install = "\nThe following {} package(s) are getting installed:\n"
         packages_to_uninstall = "\nThe following {} package(s) are getting removed:\n"
         packages_to_upgrade = "\nThe following {} package(s) are getting updated:\n"
+        packages_to_reinstall = "\nThe following {} packages(s) are just getting reinstalled:\n"
         user_question = "\nDo you want to continue?"
 
         new_system = self.hypothetical_append_packages_to_system(solution)
@@ -745,6 +746,8 @@ class System:
         to_upgrade_names = to_install_names & to_uninstall_names
         to_install_names -= to_upgrade_names
         to_uninstall_names -= to_upgrade_names
+        just_reinstall_names = set([package.name for package in solution]) - set.union(
+            *[to_upgrade_names, to_install_names, to_uninstall_names])
 
         print(color_string((Colors.DEFAULT, package_to_install.format(len(to_install_names)))))
         print(", ".join(
@@ -760,6 +763,11 @@ class System:
                                            color_string(
                                                (Colors.GREEN, str(new_system.all_packages_dict[package_name])))) for
                        package_name in to_upgrade_names]))
+
+        print(color_string((Colors.DEFAULT, packages_to_reinstall.format(len(just_reinstall_names)))))
+        print(", ".join(
+            [color_string((Colors.LIGHT_MAGENTA, str(self.all_packages_dict[package_name]))) for package_name in
+             just_reinstall_names]))
 
         if not ask_user(color_string((Colors.DEFAULT, user_question)), True):
             raise InvalidInput()
