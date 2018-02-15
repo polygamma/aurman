@@ -666,6 +666,10 @@ class System:
 
         # calculate the differences between the solutions
         systems_differences = self.differences_between_systems(valid_systems)
+        single_differences_count = sum(
+            [len(diff_tuple[0]) + len(diff_tuple[1]) for diff_tuple in systems_differences[1]])
+        if single_differences_count == 0:
+            return solutions[0]
         system_solution_dict = {}
         for i, index in enumerate(valid_solutions_indices):
             system_solution_dict[index] = (valid_systems[i], systems_differences[1][i])
