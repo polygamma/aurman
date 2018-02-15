@@ -90,17 +90,13 @@ def process(args):
 
     print("fetching pkgbuilds...")
     for package in upstream_system.aur_packages_list:
-        break
         package.fetch_pkgbuild()
     for package in upstream_system.devel_packages_list:
-        break
         package.fetch_pkgbuild()
     if not noedit:
         for package in upstream_system.aur_packages_list:
-            break
             package.show_pkgbuild()
         for package in upstream_system.devel_packages_list:
-            break
             package.show_pkgbuild()
     if devel:
         for package in upstream_system.devel_packages_list:
