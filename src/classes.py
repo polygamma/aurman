@@ -702,7 +702,7 @@ class System:
             packages_to_install = [package for package in installed_different_packages]
             package_count = len(packages_to_install)
             print(color_string((Colors.DEFAULT,
-                                "Which of the following {} packages do you want to install? Enter the corresponding number.\n".format(
+                                "\nWhich of the following {} packages do you want to install? Enter the corresponding number.\n".format(
                                     package_count))))
             while True:
                 try:
@@ -713,10 +713,10 @@ class System:
                             current_tuple = system_solution_dict[index]
                             if packages_to_install[user_input - 1].name not in current_tuple[0].all_packages_dict:
                                 del system_solution_dict[index]
-                    else:
-                        print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
-                    break
+                        break
                 except ValueError:
+                    print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
+                else:
                     print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
 
         if len(system_solution_dict) == 0:
