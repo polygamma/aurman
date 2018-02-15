@@ -536,9 +536,10 @@ class System:
             to_delete_packages = []
             was_required_by_packages = []
             for deleted_package in deleted_packages:
-                was_required_by_packages.extend(
-                    [new_system.all_packages_dict[required_by] for required_by in deleted_package.required_by if
-                     required_by in new_system.all_packages_dict])
+                if deleted_package.required_by is not None:
+                    was_required_by_packages.extend(
+                        [new_system.all_packages_dict[required_by] for required_by in deleted_package.required_by if
+                         required_by in new_system.all_packages_dict])
             deleted_packages = []
 
             for was_required_by_package in was_required_by_packages:
