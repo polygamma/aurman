@@ -701,8 +701,8 @@ class System:
             # packages to be uninstalled are more relevant, so check those first
             if uninstalled_different_packages:
                 rand_package = list(uninstalled_different_packages)[0]
-                user_answer = ask_user(color_string((Colors.LIGHT_MAGENTA, which_package_remove.format(rand_package))),
-                                       False)
+                user_answer = ask_user(
+                    color_string((Colors.LIGHT_MAGENTA, which_package_remove.format(rand_package.name))), False)
                 for index in list(system_solution_dict.keys())[:]:
                     current_tuple = system_solution_dict[index]
                     if user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
@@ -719,7 +719,8 @@ class System:
                 if package_count == 1:
                     rand_package = packages_to_install[0]
                     user_answer = ask_user(
-                        color_string((Colors.LIGHT_MAGENTA, which_package_install_once.format(rand_package))), True)
+                        color_string((Colors.LIGHT_MAGENTA, which_package_install_once.format(rand_package.name))),
+                        True)
                     for index in list(system_solution_dict.keys())[:]:
                         current_tuple = system_solution_dict[index]
                         if user_answer and (rand_package.name not in current_tuple[0].all_packages_dict):
@@ -731,9 +732,9 @@ class System:
                 print(color_string((Colors.LIGHT_MAGENTA, which_package_install.format(package_count))))
                 while True:
                     try:
-                        print(''.join(
-                            ["{}: {}\n".format(i + 1, color_string((Colors.LIGHT_MAGENTA, str(packages_to_install[i]))))
-                             for i in range(0, package_count)]))
+                        print(''.join(["{}: {}\n".format(i + 1, color_string(
+                            (Colors.LIGHT_MAGENTA, str(packages_to_install[i].name)))) for i in
+                                       range(0, package_count)]))
                         user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
                         if 1 <= user_input <= package_count:
                             for index in list(system_solution_dict.keys())[:]:
