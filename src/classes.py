@@ -686,7 +686,8 @@ class System:
             # packages to be uninstalled are more relevant, so check those first
             if uninstalled_different_packages:
                 rand_package = list(uninstalled_different_packages)[0]
-                user_answer = ask_user(color_string((Colors.DEFAULT, which_package_remove.format(rand_package))), False)
+                user_answer = ask_user(color_string((Colors.LIGHT_MAGENTA, which_package_remove.format(rand_package))),
+                                       False)
                 for index in list(system_solution_dict.keys())[:]:
                     current_tuple = system_solution_dict[index]
                     if user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
@@ -698,11 +699,12 @@ class System:
             # packages to be installed
             packages_to_install = [package for package in installed_different_packages]
             package_count = len(packages_to_install)
-            print(color_string((Colors.DEFAULT, which_package_install.format(package_count))))
+            print(color_string((Colors.LIGHT_MAGENTA, which_package_install.format(package_count))))
             while True:
                 try:
                     print(''.join(
-                        ["{}: {}\n".format(i + 1, color_string((Colors.DEFAULT, str(packages_to_install[i])))) for i in
+                        ["{}: {}\n".format(i + 1, color_string((Colors.LIGHT_MAGENTA, str(packages_to_install[i])))) for
+                         i in
                          range(0, package_count)]))
                     user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
                     if 1 <= user_input <= package_count:
@@ -746,17 +748,17 @@ class System:
 
         print(color_string((Colors.DEFAULT, package_to_install.format(len(to_install_names)))))
         print(", ".join(
-            [color_string((Colors.DEFAULT, str(new_system.all_packages_dict[package_name]))) for package_name in
+            [color_string((Colors.GREEN, str(new_system.all_packages_dict[package_name]))) for package_name in
              to_install_names]))
 
         print(color_string((Colors.DEFAULT, packages_to_uninstall.format(len(to_uninstall_names)))))
-        print(", ".join([color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))) for package_name in
+        print(", ".join([color_string((Colors.RED, str(self.all_packages_dict[package_name]))) for package_name in
                          to_uninstall_names]))
 
         print(color_string((Colors.DEFAULT, packages_to_upgrade.format(len(to_upgrade_names)))))
-        print(''.join(["{} -> {}\n".format(color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))),
+        print(''.join(["{} -> {}\n".format(color_string((Colors.RED, str(self.all_packages_dict[package_name]))),
                                            color_string(
-                                               (Colors.DEFAULT, str(new_system.all_packages_dict[package_name])))) for
+                                               (Colors.GREEN, str(new_system.all_packages_dict[package_name])))) for
                        package_name in to_upgrade_names]))
 
         if not ask_user(color_string((Colors.DEFAULT, user_question)), True):
