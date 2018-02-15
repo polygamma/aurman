@@ -154,7 +154,8 @@ def process(args):
             repo_packages_names.append(package.name)
             # concrete repo packages instances not needed anymore
             chosen_solution.remove(package)
-        elif package.name in for_us:
+        elif package.name in for_us or ((package.name in installed_system.all_packages_dict) and (
+                installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
             explicit_aur_packages_names.add(package.name)
 
     # install repo packages
