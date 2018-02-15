@@ -626,13 +626,13 @@ class System:
         return first_return_tuple, return_list
 
     def validate_and_choose_solution(self, solutions: List[List['Package']],
-                                     needed_packages: Sequence['Package']) -> Union[List['Package'], None]:
+                                     needed_packages: Sequence['Package']) -> List['Package']:
         """
         Validates solutions and lets the user choose a solution
 
         :param solutions:           The solutions
         :param needed_packages:     Packages which need to be in the solutions
-        :return:                    A chosen and valid solution or None
+        :return:                    A chosen and valid solution
         """
 
         # needed strings
@@ -658,7 +658,8 @@ class System:
 
         # no valid solutions
         if not valid_systems:
-            return None
+            logging.error("No valid solutions found")
+            raise InvalidInput()
 
         # only one valid solution - just return
         if len(valid_systems) == 1:
