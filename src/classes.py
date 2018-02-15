@@ -699,14 +699,26 @@ class System:
                 continue
 
             # packages to be installed
-            rand_package = list(installed_different_packages)[0]
-            user_answer = ask_user("Do you want the package {} to be installed?".format(rand_package), True)
-            for index in list(system_solution_dict.keys())[:]:
-                current_tuple = system_solution_dict[index]
-                if user_answer and (rand_package.name not in current_tuple[0].all_packages_dict):
-                    del system_solution_dict[index]
-                elif not user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
-                    del system_solution_dict[index]
+            packages_to_install = [package for package in installed_different_packages]
+            package_count = len(packages_to_install)
+            print(color_string((Colors.DEFAULT,
+                                "Which of the following {} packages do you want to install? Enter the corresponding number.\n".format(
+                                    package_count))))
+            while True:
+                try:
+                    print(", ".join(["{} - {}".format(packages_to_install[i], i + 1) for i in range(0, package_count)]))
+                    user_input = int(input("Enter the number: "))
+                    if 1 <= user_input <= package_count:
+                        for index in list(system_solution_dict.keys())[:]:
+                            current_tuple = system_solution_dict[index]
+                            if packages_to_install[user_input - 1].name not in current_tuple[0].all_packages_dict:
+                                del system_solution_dict[index]
+                    else:
+                        print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
+                    break
+                except ValueError:
+                    pass
+                print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
 
         if len(system_solution_dict) == 0:
             logging.error("This should really never happen. We had solutions, but lost them all...")
