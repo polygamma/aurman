@@ -16,7 +16,7 @@ parameters = {
         'u', 'sysupgrade', 'needed'
     ),
     ('aurman',): (
-        'noedit', 'devel', 'packages'
+        'noedit', 'devel', 'packages', 'deep_search'
     )
 }
 

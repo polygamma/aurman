@@ -30,6 +30,7 @@ class Package:
         """
         for_us = []
         for_pacman = []
+        user_input = list(set(user_input))
 
         found_in_aur_names = set([package.name for package in Package.get_packages_from_aur(user_input)])
         for _user_input in user_input:
