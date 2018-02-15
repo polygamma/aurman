@@ -666,6 +666,13 @@ class System:
 
         # calculate the differences between the solutions
         systems_differences = self.differences_between_systems(valid_systems)
+
+        # if the solutions are different but the resulting systems are not
+        single_differences_count = sum(
+            [len(diff_tuple[0]) + len(diff_tuple[1]) for diff_tuple in systems_differences[1]])
+        if single_differences_count == 0:
+            return solutions[valid_solutions_indices[0]]
+
         system_solution_dict = {}
         for i, index in enumerate(valid_solutions_indices):
             system_solution_dict[index] = (valid_systems[i], systems_differences[1][i])
@@ -698,25 +705,29 @@ class System:
                 continue
 
             # packages to be installed
-            packages_to_install = [package for package in installed_different_packages]
-            package_count = len(packages_to_install)
-            print(color_string((Colors.LIGHT_MAGENTA, which_package_install.format(package_count))))
-            while True:
-                try:
-                    print(''.join(
-                        ["{}: {}\n".format(i + 1, color_string((Colors.LIGHT_MAGENTA, str(packages_to_install[i])))) for
-                         i in range(0, package_count)]))
-                    user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
-                    if 1 <= user_input <= package_count:
-                        for index in list(system_solution_dict.keys())[:]:
-                            current_tuple = system_solution_dict[index]
-                            if packages_to_install[user_input - 1].name not in current_tuple[0].all_packages_dict:
-                                del system_solution_dict[index]
-                        break
-                except ValueError:
-                    print(choice_not_valid)
-                else:
-                    print(choice_not_valid)
+            if installed_different_packages:
+                packages_to_install = [package for package in installed_different_packages]
+                package_count = len(packages_to_install)
+                print(color_string((Colors.LIGHT_MAGENTA, which_package_install.format(package_count))))
+                while True:
+                    try:
+                        print(''.join(
+                            ["{}: {}\n".format(i + 1, color_string((Colors.LIGHT_MAGENTA, str(packages_to_install[i]))))
+                             for
+                             i in range(0, package_count)]))
+                        user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
+                        if 1 <= user_input <= package_count:
+                            for index in list(system_solution_dict.keys())[:]:
+                                current_tuple = system_solution_dict[index]
+                                if packages_to_install[user_input - 1].name not in current_tuple[0].all_packages_dict:
+                                    del system_solution_dict[index]
+                            break
+                    except ValueError:
+                        print(choice_not_valid)
+                    else:
+                        print(choice_not_valid)
+                continue
+            break
 
         if len(system_solution_dict) == 0:
             logging.error("This should really never happen. We had solutions, but lost them all...")
