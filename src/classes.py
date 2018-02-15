@@ -704,8 +704,7 @@ class System:
                 try:
                     print(''.join(
                         ["{}: {}\n".format(i + 1, color_string((Colors.LIGHT_MAGENTA, str(packages_to_install[i])))) for
-                         i in
-                         range(0, package_count)]))
+                         i in range(0, package_count)]))
                     user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
                     if 1 <= user_input <= package_count:
                         for index in list(system_solution_dict.keys())[:]:
