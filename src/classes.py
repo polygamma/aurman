@@ -730,3 +730,45 @@ class System:
             raise InvalidInput()
 
         return solutions[int(list(system_solution_dict.keys())[0])]
+
+    def show_solution_differences_to_user(self, solution: List['Package']):
+        """
+        Shows the chosen solution to the user with package upgrades etc.
+
+        :param solution:    The chosen solution
+        """
+
+        # needed strings
+        package_to_install = "The following {} package(s) are getting installed:\n"
+        packages_to_uninstall = "\nThe following {} package(s) are getting removed:\n"
+        packages_to_upgrade = "\nThe following {} package(s) are getting updated:\n"
+        user_question = "\nDo you want to continue?"
+
+        new_system = self.hypothetical_append_packages_to_system(solution)
+        differences_to_this_system_tuple = self.differences_between_systems((new_system,))[0]
+
+        to_install_names = set([package.name for package in differences_to_this_system_tuple[0]])
+        to_uninstall_names = set([package.name for package in differences_to_this_system_tuple[1]])
+        to_upgrade_names = to_install_names & to_uninstall_names
+        to_install_names -= to_upgrade_names
+        to_uninstall_names -= to_upgrade_names
+
+        print(color_string((Colors.DEFAULT, package_to_install.format(len(to_install_names)))))
+        print("\n" + ", ".join(
+            [color_string((Colors.DEFAULT, str(new_system.all_packages_dict[package_name]))) for package_name in
+             to_install_names]))
+
+        print(color_string((Colors.DEFAULT, packages_to_uninstall.format(len(to_uninstall_names)))))
+        print("\n" + ", ".join(
+            [color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))) for package_name in
+             to_uninstall_names]))
+
+        print(color_string((Colors.DEFAULT, packages_to_upgrade.format(len(to_upgrade_names)))))
+        print("\n" + ''.join(
+            ["{} -> {}\n".format(color_string((Colors.DEFAULT, str(self.all_packages_dict[package_name]))),
+                                 color_string(
+                                     (Colors.DEFAULT, str(new_system.all_packages_dict[package_name])))) for
+             package_name in to_upgrade_names]))
+
+        if not ask_user(color_string((Colors.DEFAULT, user_question)), True):
+            raise InvalidInput()
