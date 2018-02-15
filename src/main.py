@@ -179,7 +179,6 @@ def process(args):
 
     # build and install aur packages
     for package in chosen_solution:
-        break
         package.build()
         if package.name in explicit_aur_packages_names:
             package.install(args_for_explicit)
