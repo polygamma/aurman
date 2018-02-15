@@ -641,6 +641,7 @@ class System:
         choose_info = "Choose between the following options to find one solution"
         which_package_remove = "\nDo you want the package {} to be removed?"
         which_package_install = "\nWhich of the following {} packages do you want to install? Enter the corresponding number.\n"
+        which_package_install_once = "\nDo you want the package {} to be installed?"
         choice_not_valid = color_string((Colors.LIGHT_RED, "That was not a valid choice!"))
 
         # calculating new systems and finding valid systems
@@ -708,6 +709,19 @@ class System:
             if installed_different_packages:
                 packages_to_install = [package for package in installed_different_packages]
                 package_count = len(packages_to_install)
+
+                if package_count == 1:
+                    rand_package = packages_to_install[0]
+                    user_answer = ask_user(
+                        color_string((Colors.LIGHT_MAGENTA, which_package_install_once.format(rand_package))), True)
+                    for index in list(system_solution_dict.keys())[:]:
+                        current_tuple = system_solution_dict[index]
+                        if user_answer and (rand_package.name not in current_tuple[0].all_packages_dict):
+                            del system_solution_dict[index]
+                        elif not user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
+                            del system_solution_dict[index]
+                    continue
+
                 print(color_string((Colors.LIGHT_MAGENTA, which_package_install.format(package_count))))
                 while True:
                     try:
