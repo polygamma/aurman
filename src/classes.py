@@ -9,7 +9,7 @@ from aur_utilities import is_devel, get_aur_info
 from colors import Colors, color_string
 from own_exceptions import InvalidInput, ConnectionProblem
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
-from wrappers import expac, makepkg
+from wrappers import expac, makepkg, pacman
 
 
 class PossibleTypes(Enum):
@@ -466,6 +466,60 @@ class Package:
         makepkg("-odc --noprepare --skipinteg", False, package_dir)
 
         self.version = self.version_from_srcinfo()
+
+    @staticmethod
+    def get_build_dir(package_dir):
+        makepkg_conf = os.path.join("/etc", "makepkg.conf")
+        if not os.path.isfile(makepkg_conf):
+            logging.error("makepkg.conf not found")
+            raise InvalidInput()
+
+        with open(makepkg_conf, "r") as f:
+            makepkg_conf_lines = f.read().strip().splitlines()
+
+        for line in makepkg_conf_lines:
+            line_stripped = line.strip()
+            if line_stripped.startswith("PKGDEST="):
+                return os.path.expandvars(os.path.expanduser(line_stripped.split("PKGDEST=")[1].strip()))
+        else:
+            return package_dir
+
+    def build(self):
+        # check if build needed
+        build_version = self.version_from_srcinfo()
+        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+        build_dir = Package.get_build_dir(package_dir)
+
+        files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
+        install_file = None
+        for file in files_in_build_dir:
+            if file.startswith(self.name + "-" + build_version) and ".pkg." in \
+                    file.split(self.name + "-" + build_version)[1]:
+                install_file = file
+                break
+
+        if install_file is None:
+            makepkg("-c --noconfirm", False, package_dir)
+
+    def install(self, args_as_string: str):
+        build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
+
+        # get name of install file
+        build_version = self.version_from_srcinfo()
+        files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
+        install_file = None
+        for file in files_in_build_dir:
+            if file.startswith(self.name + "-" + build_version) and ".pkg." in \
+                    file.split(self.name + "-" + build_version)[1]:
+                install_file = file
+                break
+
+        if install_file is None:
+            logging.error("package file of %s not available", str(self.name))
+            raise InvalidInput()
+
+        # install
+        pacman("{} {}".format(args_as_string, install_file), False, dir_to_execute=build_dir)
 
 
 class System:
