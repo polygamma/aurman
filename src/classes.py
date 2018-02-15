@@ -1,11 +1,13 @@
 import logging
+import os
 from copy import deepcopy
 from enum import Enum, auto
+from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List, Tuple, Union, Set
 
 from aur_utilities import is_devel, get_aur_info
 from colors import Colors, color_string
-from own_exceptions import InvalidInput
+from own_exceptions import InvalidInput, ConnectionProblem
 from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
 from wrappers import expac
 
@@ -18,6 +20,12 @@ class PossibleTypes(Enum):
 
 
 class Package:
+    # default editor path
+    default_editor_path = os.environ.get("EDITOR", os.path.join("usr", "bin", "nano"))
+    # directory of the cache
+    cache_dir = os.path.join(os.environ.get("XDG_CACHE_HOME", os.path.expanduser(os.path.join("~", ".cache"))),
+                             "aurman")
+
     @staticmethod
     def user_input_to_categories(user_input: Sequence[str]) -> Tuple[Sequence[str], Sequence[str]]:
         """
@@ -284,6 +292,129 @@ class Package:
             current_solutions = new_solutions
 
         return [solution[0] for solution in current_solutions]
+
+    def fetch_pkgbuild(self):
+        """
+        Fetches the current git aur repo changes for this package
+        In cache_dir/package_base_name/.git/aurman will be copies of the last reviewed PKGBUILD and .install files
+        In cache_dir/package_base_name/.git/aurman/.reviewed will be saved if the current PKGBUILD and .install files have been reviewed
+        """
+
+        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+
+        # check if repo has ever been fetched
+        if os.path.isdir(package_dir):
+            if run("git fetch", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir).returncode != 0:
+                logging.error("git fetch of %s failed", self.name)
+                raise ConnectionProblem()
+
+            head = run("git rev-parse HEAD", shell=True, stdout=PIPE, universal_newlines=True,
+                       cwd=package_dir).stdout.strip()
+            u = run("git rev-parse @{u}", shell=True, stdout=PIPE, universal_newlines=True,
+                    cwd=package_dir).stdout.strip()
+
+            # if new sources available
+            if head != u:
+                if run("git reset --hard HEAD && git pull", shell=True, stdout=DEVNULL, stderr=DEVNULL,
+                       cwd=package_dir).returncode != 0:
+                    logging.error("sources of %s could not be fetched", self.name)
+                    raise ConnectionProblem()
+
+        # repo has never been fetched
+        else:
+            if run("install -dm700 '" + package_dir + "'", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
+                logging.error("Creating package dir of %s failed", self.name)
+                raise InvalidInput()
+
+            # clone repo
+            if run("git clone https://aur.archlinux.org/" + self.pkgbase + ".git", shell=True, stdout=DEVNULL,
+                   stderr=DEVNULL, cwd=Package.cache_dir).returncode != 0:
+                logging.error("Cloning repo of %s failed", self.name)
+                raise ConnectionProblem()
+
+    def show_pkgbuild(self):
+        """
+        Lets the user review and edit unreviewed PKGBUILD and install files of this package
+        """
+
+        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+        git_aurman_dir = os.path.join(package_dir, ".git", "aurman")
+        reviewed_file = os.path.join(git_aurman_dir, ".reviewed")
+
+        # if package dir does not exist - abort
+        if not os.path.isdir(package_dir):
+            logging.error("Package dir of %s does not exist", self.name)
+            raise InvalidInput()
+
+        # if aurman dir does not exist - create
+        if not os.path.isdir(git_aurman_dir):
+            if run("install -dm700 '" + git_aurman_dir + "'", shell=True, stdout=DEVNULL,
+                   stderr=DEVNULL).returncode != 0:
+                logging.error("Creating git_aurman_dir of %s failed", self.name)
+                raise InvalidInput()
+
+        # if reviewed file does not exist - create
+        if not os.path.isfile(reviewed_file):
+            with open(reviewed_file, "w") as f:
+                f.write("0")
+
+        # if files have been reviewed
+        with open(reviewed_file, "r") as f:
+            to_review = f.read().strip() == "0"
+
+        if not to_review:
+            return
+
+        # relevant files are PKGBUILD + .install files
+        relevant_files = ["PKGBUILD"]
+        files_in_pack_dir = [f for f in os.listdir(package_dir) if os.path.isfile(os.path.join(package_dir, f))]
+        for file in files_in_pack_dir:
+            if file.endswith(".install"):
+                relevant_files.append(file)
+
+        # check if there are changes, if there are, ask the user if he wants to see them
+        for file in relevant_files:
+            if os.path.isfile(os.path.join(git_aurman_dir, file)):
+                if run("git diff --quiet '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'", shell=True,
+                       cwd=package_dir).returncode == 1:
+                    if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
+                        run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
+                            shell=True, cwd=package_dir)
+                        changes_seen = True
+                    else:
+                        changes_seen = False
+                else:
+                    changes_seen = False
+            else:
+                if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
+                    run("git diff --no-index '" + "' '".join([os.path.join("/dev", "null"), file]) + "'", shell=True,
+                        cwd=package_dir)
+
+                    changes_seen = True
+                else:
+                    changes_seen = False
+
+            # if the user wanted to see changes, ask, if he wants to edit the file
+            if changes_seen:
+                if ask_user("Do you want to edit " + file + "?", False):
+                    if run(Package.default_editor_path + " " + os.path.join(package_dir, file),
+                           shell=True).returncode != 0:
+                        logging.error("Editing %s failed", file)
+                        raise InvalidInput()
+
+        # if the user wants to use all files as they are now
+        # copy all reviewed files to another folder for comparison of future changes
+        if ask_user("You have seen all files of the package {}. Are you fine with using them?".format(self.name), True):
+            with open(reviewed_file, "w") as f:
+                f.write("1")
+
+            for file in relevant_files:
+                run("cp -f '" + "' '".join([file, os.path.join(git_aurman_dir, file)]) + "'", shell=True,
+                    stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir)
+
+        else:
+            logging.error("Files of %s are not okay", str(self.name))
+            raise InvalidInput()
 
 
 class System:
