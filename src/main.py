@@ -2,7 +2,7 @@ import logging
 from copy import deepcopy
 from sys import argv
 
-from classes import System, Package
+from classes import System, Package, PossibleTypes
 from own_exceptions import InvalidInput
 from parse_args import group_args, args_to_string
 from utilities import acquire_sudo, version_comparison
@@ -150,7 +150,45 @@ def process(args):
 
     installed_system.show_solution_differences_to_user(chosen_solution)
 
-    # installing comes later
+    # split packages
+    repo_packages_names = []
+    # for aur packages only sets of names needed
+    explicit_aur_packages_names = set()
+    for package in chosen_solution[:]:
+        if package.type_of is PossibleTypes.REPO_PACKAGE:
+            repo_packages_names.append(package.name)
+            # concrete repo packages instances not needed anymore
+            chosen_solution.remove(package)
+        elif package.name in for_us:
+            explicit_aur_packages_names.add(package.name)
+
+    # install repo packages
+    if not sudo_acquired:
+        acquire_sudo()
+
+    relevant_args = deepcopy(grouped_args['S'])
+    relevant_args[''] = repo_packages_names
+    relevant_args[operation] = []
+    relevant_args['asdeps'] = []
+    args_as_string = args_to_string(relevant_args)
+    pacman(args_as_string, False)
+
+    # generate pacman args for the aur packages
+    relevant_args = deepcopy(grouped_args['U'])
+    relevant_args['U'] = []
+
+    args_for_explicit = args_to_string(relevant_args)
+    relevant_args['asdeps'] = []
+    args_for_dependency = args_to_string(relevant_args)
+
+    # build and install aur packages
+    for package in chosen_solution:
+        break
+        package.build()
+        if package.name in explicit_aur_packages_names:
+            package.install(args_for_explicit)
+        else:
+            package.install(args_for_dependency)
 
 
 if __name__ == '__main__':
