@@ -10,8 +10,7 @@ parameters = {
         'p', 'print', 'print-format', 'force', 'asdeps', 'asexplicit', 'ignore', 'ignoregroup'
     ),
     ('S', 'sync'): (
-        'c', 'clean', 'g', 'groups', 'i', 'info', 'l', 'list', 'q', 'quiet', 's', 'search', 'w',
-        'downloadonly', 'y', 'refresh'
+        'y', 'refresh'
     ),
     ('aurman', 'S', 'sync'): (
         'u', 'sysupgrade', 'needed'
