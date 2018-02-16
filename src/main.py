@@ -21,7 +21,7 @@ def process(args):
         operation, grouped_args = group_args(args)
     except InvalidInput:
         logging.error("Parsing the arguments %s failed, exiting.", str(args))
-        exit(1)
+        return
 
     # delete own packages parameter. Was just for parsing.
     if 'packages' in grouped_args['other']:
