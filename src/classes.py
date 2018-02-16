@@ -416,7 +416,7 @@ class Package:
             logging.error("Files of %s are not okay", str(self.name))
             raise InvalidInput()
 
-    def version_from_srcinfo(self):
+    def version_from_srcinfo(self) -> str:
         """
         Returns the version from the srcinfo
         :return:    The version read from the srcinfo
