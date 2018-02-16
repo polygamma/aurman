@@ -145,7 +145,10 @@ def process(args):
         print("if you think that there should be something to do, rerun aurman with the --deep_search flag")
         return
 
-    installed_system.show_solution_differences_to_user(chosen_solution)
+    try:
+        installed_system.show_solution_differences_to_user(chosen_solution)
+    except InvalidInput:
+        return
 
     # split packages
     repo_packages_names = []
