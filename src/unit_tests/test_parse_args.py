@@ -1,6 +1,7 @@
 from unittest import TestCase, main
-from parse_args import parse_args, group_args, args_to_string
+
 from own_exceptions import InvalidInput
+from parse_args import parse_args, group_args, args_to_string
 
 
 class TestParse_args(TestCase):
