@@ -3,12 +3,12 @@ AUR Helper
 
 Needed packages: **python-requests**, **expac** and **pyalpm**
 
-Syntax: This is a pacman wrapper, so it is basically pacman syntax. But one has to put *--packages* in front of the packages,
+Syntax: This is a pacman wrapper, so it is basically pacman syntax. But one has to put *--pk* in front of the packages,
 so for example:
 
-**pacman -Syu package1 package2** -> **python main.py -Syu --packages package1 package2**
+**pacman -Syu package1 package2** -> **python main.py -Syu --pk package1 package2**
 
-**pacman -R package1 package2 -sc** -> **python main.py -R --packages package1 package2 -sc**
+**pacman -R package1 package2 -sc** -> **python main.py -R --pk package1 package2 -sc**
 
 There are also three aurman exclusive flags.
 
