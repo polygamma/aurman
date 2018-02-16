@@ -5,6 +5,7 @@ from sys import argv
 from aurman.classes import System, Package, PossibleTypes
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import group_args, args_to_string
+from aurman.print_help import help_to_print
 from aurman.utilities import acquire_sudo, version_comparison
 from aurman.wrappers import pacman
 
@@ -18,7 +19,7 @@ def process(args):
     try:
         operation, grouped_args = group_args(args)
     except InvalidInput:
-        logging.error("Parsing the arguments %s failed, exiting.", str(args))
+        print(help_to_print)
         return
 
     # delete own pk parameter. Was just for parsing.

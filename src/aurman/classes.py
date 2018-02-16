@@ -301,6 +301,8 @@ class Package:
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+        git_aurman_dir = os.path.join(package_dir, ".git", "aurman")
+        new_loaded = True
 
         # check if repo has ever been fetched
         if os.path.isdir(package_dir):
@@ -319,9 +321,12 @@ class Package:
                        cwd=package_dir).returncode != 0:
                     logging.error("sources of %s could not be fetched", self.name)
                     raise ConnectionProblem()
+            else:
+                new_loaded = False
 
         # repo has never been fetched
         else:
+            # create package dir
             if run("install -dm700 '" + package_dir + "'", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
                 logging.error("Creating package dir of %s failed", self.name)
                 raise InvalidInput()
@@ -331,6 +336,18 @@ class Package:
                    cwd=Package.cache_dir).returncode != 0:
                 logging.error("Cloning repo of %s failed", self.name)
                 raise ConnectionProblem()
+
+        # if aurman dir does not exist - create
+        if not os.path.isdir(git_aurman_dir):
+            if run("install -dm700 '" + git_aurman_dir + "'", shell=True, stdout=DEVNULL,
+                   stderr=DEVNULL).returncode != 0:
+                logging.error("Creating git_aurman_dir of %s failed", self.name)
+                raise InvalidInput()
+
+        # files have not yet been reviewed
+        if new_loaded:
+            with open(os.path.join(git_aurman_dir, ".reviewed"), "w") as f:
+                f.write("0")
 
     def show_pkgbuild(self):
         """
