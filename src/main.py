@@ -88,20 +88,20 @@ def process(args):
     names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
     upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
-    print("looking for new pkgbuilds and fetch them...")
-    for package in upstream_system.aur_packages_list:
-        package.fetch_pkgbuild()
-    for package in upstream_system.devel_packages_list:
-        package.fetch_pkgbuild()
-    if not noedit:
-        try:
-            for package in upstream_system.aur_packages_list:
-                package.show_pkgbuild()
-            for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild()
-        except InvalidInput:
-            return
     if devel:
+        print("looking for new pkgbuilds and fetch them...")
+        for package in upstream_system.aur_packages_list:
+            package.fetch_pkgbuild()
+        for package in upstream_system.devel_packages_list:
+            package.fetch_pkgbuild()
+        if not noedit:
+            try:
+                for package in upstream_system.aur_packages_list:
+                    package.show_pkgbuild()
+                for package in upstream_system.devel_packages_list:
+                    package.show_pkgbuild()
+            except InvalidInput:
+                return
         for package in upstream_system.devel_packages_list:
             package.get_devel_version()
 
@@ -191,6 +191,17 @@ def process(args):
     args_for_dependency = args_to_string(relevant_args)
 
     # build and install aur packages
+    if not devel:
+        print("looking for new pkgbuilds and fetch them...")
+        for package in chosen_solution:
+            package.fetch_pkgbuild()
+        if not noedit:
+            try:
+                for package in chosen_solution:
+                    package.show_pkgbuild()
+            except InvalidInput:
+                return
+
     for package in chosen_solution:
         package.build()
         if package.name in explicit_aur_packages_names:
