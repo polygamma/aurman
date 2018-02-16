@@ -1,10 +1,19 @@
 # aurman
 AUR Helper
 
-Usage:  pacaur Syntax for now, with one small difference: write --packages in front of the packages.
+Needed packages: **python-requests**, **expac** and **pyalpm**
 
-e.g. pacaur -Syu package1 package2 -> python main.py -Syu --packages package1 package2
+Syntax: This is a pacman wrapper, so it is basically pacman syntax. But one has to put *--packages* in front of the packages,
+so for example:
 
-Needed packages: **python-requests** and **expac**
+**pacman -Syu package1 package2** -> **python main.py -Syu --packages package1 package2**
 
-More info: https://www.reddit.com/r/archlinux/comments/7u8a71/my_own_aur_helper/
+**pacman -R package1 package2 -sc** -> **python main.py -R --packages package1 package2 -sc**
+
+There are also three aurman exclusive flags.
+
+*--noedit* - will not show changes of PKGBUILDs and .install files. just assumes you are okay with the changes.
+
+*--devel* - will fetch current development packages versions to decide whether a new version is available or not.
+
+*--deep_search* - dependency solving will ignore currently fulfilled dependencies of your system and try to solve the problem for a system with zero packages installed. should almost never be needed, but if aurman is not able to find a solution to install packages, try rerunning aurman with this flag. but be warned, it could take a few minutes to find solutions.
