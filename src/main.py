@@ -88,20 +88,20 @@ def process(args):
     names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
     upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
-    print("looking for new pkgbuilds and fetch them...")
-    for package in upstream_system.aur_packages_list:
-        package.fetch_pkgbuild()
-    for package in upstream_system.devel_packages_list:
-        package.fetch_pkgbuild()
-    if not noedit:
-        try:
-            for package in upstream_system.aur_packages_list:
-                package.show_pkgbuild()
-            for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild()
-        except InvalidInput:
-            return
     if devel:
+        print("looking for new pkgbuilds and fetch them...")
+        for package in upstream_system.aur_packages_list:
+            package.fetch_pkgbuild()
+        for package in upstream_system.devel_packages_list:
+            package.fetch_pkgbuild()
+        if not noedit:
+            try:
+                for package in upstream_system.aur_packages_list:
+                    package.show_pkgbuild()
+                for package in upstream_system.devel_packages_list:
+                    package.show_pkgbuild()
+            except InvalidInput:
+                return
         for package in upstream_system.devel_packages_list:
             package.get_devel_version()
 
@@ -132,7 +132,12 @@ def process(args):
     solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system,
                                     only_unfulfilled_deps)
 
-    chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
+    try:
+        chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
+    except InvalidInput:
+        print(
+            "we could not find a solution.\nif you think that there should be one, rerun aurman with the --deep_search flag")
+        return
 
     # needed because deep_search ignores installed packages
     if not only_unfulfilled_deps:
@@ -144,8 +149,7 @@ def process(args):
 
     # solution contains no packages
     if not chosen_solution:
-        print("nothing to do... everything is up to date or we could not find a solution")
-        print("if you think that there should be something to do, rerun aurman with the --deep_search flag")
+        print("nothing to do... everything is up to date")
         return
 
     try:
@@ -187,6 +191,17 @@ def process(args):
     args_for_dependency = args_to_string(relevant_args)
 
     # build and install aur packages
+    if not devel:
+        print("looking for new pkgbuilds and fetch them...")
+        for package in chosen_solution:
+            package.fetch_pkgbuild()
+        if not noedit:
+            try:
+                for package in chosen_solution:
+                    package.show_pkgbuild()
+            except InvalidInput:
+                return
+
     for package in chosen_solution:
         package.build()
         if package.name in explicit_aur_packages_names:
