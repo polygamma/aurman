@@ -404,7 +404,7 @@ class Package:
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
-        if ask_user("You have seen all files of the package {}. Are you fine with using them?".format(self.name), True):
+        if ask_user("Are you fine with using the files of {}?".format(self.name), True):
             with open(reviewed_file, "w") as f:
                 f.write("1")
 
