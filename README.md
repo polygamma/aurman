@@ -1,14 +1,14 @@
 # aurman
 AUR Helper
 
-Needed packages: **python-requests**, **expac** and **pyalpm**
+## now available in the AUR: https://aur.archlinux.org/packages/aurman-git
 
 Syntax: This is a pacman wrapper, so it is basically pacman syntax. But one has to put *--pk* in front of the packages,
 so for example:
 
-**pacman -Syu package1 package2** -> **python main.py -Syu --pk package1 package2**
+**pacman -Syu package1 package2** -> **aurman -Syu --pk package1 package2**
 
-**pacman -R package1 package2 -sc** -> **python main.py -R --pk package1 package2 -sc**
+**pacman -R package1 package2 -sc** -> **aurman -R --pk package1 package2 -sc**
 
 There are also three aurman exclusive flags.
 
