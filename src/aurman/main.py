@@ -21,14 +21,14 @@ def process(args):
         logging.error("Parsing the arguments %s failed, exiting.", str(args))
         return
 
-    # delete own packages parameter. Was just for parsing.
-    if 'packages' in grouped_args['other']:
-        grouped_args['other'][''] = grouped_args['other']['packages']
-        del grouped_args['other']['packages']
+    # delete own pk parameter. Was just for parsing.
+    if 'pk' in grouped_args['other']:
+        grouped_args['other'][''] = grouped_args['other']['pk']
+        del grouped_args['other']['pk']
 
-    elif 'packages' in grouped_args['aurman']:
-        packages_of_user_names = grouped_args['aurman']['packages']
-        del grouped_args['aurman']['packages']
+    elif 'pk' in grouped_args['aurman']:
+        packages_of_user_names = grouped_args['aurman']['pk']
+        del grouped_args['aurman']['pk']
 
     # if not -S or --sync, just redirect to pacman
     if operation not in ['S', 'sync']:
