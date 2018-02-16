@@ -404,7 +404,7 @@ class Package:
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
-        if ask_user("You have seen all files of the package {}. Are you fine with using them?".format(self.name), True):
+        if ask_user("Are you fine with using the files of {}?".format(self.name), True):
             with open(reviewed_file, "w") as f:
                 f.write("1")
 
@@ -884,8 +884,7 @@ class System:
         """
 
         # needed strings
-        different_solutions_found = "\n{} different solution(s) have been found"
-        choose_info = "Choose between the following options to find one solution"
+        choose_info = "More than one solution has been found\nChoose between the following options to find one solution"
         which_package_remove = "\nDo you want the package {} to be removed?"
         which_package_install = "\nWhich of the following {} packages do you want to install? Enter the corresponding number.\n"
         which_package_install_once = "\nDo you want the package {} to be installed?"
@@ -926,7 +925,6 @@ class System:
             system_solution_dict[index] = (valid_systems[i], systems_differences[1][i])
 
         # prints for the user
-        print(color_string((Colors.DEFAULT, different_solutions_found.format(len(valid_systems)))))
         print(color_string((Colors.DEFAULT, choose_info)))
 
         # while we have more than 1 valid solution
