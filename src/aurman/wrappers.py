@@ -2,7 +2,7 @@ import logging
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List
 
-from own_exceptions import InvalidInput
+from aurman.own_exceptions import InvalidInput
 
 
 def split_query_helper(max_length: int, base_length_of_query: int, length_per_append: int, to_append: Sequence[str]) -> \

@@ -5,8 +5,8 @@ from pyalpm import vercmp
 from subprocess import run, DEVNULL
 from typing import Tuple
 
-from colors import color_string, Colors
-from own_exceptions import InvalidInput
+from aurman.colors import color_string, Colors
+from aurman.own_exceptions import InvalidInput
 
 
 def split_name_with_versioning(name: str) -> Tuple[str, str, str]:

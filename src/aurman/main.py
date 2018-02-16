@@ -2,11 +2,11 @@ import logging
 from copy import deepcopy
 from sys import argv
 
-from classes import System, Package, PossibleTypes
-from own_exceptions import InvalidInput
-from parse_args import group_args, args_to_string
-from utilities import acquire_sudo, version_comparison
-from wrappers import pacman
+from aurman.classes import System, Package, PossibleTypes
+from aurman.own_exceptions import InvalidInput
+from aurman.parse_args import group_args, args_to_string
+from aurman.utilities import acquire_sudo, version_comparison
+from aurman.wrappers import pacman
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
 

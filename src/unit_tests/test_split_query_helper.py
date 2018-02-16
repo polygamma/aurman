@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from own_exceptions import InvalidInput
-from wrappers import split_query_helper
+from aurman.own_exceptions import InvalidInput
+from aurman.wrappers import split_query_helper
 
 
 class TestSplit_query_helper(TestCase):
