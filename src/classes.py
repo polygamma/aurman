@@ -304,7 +304,7 @@ class Package:
 
         # check if repo has ever been fetched
         if os.path.isdir(package_dir):
-            if run("git fetch", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir).returncode != 0:
+            if run("git fetch", shell=True, cwd=package_dir).returncode != 0:
                 logging.error("git fetch of %s failed", self.name)
                 raise ConnectionProblem()
 
@@ -327,8 +327,8 @@ class Package:
                 raise InvalidInput()
 
             # clone repo
-            if run("git clone https://aur.archlinux.org/" + self.pkgbase + ".git", shell=True, stdout=DEVNULL,
-                   stderr=DEVNULL, cwd=Package.cache_dir).returncode != 0:
+            if run("git clone https://aur.archlinux.org/" + self.pkgbase + ".git", shell=True,
+                   cwd=Package.cache_dir).returncode != 0:
                 logging.error("Cloning repo of %s failed", self.name)
                 raise ConnectionProblem()
 
