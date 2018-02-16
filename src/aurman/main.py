@@ -46,6 +46,11 @@ def process(args):
     devel = 'devel' in grouped_args['aurman']
     only_unfulfilled_deps = 'deep_search' not in grouped_args['aurman']
 
+    # do not allow -y without -u
+    if ('y' in grouped_args['S'] or 'refresh' in grouped_args['S']) and not sysupgrade:
+        logging.info("-y without -u is not allowed!")
+        return
+
     # categorize user input
     for_us, for_pacman = Package.user_input_to_categories(packages_of_user_names)
 
