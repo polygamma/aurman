@@ -1,7 +1,7 @@
 from unittest import TestCase, main
 
-from own_exceptions import InvalidInput
-from parse_args import parse_args, group_args, args_to_string
+from aurman.own_exceptions import InvalidInput
+from aurman.parse_args import parse_args, group_args, args_to_string
 
 
 class TestParse_args(TestCase):
