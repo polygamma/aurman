@@ -35,5 +35,7 @@ setup(
         'console_scripts': [
             'aurman=aurman.main:main',
         ]
-    }
+    },
+
+    install_requires=['requests']
 )

@@ -12,8 +12,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(fun
 
 
 def process(args):
-    operation = ""
-    grouped_args = {}
     packages_of_user_names = []
     sudo_acquired = False
 
