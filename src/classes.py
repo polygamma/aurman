@@ -539,19 +539,24 @@ class System:
         return_list = []
 
         # installed repo packages
-        return_list.extend(
-            Package.get_packages_from_expac("-Q", list(installed_repo_packages_names), PossibleTypes.REPO_PACKAGE))
+        if installed_repo_packages_names:
+            return_list.extend(
+                Package.get_packages_from_expac("-Q", list(installed_repo_packages_names), PossibleTypes.REPO_PACKAGE))
 
         # installed aur packages
         installed_aur_packages_names = set(
             [package.name for package in Package.get_packages_from_aur(list(unclassified_installed_names))])
-        return_list.extend(
-            Package.get_packages_from_expac("-Q", list(installed_aur_packages_names), PossibleTypes.AUR_PACKAGE))
+
+        if installed_aur_packages_names:
+            return_list.extend(
+                Package.get_packages_from_expac("-Q", list(installed_aur_packages_names), PossibleTypes.AUR_PACKAGE))
+
         unclassified_installed_names -= installed_aur_packages_names
 
         # installed not repo not aur packages
-        return_list.extend(Package.get_packages_from_expac("-Q", list(unclassified_installed_names),
-                                                           PossibleTypes.PACKAGE_NOT_REPO_NOT_AUR))
+        if unclassified_installed_names:
+            return_list.extend(Package.get_packages_from_expac("-Q", list(unclassified_installed_names),
+                                                               PossibleTypes.PACKAGE_NOT_REPO_NOT_AUR))
 
         return return_list
 
