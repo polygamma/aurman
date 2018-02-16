@@ -94,10 +94,13 @@ def process(args):
     for package in upstream_system.devel_packages_list:
         package.fetch_pkgbuild()
     if not noedit:
-        for package in upstream_system.aur_packages_list:
-            package.show_pkgbuild()
-        for package in upstream_system.devel_packages_list:
-            package.show_pkgbuild()
+        try:
+            for package in upstream_system.aur_packages_list:
+                package.show_pkgbuild()
+            for package in upstream_system.devel_packages_list:
+                package.show_pkgbuild()
+        except InvalidInput:
+            return
     if devel:
         for package in upstream_system.devel_packages_list:
             package.get_devel_version()
