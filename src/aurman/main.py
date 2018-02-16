@@ -210,10 +210,14 @@ def process(args):
             package.install(args_for_dependency)
 
 
-if __name__ == '__main__':
+def main():
     try:
         process(argv[1:])
     except (SystemExit, KeyboardInterrupt):
         pass
     except:
         logging.error("", exc_info=True)
+
+
+if __name__ == '__main__':
+    main()
