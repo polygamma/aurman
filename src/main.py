@@ -192,5 +192,7 @@ def process(args):
 if __name__ == '__main__':
     try:
         process(argv[1:])
-    except:
+    except (SystemExit, KeyboardInterrupt):
         pass
+    except:
+        logging.error("", exc_info=True)
