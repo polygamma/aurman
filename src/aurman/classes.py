@@ -5,11 +5,11 @@ from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List, Tuple, Union, Set
 
-from aur_utilities import is_devel, get_aur_info
-from colors import Colors, color_string
-from own_exceptions import InvalidInput, ConnectionProblem
-from utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
-from wrappers import expac, makepkg, pacman
+from aurman.aur_utilities import is_devel, get_aur_info
+from aurman.colors import Colors, color_string
+from aurman.own_exceptions import InvalidInput, ConnectionProblem
+from aurman.utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
+from aurman.wrappers import expac, makepkg, pacman
 
 
 class PossibleTypes(Enum):

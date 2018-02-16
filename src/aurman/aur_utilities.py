@@ -5,8 +5,8 @@ from urllib.parse import quote_plus
 
 import requests
 
-from own_exceptions import InvalidInput, ConnectionProblem
-from wrappers import split_query_helper
+from aurman.own_exceptions import InvalidInput, ConnectionProblem
+from aurman.wrappers import split_query_helper
 
 
 def get_aur_info(package_names: Sequence[str]) -> List[Dict]:

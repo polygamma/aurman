@@ -2,18 +2,16 @@ import logging
 from copy import deepcopy
 from sys import argv
 
-from classes import System, Package, PossibleTypes
-from own_exceptions import InvalidInput
-from parse_args import group_args, args_to_string
-from utilities import acquire_sudo, version_comparison
-from wrappers import pacman
+from aurman.classes import System, Package, PossibleTypes
+from aurman.own_exceptions import InvalidInput
+from aurman.parse_args import group_args, args_to_string
+from aurman.utilities import acquire_sudo, version_comparison
+from aurman.wrappers import pacman
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
 
 
 def process(args):
-    operation = ""
-    grouped_args = {}
     packages_of_user_names = []
     sudo_acquired = False
 
@@ -23,14 +21,14 @@ def process(args):
         logging.error("Parsing the arguments %s failed, exiting.", str(args))
         return
 
-    # delete own packages parameter. Was just for parsing.
-    if 'packages' in grouped_args['other']:
-        grouped_args['other'][''] = grouped_args['other']['packages']
-        del grouped_args['other']['packages']
+    # delete own pk parameter. Was just for parsing.
+    if 'pk' in grouped_args['other']:
+        grouped_args['other'][''] = grouped_args['other']['pk']
+        del grouped_args['other']['pk']
 
-    elif 'packages' in grouped_args['aurman']:
-        packages_of_user_names = grouped_args['aurman']['packages']
-        del grouped_args['aurman']['packages']
+    elif 'pk' in grouped_args['aurman']:
+        packages_of_user_names = grouped_args['aurman']['pk']
+        del grouped_args['aurman']['pk']
 
     # if not -S or --sync, just redirect to pacman
     if operation not in ['S', 'sync']:
@@ -210,10 +208,14 @@ def process(args):
             package.install(args_for_dependency)
 
 
-if __name__ == '__main__':
+def main():
     try:
         process(argv[1:])
     except (SystemExit, KeyboardInterrupt):
         pass
     except:
         logging.error("", exc_info=True)
+
+
+if __name__ == '__main__':
+    main()

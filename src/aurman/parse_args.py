@@ -1,7 +1,7 @@
 import logging
 from typing import Sequence, Dict, Tuple
 
-from own_exceptions import InvalidInput
+from aurman.own_exceptions import InvalidInput
 
 parameters = {
     ('S', 'sync', 'U', 'upgrade'): (
@@ -17,7 +17,7 @@ parameters = {
         'u', 'sysupgrade', 'needed'
     ),
     ('aurman',): (
-        'noedit', 'devel', 'packages', 'deep_search'
+        'noedit', 'devel', 'pk', 'deep_search'
     )
 }
 
