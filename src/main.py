@@ -132,7 +132,12 @@ def process(args):
     solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system,
                                     only_unfulfilled_deps)
 
-    chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
+    try:
+        chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
+    except InvalidInput:
+        print(
+            "we could not find a solution.\nif you think that there should be one, rerun aurman with the --deep_search flag")
+        return
 
     # needed because deep_search ignores installed packages
     if not only_unfulfilled_deps:
@@ -144,8 +149,7 @@ def process(args):
 
     # solution contains no packages
     if not chosen_solution:
-        print("nothing to do... everything is up to date or we could not find a solution")
-        print("if you think that there should be something to do, rerun aurman with the --deep_search flag")
+        print("nothing to do... everything is up to date")
         return
 
     try:
