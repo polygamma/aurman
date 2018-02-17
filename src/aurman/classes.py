@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Union, Set
+from typing import Sequence, List, Tuple, Set
 
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.colors import Colors, color_string
@@ -248,47 +248,40 @@ class Package:
 
         return to_return
 
-    def solutions_for_dep_problem(self, visited_list: List[Union[str, 'Package']], current_solution: List['Package'],
+    def solutions_for_dep_problem(self, solution: 'DepAlgoSolution', found_problems: Set['DepAlgoFoundProblems'],
                                   installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool) -> \
-            List[Tuple[List['Package'], List[Union[str, 'Package']]]]:
+            List['DepAlgoSolution']:
         """
         Heart of this AUR helper. Algorithm for dependency solving.
         Also checks for conflicts, dep-cycles and topologically sorts the solutions.
 
-        :param visited_list:            List containing the visited nodes for the solution.
-                                        May be "names" or packages.
-        :param current_solution:        The packages in the current solution.
-                                        Always topologically sorted
-        :param installed_system:        The system containing the installed packages
+        :param solution:                The current solution
+        :param found_problems:          A set containing found problems while searching for solutions
+        :param installed_system:        The currently installed system
         :param upstream_system:         The system containing the known upstream packages
         :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
-        :return:                        A list containing the solutions.
-                                        Every solution is a tuple containing two items:
-                                        First item:
-                                        A list of topologically sorted packages.
-                                        Second item:
-                                        The visited list for the solution
+        :return:                        The found solutions
         """
-        if self in current_solution:
-            return [(deepcopy(current_solution), deepcopy(visited_list))]
+        if self in solution.packages_in_solution:
+            return [deepcopy(solution)]
 
         # dep cycle
         # dirty... thanks to dep cycle between mesa and libglvnd
-        if self in visited_list and not (self.type_of is PossibleTypes.REPO_PACKAGE):
+        if self in solution.visited_packages and not (self.type_of is PossibleTypes.REPO_PACKAGE):
             return []
-        elif self in visited_list:
-            return [(deepcopy(current_solution), deepcopy(visited_list))]
+        elif self in solution.visited_packages:
+            return [deepcopy(solution)]
 
         # conflict
-        possible_conflict_packages = deepcopy(current_solution)
-        possible_conflict_packages.extend([thing for thing in deepcopy(visited_list) if
-                                           isinstance(thing, Package) and (thing not in possible_conflict_packages)])
+        possible_conflict_packages = deepcopy(solution.packages_in_solution)
+        possible_conflict_packages.extend(
+            [package for package in deepcopy(solution.visited_packages) if package not in possible_conflict_packages])
         if System(possible_conflict_packages).conflicting_with(self):
             return []
 
-        visited_list = deepcopy(visited_list)
-        visited_list.append(self)
-        solution_visited_list = [(deepcopy(current_solution), visited_list)]
+        solution = deepcopy(solution)
+        solution.visited_packages.append(self)
+        current_solutions = [solution]
 
         # AND - every dep has to be fulfilled
         for dep in self.relevant_deps():
@@ -301,25 +294,23 @@ class Package:
                 return []
 
             # OR - at least one of the dep providers needs to provide the dep
-            finished_solutions = [solution_tuple for solution_tuple in solution_visited_list if
-                                  dep in solution_tuple[1]]
-            not_finished_solutions = [solution_tuple for solution_tuple in solution_visited_list if
-                                      dep not in solution_tuple[1]]
+            finished_solutions = [solution for solution in current_solutions if dep in solution.visited_names]
+            not_finished_solutions = [solution for solution in current_solutions if dep not in solution.visited_names]
 
-            for solution_tuple in not_finished_solutions:
-                solution_tuple[1].append(dep)
+            for solution in not_finished_solutions:
+                solution.visited_names.add(dep)
 
-            solution_visited_list = finished_solutions
-            for solution_tuple in not_finished_solutions:
+            current_solutions = finished_solutions
+            for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
-                    solution_visited_list.extend(
-                        dep_provider.solutions_for_dep_problem(solution_tuple[1], solution_tuple[0], installed_system,
+                    current_solutions.extend(
+                        dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps))
 
-        for solution_tuple in solution_visited_list:
-            solution_tuple[0].append(self)
+        for solution in current_solutions:
+            solution.packages_in_solution.append(self)
 
-        return solution_visited_list
+        return current_solutions
 
     @staticmethod
     def dep_solving(packages: Sequence['Package'], installed_system: 'System', upstream_system: 'System',
@@ -335,17 +326,18 @@ class Package:
                                         Every inner list contains the packages for the solution topologically sorted
         """
 
-        current_solutions = [([], [])]
+        current_solutions = [DepAlgoSolution([], [], set())]
+        found_problems = set()
 
         for package in packages:
             new_solutions = []
             for solution in current_solutions:
                 new_solutions.extend(
-                    package.solutions_for_dep_problem(solution[1], solution[0], installed_system, upstream_system,
+                    package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
                                                       only_unfulfilled_deps))
             current_solutions = new_solutions
 
-        return [solution[0] for solution in current_solutions]
+        return [solution.packages_in_solution for solution in current_solutions]
 
     def fetch_pkgbuild(self):
         """
