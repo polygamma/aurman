@@ -57,10 +57,10 @@ class DepAlgoConflict(DepAlgoFoundProblems):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
-            other.conflicting_packages) and tuple(self.way_to_conflict) == tuple(other.way_to_conflict)
+            other.conflicting_packages)
 
     def __hash__(self):
-        return hash((frozenset(self.conflicting_packages), tuple(self.way_to_conflict)))
+        return hash(frozenset(self.conflicting_packages))
 
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
@@ -589,7 +589,7 @@ class Package:
         build_dir = Package.get_build_dir(package_dir)
 
         if self.get_package_install_file(build_dir, build_version) is None:
-            makepkg("-c --noconfirm", False, package_dir)
+            makepkg("-cf --noconfirm", False, package_dir)
 
     def install(self, args_as_string: str):
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
