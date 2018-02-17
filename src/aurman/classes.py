@@ -284,7 +284,7 @@ class Package:
         possible_conflict_packages.extend(
             [package for package in deepcopy(solution.visited_packages) if package not in possible_conflict_packages])
         if System(possible_conflict_packages).conflicting_with(self):
-            new_conflict = DepAlgoConflict(set(possible_conflict_packages))
+            new_conflict = DepAlgoConflict(set(System(possible_conflict_packages).conflicting_with(self)))
             new_conflict.conflicting_packages.add(self)
             if new_conflict not in found_problems:
                 found_problems.add(new_conflict)
