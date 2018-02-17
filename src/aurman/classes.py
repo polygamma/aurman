@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Union, Set
+from typing import Sequence, List, Tuple, Set
 
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.colors import Colors, color_string
@@ -17,6 +17,62 @@ class PossibleTypes(Enum):
     AUR_PACKAGE = auto()
     DEVEL_PACKAGE = auto()
     PACKAGE_NOT_REPO_NOT_AUR = auto()
+
+
+class DepAlgoSolution:
+    def __init__(self, packages_in_solution, visited_packages, visited_names):
+        self.packages_in_solution: List['Package'] = packages_in_solution
+        self.visited_packages: List['Package'] = visited_packages
+        self.visited_names: Set['str'] = visited_names
+
+
+class DepAlgoFoundProblems:
+    pass
+
+
+class DepAlgoCycle(DepAlgoFoundProblems):
+    def __init__(self, cycle_packages):
+        self.cycle_packages: List['Package'] = cycle_packages
+
+    def __repr__(self):
+        return "Dep cycle: " + " -> ".join([str(package) for package in self.cycle_packages])
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and tuple(self.cycle_packages) == tuple(other.cycle_packages)
+
+    def __hash__(self):
+        return hash(tuple(self.cycle_packages))
+
+
+class DepAlgoConflict(DepAlgoFoundProblems):
+    def __init__(self, conflicting_packages):
+        self.conflicting_packages: Set['Package'] = conflicting_packages
+
+    def __repr__(self):
+        return "Conflicts between: " + ", ".join([str(package) for package in self.conflicting_packages])
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
+            other.conflicting_packages)
+
+    def __hash__(self):
+        return hash(frozenset(self.conflicting_packages))
+
+
+class DepAlgoNotProvided(DepAlgoFoundProblems):
+    def __init__(self, dep_not_provided, package):
+        self.dep_not_provided: str = dep_not_provided
+        self.package: 'Package' = package
+
+    def __repr__(self):
+        return "Not provided: {} but needed by {}".format(self.dep_not_provided, self.package)
+
+    def __eq__(self, other):
+        return isinstance(other,
+                          self.__class__) and self.dep_not_provided == other.dep_not_provided and self.package == other.package
+
+    def __hash__(self):
+        return hash((self.dep_not_provided, self.package))
 
 
 class Package:
@@ -194,47 +250,49 @@ class Package:
 
         return to_return
 
-    def solutions_for_dep_problem(self, visited_list: List[Union[str, 'Package']], current_solution: List['Package'],
+    def solutions_for_dep_problem(self, solution: 'DepAlgoSolution', found_problems: Set['DepAlgoFoundProblems'],
                                   installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool) -> \
-            List[Tuple[List['Package'], List[Union[str, 'Package']]]]:
+            List['DepAlgoSolution']:
         """
         Heart of this AUR helper. Algorithm for dependency solving.
         Also checks for conflicts, dep-cycles and topologically sorts the solutions.
 
-        :param visited_list:            List containing the visited nodes for the solution.
-                                        May be "names" or packages.
-        :param current_solution:        The packages in the current solution.
-                                        Always topologically sorted
-        :param installed_system:        The system containing the installed packages
+        :param solution:                The current solution
+        :param found_problems:          A set containing found problems while searching for solutions
+        :param installed_system:        The currently installed system
         :param upstream_system:         The system containing the known upstream packages
         :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
-        :return:                        A list containing the solutions.
-                                        Every solution is a tuple containing two items:
-                                        First item:
-                                        A list of topologically sorted packages.
-                                        Second item:
-                                        The visited list for the solution
+        :return:                        The found solutions
         """
-        if self in current_solution:
-            return [(deepcopy(current_solution), deepcopy(visited_list))]
+        if self in solution.packages_in_solution:
+            return [deepcopy(solution)]
 
         # dep cycle
         # dirty... thanks to dep cycle between mesa and libglvnd
-        if self in visited_list and not (self.type_of is PossibleTypes.REPO_PACKAGE):
+        if self in solution.visited_packages and not (self.type_of is PossibleTypes.REPO_PACKAGE):
+            index_of_self = solution.visited_packages.index(self)
+            new_dep_cycle = DepAlgoCycle(deepcopy(solution.visited_packages[index_of_self:]))
+            new_dep_cycle.cycle_packages.append(self)
+            if new_dep_cycle not in found_problems:
+                found_problems.add(new_dep_cycle)
             return []
-        elif self in visited_list:
-            return [(deepcopy(current_solution), deepcopy(visited_list))]
+        elif self in solution.visited_packages:
+            return [deepcopy(solution)]
 
         # conflict
-        possible_conflict_packages = deepcopy(current_solution)
-        possible_conflict_packages.extend([thing for thing in deepcopy(visited_list) if
-                                           isinstance(thing, Package) and (thing not in possible_conflict_packages)])
+        possible_conflict_packages = deepcopy(solution.packages_in_solution)
+        possible_conflict_packages.extend(
+            [package for package in deepcopy(solution.visited_packages) if package not in possible_conflict_packages])
         if System(possible_conflict_packages).conflicting_with(self):
+            new_conflict = DepAlgoConflict(set(possible_conflict_packages))
+            new_conflict.conflicting_packages.add(self)
+            if new_conflict not in found_problems:
+                found_problems.add(new_conflict)
             return []
 
-        visited_list = deepcopy(visited_list)
-        visited_list.append(self)
-        solution_visited_list = [(deepcopy(current_solution), visited_list)]
+        solution = deepcopy(solution)
+        solution.visited_packages.append(self)
+        current_solutions = [solution]
 
         # AND - every dep has to be fulfilled
         for dep in self.relevant_deps():
@@ -244,28 +302,29 @@ class Package:
             dep_providers = upstream_system.provided_by(dep)
             # dep not fulfillable, solutions not valid
             if not dep_providers:
+                new_dep_not_fulfilled = DepAlgoNotProvided(dep, self)
+                if new_dep_not_fulfilled not in found_problems:
+                    found_problems.add(new_dep_not_fulfilled)
                 return []
 
             # OR - at least one of the dep providers needs to provide the dep
-            finished_solutions = [solution_tuple for solution_tuple in solution_visited_list if
-                                  dep in solution_tuple[1]]
-            not_finished_solutions = [solution_tuple for solution_tuple in solution_visited_list if
-                                      dep not in solution_tuple[1]]
+            finished_solutions = [solution for solution in current_solutions if dep in solution.visited_names]
+            not_finished_solutions = [solution for solution in current_solutions if dep not in solution.visited_names]
 
-            for solution_tuple in not_finished_solutions:
-                solution_tuple[1].append(dep)
+            for solution in not_finished_solutions:
+                solution.visited_names.add(dep)
 
-            solution_visited_list = finished_solutions
-            for solution_tuple in not_finished_solutions:
+            current_solutions = finished_solutions
+            for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
-                    solution_visited_list.extend(
-                        dep_provider.solutions_for_dep_problem(solution_tuple[1], solution_tuple[0], installed_system,
+                    current_solutions.extend(
+                        dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps))
 
-        for solution_tuple in solution_visited_list:
-            solution_tuple[0].append(self)
+        for solution in current_solutions:
+            solution.packages_in_solution.append(self)
 
-        return solution_visited_list
+        return current_solutions
 
     @staticmethod
     def dep_solving(packages: Sequence['Package'], installed_system: 'System', upstream_system: 'System',
@@ -281,17 +340,23 @@ class Package:
                                         Every inner list contains the packages for the solution topologically sorted
         """
 
-        current_solutions = [([], [])]
+        current_solutions = [DepAlgoSolution([], [], set())]
+        found_problems = set()
 
         for package in packages:
             new_solutions = []
             for solution in current_solutions:
                 new_solutions.extend(
-                    package.solutions_for_dep_problem(solution[1], solution[0], installed_system, upstream_system,
+                    package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
                                                       only_unfulfilled_deps))
             current_solutions = new_solutions
 
-        return [solution[0] for solution in current_solutions]
+        # output for user
+        if found_problems:
+            print("While searching for solutions the following errors occurred:\n{}\n".format(
+                "\n".join([str(problem) for problem in found_problems])))
+
+        return [solution.packages_in_solution for solution in current_solutions]
 
     def fetch_pkgbuild(self):
         """
