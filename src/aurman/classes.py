@@ -60,17 +60,19 @@ class DepAlgoConflict(DepAlgoFoundProblems):
 
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
-    def __init__(self, dep_not_provided):
+    def __init__(self, dep_not_provided, package):
         self.dep_not_provided: str = dep_not_provided
+        self.package: 'Package' = package
 
     def __repr__(self):
-        return "Not provided: {}".format(self.dep_not_provided)
+        return "Not provided: {} but needed by {}".format(self.dep_not_provided, self.package)
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.dep_not_provided == other.dep_not_provided
+        return isinstance(other,
+                          self.__class__) and self.dep_not_provided == other.dep_not_provided and self.package == other.package
 
     def __hash__(self):
-        return hash(self.dep_not_provided)
+        return hash((self.dep_not_provided, self.package))
 
 
 class Package:
@@ -268,6 +270,11 @@ class Package:
         # dep cycle
         # dirty... thanks to dep cycle between mesa and libglvnd
         if self in solution.visited_packages and not (self.type_of is PossibleTypes.REPO_PACKAGE):
+            index_of_self = solution.visited_packages.index(self)
+            new_dep_cycle = DepAlgoCycle(deepcopy(solution.visited_packages[index_of_self:]))
+            new_dep_cycle.cycle_packages.append(self)
+            if new_dep_cycle not in found_problems:
+                found_problems.add(new_dep_cycle)
             return []
         elif self in solution.visited_packages:
             return [deepcopy(solution)]
@@ -277,6 +284,10 @@ class Package:
         possible_conflict_packages.extend(
             [package for package in deepcopy(solution.visited_packages) if package not in possible_conflict_packages])
         if System(possible_conflict_packages).conflicting_with(self):
+            new_conflict = DepAlgoConflict(set(possible_conflict_packages))
+            new_conflict.conflicting_packages.add(self)
+            if new_conflict not in found_problems:
+                found_problems.add(new_conflict)
             return []
 
         solution = deepcopy(solution)
@@ -291,6 +302,9 @@ class Package:
             dep_providers = upstream_system.provided_by(dep)
             # dep not fulfillable, solutions not valid
             if not dep_providers:
+                new_dep_not_fulfilled = DepAlgoNotProvided(dep, self)
+                if new_dep_not_fulfilled not in found_problems:
+                    found_problems.add(new_dep_not_fulfilled)
                 return []
 
             # OR - at least one of the dep providers needs to provide the dep
@@ -336,6 +350,11 @@ class Package:
                     package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
                                                       only_unfulfilled_deps))
             current_solutions = new_solutions
+
+        # output for user
+        if found_problems:
+            print("While searching for solutions the following errors occurred:\n{}\n".format(
+                "\n".join([str(problem) for problem in found_problems])))
 
         return [solution.packages_in_solution for solution in current_solutions]
 
