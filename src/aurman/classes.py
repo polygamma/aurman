@@ -19,6 +19,60 @@ class PossibleTypes(Enum):
     PACKAGE_NOT_REPO_NOT_AUR = auto()
 
 
+class DepAlgoSolution:
+    def __init__(self, packages_in_solution, visited_packages, visited_names):
+        self.packages_in_solution: List['Package'] = packages_in_solution
+        self.visited_packages: List['Package'] = visited_packages
+        self.visited_names: Set['str'] = visited_names
+
+
+class DepAlgoFoundProblems:
+    pass
+
+
+class DepAlgoCycle(DepAlgoFoundProblems):
+    def __init__(self, cycle_packages):
+        self.cycle_packages: List['Package'] = cycle_packages
+
+    def __repr__(self):
+        return "Dep cycle: " + " -> ".join([str(package) for package in self.cycle_packages])
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and tuple(self.cycle_packages) == tuple(other.cycle_packages)
+
+    def __hash__(self):
+        return hash(tuple(self.cycle_packages))
+
+
+class DepAlgoConflict(DepAlgoFoundProblems):
+    def __init__(self, conflicting_packages):
+        self.conflicting_packages: Set['Package'] = conflicting_packages
+
+    def __repr__(self):
+        return "Conflicts between: " + ", ".join([str(package) for package in self.conflicting_packages])
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
+            other.conflicting_packages)
+
+    def __hash__(self):
+        return hash(frozenset(self.conflicting_packages))
+
+
+class DepAlgoNotProvided(DepAlgoFoundProblems):
+    def __init__(self, dep_not_provided):
+        self.dep_not_provided: str = dep_not_provided
+
+    def __repr__(self):
+        return "Not provided: {}".format(self.dep_not_provided)
+
+    def __eq__(self, other):
+        return isinstance(other, self.__class__) and self.dep_not_provided == other.dep_not_provided
+
+    def __hash__(self):
+        return hash(self.dep_not_provided)
+
+
 class Package:
     # default editor path
     default_editor_path = os.environ.get("EDITOR", os.path.join("usr", "bin", "nano"))
