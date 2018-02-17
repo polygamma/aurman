@@ -576,7 +576,7 @@ class Package:
 
     def build(self):
         # check if build needed
-        build_version = self.version_from_srcinfo()
+        build_version = self.version
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         build_dir = Package.get_build_dir(package_dir)
 
