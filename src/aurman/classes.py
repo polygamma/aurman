@@ -35,7 +35,8 @@ class DepAlgoCycle(DepAlgoFoundProblems):
         self.cycle_packages: List['Package'] = cycle_packages
 
     def __repr__(self):
-        return "Dep cycle: " + " -> ".join([str(package) for package in self.cycle_packages])
+        return "Dep cycle: " + " -> ".join(
+            [color_string((Colors.LIGHT_MAGENTA, str(package))) for package in self.cycle_packages])
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and tuple(self.cycle_packages) == tuple(other.cycle_packages)
@@ -45,18 +46,21 @@ class DepAlgoCycle(DepAlgoFoundProblems):
 
 
 class DepAlgoConflict(DepAlgoFoundProblems):
-    def __init__(self, conflicting_packages):
+    def __init__(self, conflicting_packages, way_to_conflict):
         self.conflicting_packages: Set['Package'] = conflicting_packages
+        self.way_to_conflict: List['Package'] = way_to_conflict
 
     def __repr__(self):
-        return "Conflicts between: " + ", ".join([str(package) for package in self.conflicting_packages])
+        return "Conflicts between: " + ", ".join([color_string((Colors.LIGHT_MAGENTA, str(package))) for package in
+                                                  self.conflicting_packages]) + "\nWay to conflict: " + " -> ".join(
+            [color_string((Colors.LIGHT_MAGENTA, str(package))) for package in self.way_to_conflict])
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
-            other.conflicting_packages)
+            other.conflicting_packages) and tuple(self.way_to_conflict) == tuple(other.way_to_conflict)
 
     def __hash__(self):
-        return hash(frozenset(self.conflicting_packages))
+        return hash((frozenset(self.conflicting_packages), tuple(self.way_to_conflict)))
 
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
@@ -65,7 +69,9 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
         self.package: 'Package' = package
 
     def __repr__(self):
-        return "Not provided: {} but needed by {}".format(self.dep_not_provided, self.package)
+        return "Not provided: {} but needed by {}".format(
+            color_string((Colors.LIGHT_MAGENTA, str(self.dep_not_provided))),
+            color_string((Colors.LIGHT_MAGENTA, str(self.package))))
 
     def __eq__(self, other):
         return isinstance(other,
@@ -280,11 +286,13 @@ class Package:
             return [deepcopy(solution)]
 
         # conflict
-        possible_conflict_packages = deepcopy(solution.packages_in_solution)
-        possible_conflict_packages.extend(
-            [package for package in deepcopy(solution.visited_packages) if package not in possible_conflict_packages])
-        if System(possible_conflict_packages).conflicting_with(self):
-            new_conflict = DepAlgoConflict(set(System(possible_conflict_packages).conflicting_with(self)))
+        possible_conflict_packages = deepcopy(solution.visited_packages)
+        conflict_system = System(possible_conflict_packages).conflicting_with(self)
+        if conflict_system:
+            min_index = min([solution.visited_packages.index(package) for package in conflict_system])
+            way_to_conflict = solution.visited_packages[min_index:]
+            way_to_conflict.append(self)
+            new_conflict = DepAlgoConflict(set(conflict_system), way_to_conflict)
             new_conflict.conflicting_packages.add(self)
             if new_conflict not in found_problems:
                 found_problems.add(new_conflict)
@@ -352,8 +360,8 @@ class Package:
 
         # output for user
         if found_problems:
-            print("While searching for solutions the following errors occurred:\n{}\n".format(
-                "\n".join([str(problem) for problem in found_problems])))
+            print("\nWhile searching for solutions the following errors occurred:\n{}\n".format(
+                "\n\n".join([str(problem) for problem in found_problems])))
 
         return [solution.packages_in_solution for solution in current_solutions]
 
