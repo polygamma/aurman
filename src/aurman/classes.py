@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Set
+from typing import Sequence, List, Tuple, Set, Union
 
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.colors import Colors, color_string
@@ -565,42 +565,37 @@ class Package:
         else:
             return package_dir
 
+    def get_package_install_file(self, build_dir: str, build_version: str) -> Union[str, None]:
+        files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
+        for file in files_in_build_dir:
+            if file.startswith(self.name + "-" + build_version + "-") and ".pkg." in \
+                    file.split(self.name + "-" + build_version + "-")[1]:
+                return file
+        else:
+            return None
+
     def build(self):
         # check if build needed
         build_version = self.version_from_srcinfo()
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         build_dir = Package.get_build_dir(package_dir)
 
-        files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
-        install_file = None
-        for file in files_in_build_dir:
-            if file.startswith(self.name + "-" + build_version) and ".pkg." in \
-                    file.split(self.name + "-" + build_version)[1]:
-                install_file = file
-                break
-
-        if install_file is None:
+        if self.get_package_install_file(build_dir, build_version) is None:
             makepkg("-c --noconfirm", False, package_dir)
 
     def install(self, args_as_string: str):
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
 
-        # get name of install file
+        # get name of package install file
         build_version = self.version_from_srcinfo()
-        files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
-        install_file = None
-        for file in files_in_build_dir:
-            if file.startswith(self.name + "-" + build_version) and ".pkg." in \
-                    file.split(self.name + "-" + build_version)[1]:
-                install_file = file
-                break
+        package_install_file = self.get_package_install_file(build_dir, build_version)
 
-        if install_file is None:
+        if package_install_file is None:
             logging.error("package file of %s not available", str(self.name))
             raise InvalidInput()
 
         # install
-        pacman("{} {}".format(args_as_string, install_file), False, dir_to_execute=build_dir)
+        pacman("{} {}".format(args_as_string, package_install_file), False, dir_to_execute=build_dir)
 
 
 class System:
