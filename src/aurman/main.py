@@ -36,8 +36,10 @@ def process(args):
         relevant_args = grouped_args['other']
         relevant_args[operation] = []
         args_as_string = args_to_string(relevant_args)
-        pacman(args_as_string, False)
-        return
+        try:
+            pacman(args_as_string, False)
+        except InvalidInput:
+            return
 
     # -S or --sync
     # we got "packages_of_user_names" already
@@ -68,7 +70,10 @@ def process(args):
         relevant_args[''] = for_pacman
         relevant_args[operation] = []
         args_as_string = args_to_string(relevant_args)
-        pacman(args_as_string, False)
+        try:
+            pacman(args_as_string, False)
+        except InvalidInput:
+            return
 
     if not sysupgrade and not for_us:
         return
@@ -189,7 +194,10 @@ def process(args):
         relevant_args[operation] = []
         relevant_args['asdeps'] = []
         args_as_string = args_to_string(relevant_args)
-        pacman(args_as_string, False)
+        try:
+            pacman(args_as_string, False)
+        except InvalidInput:
+            return
 
     # generate pacman args for the aur packages
     relevant_args = deepcopy(grouped_args['U'])
@@ -213,10 +221,13 @@ def process(args):
 
     for package in chosen_solution:
         package.build()
-        if package.name in explicit_aur_packages_names:
-            package.install(args_for_explicit)
-        else:
-            package.install(args_for_dependency)
+        try:
+            if package.name in explicit_aur_packages_names:
+                package.install(args_for_explicit)
+            else:
+                package.install(args_for_dependency)
+        except InvalidInput:
+            return
 
 
 def main():
