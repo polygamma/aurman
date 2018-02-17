@@ -305,7 +305,6 @@ class Package:
                 new_dep_not_fulfilled = DepAlgoNotProvided(dep, self)
                 if new_dep_not_fulfilled not in found_problems:
                     found_problems.add(new_dep_not_fulfilled)
-                return []
 
             # OR - at least one of the dep providers needs to provide the dep
             finished_solutions = [solution for solution in current_solutions if dep in solution.visited_names]
