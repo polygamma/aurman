@@ -1016,7 +1016,7 @@ class System:
         valid_solutions_indices = new_valid_solutions_indices
 
         # print for the user
-        print(color_string((Colors.LIGHT_MAGENTA, different_solutions_found.format(len(valid_systems)))))
+        print(color_string((Colors.DEFAULT, different_solutions_found.format(len(valid_systems)))))
 
         while True:
             # print solutions
@@ -1027,7 +1027,7 @@ class System:
                                                        systems_differences[1][i][1]])))
 
             try:
-                user_input = int(input(color_string((Colors.LIGHT_MAGENTA, "Enter the number: "))))
+                user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
                 if 1 <= user_input <= len(valid_systems):
                     return solutions[valid_solutions_indices[user_input - 1]]
             except ValueError:
