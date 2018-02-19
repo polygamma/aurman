@@ -464,7 +464,7 @@ class Package:
         # check if there are changes, if there are, ask the user if he wants to see them
         for file in relevant_files:
             if os.path.isfile(os.path.join(git_aurman_dir, file)):
-                if run("git diff --quiet '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'", shell=True,
+                if run("git diff --no-index --quiet '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'", shell=True,
                        cwd=package_dir).returncode == 1:
                     if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
                         run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
