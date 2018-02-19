@@ -968,10 +968,8 @@ class System:
         """
 
         # needed strings
-        choose_info = "More than one solution has been found\nChoose between the following options to find one solution"
-        which_package_remove = "\nDo you want the package {} to be removed?"
-        which_package_install = "\nWhich of the following {} packages do you want to install? Enter the corresponding number.\n"
-        which_package_install_once = "\nDo you want the package {} to be installed?"
+        different_solutions_found = "\nWe found {} different valid solutions.\nYou will be shown the differences between the solutions.\nChoose one of them by entering the corresponding number.\n"
+        solution_print = "\nNumber {}:\nGetting installed: {}\nGetting removed: {}\n"
         choice_not_valid = color_string((Colors.LIGHT_RED, "That was not a valid choice!"))
 
         # calculating new systems and finding valid systems
@@ -995,7 +993,7 @@ class System:
         if len(valid_systems) == 1:
             return solutions[valid_solutions_indices[0]]
 
-        # calculate the differences between the solutions
+        # calculate the differences between the resulting systems for the valid solutions
         systems_differences = self.differences_between_systems(valid_systems)
 
         # if the solutions are different but the resulting systems are not
@@ -1004,79 +1002,38 @@ class System:
         if single_differences_count == 0:
             return solutions[valid_solutions_indices[0]]
 
-        system_solution_dict = {}
-        for i, index in enumerate(valid_solutions_indices):
-            system_solution_dict[index] = (valid_systems[i], systems_differences[1][i])
+        # delete duplicate resulting systems
+        new_valid_systems = []
+        new_valid_solutions_indices = []
+        diff_set = set()
+        for i, valid_system in enumerate(valid_systems):
+            cont_set = frozenset(set.union(systems_differences[1][i][0], systems_differences[1][i][1]))
+            if cont_set not in diff_set:
+                new_valid_systems.append(valid_system)
+                diff_set.add(cont_set)
+                new_valid_solutions_indices.append(valid_solutions_indices[i])
+        valid_systems = new_valid_systems
+        valid_solutions_indices = new_valid_solutions_indices
 
-        # prints for the user
-        print(color_string((Colors.DEFAULT, choose_info)))
+        # print for the user
+        print(color_string((Colors.LIGHT_MAGENTA, different_solutions_found.format(len(valid_systems)))))
 
-        # while we have more than 1 valid solution
-        while len(system_solution_dict) > 1:
-            # calculate the differences between the solutions left
-            installed_different_packages = set.union(
-                *[system_solution_dict[index][1][0] for index in system_solution_dict]) - set.intersection(
-                *[system_solution_dict[index][1][0] for index in system_solution_dict])
-            uninstalled_different_packages = set.union(
-                *[system_solution_dict[index][1][1] for index in system_solution_dict]) - set.intersection(
-                *[system_solution_dict[index][1][1] for index in system_solution_dict])
+        while True:
+            # print solutions
+            for i in range(0, len(valid_systems)):
+                print(solution_print.format(i + 1, ", ".join(
+                    [color_string((Colors.GREEN, package.name)) for package in systems_differences[1][i][0]]),
+                                            ", ".join([color_string((Colors.RED, package.name)) for package in
+                                                       systems_differences[1][i][1]])))
 
-            # packages to be uninstalled are more relevant, so check those first
-            if uninstalled_different_packages:
-                rand_package = list(uninstalled_different_packages)[0]
-                user_answer = ask_user(
-                    color_string((Colors.LIGHT_MAGENTA, which_package_remove.format(rand_package.name))), False)
-                for index in list(system_solution_dict.keys())[:]:
-                    current_tuple = system_solution_dict[index]
-                    if user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
-                        del system_solution_dict[index]
-                    elif not user_answer and (rand_package.name not in current_tuple[0].all_packages_dict):
-                        del system_solution_dict[index]
-                continue
-
-            # packages to be installed
-            if installed_different_packages:
-                packages_to_install = [package for package in installed_different_packages]
-                package_count = len(packages_to_install)
-
-                if package_count == 1:
-                    rand_package = packages_to_install[0]
-                    user_answer = ask_user(
-                        color_string((Colors.LIGHT_MAGENTA, which_package_install_once.format(rand_package.name))),
-                        True)
-                    for index in list(system_solution_dict.keys())[:]:
-                        current_tuple = system_solution_dict[index]
-                        if user_answer and (rand_package.name not in current_tuple[0].all_packages_dict):
-                            del system_solution_dict[index]
-                        elif not user_answer and (rand_package.name in current_tuple[0].all_packages_dict):
-                            del system_solution_dict[index]
-                    continue
-
-                print(color_string((Colors.LIGHT_MAGENTA, which_package_install.format(package_count))))
-                while True:
-                    try:
-                        print(''.join(["{}: {}\n".format(i + 1, color_string(
-                            (Colors.LIGHT_MAGENTA, str(packages_to_install[i].name)))) for i in
-                                       range(0, package_count)]))
-                        user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
-                        if 1 <= user_input <= package_count:
-                            for index in list(system_solution_dict.keys())[:]:
-                                current_tuple = system_solution_dict[index]
-                                if packages_to_install[user_input - 1].name not in current_tuple[0].all_packages_dict:
-                                    del system_solution_dict[index]
-                            break
-                    except ValueError:
-                        print(choice_not_valid)
-                    else:
-                        print(choice_not_valid)
-                continue
-            break
-
-        if len(system_solution_dict) == 0:
-            logging.error("This should really never happen. We had solutions, but lost them all...")
-            raise InvalidInput()
-
-        return solutions[int(list(system_solution_dict.keys())[0])]
+            try:
+                user_input = int(input(color_string((Colors.LIGHT_MAGENTA, "Enter the number: "))))
+                if 1 <= user_input <= len(valid_systems):
+                    return solutions[valid_solutions_indices[user_input - 1]]
+            except ValueError:
+                print(choice_not_valid)
+            else:
+                print(choice_not_valid)
 
     def show_solution_differences_to_user(self, solution: List['Package']):
         """
