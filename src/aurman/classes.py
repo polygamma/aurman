@@ -1014,6 +1014,7 @@ class System:
                 new_valid_solutions_indices.append(valid_solutions_indices[i])
         valid_systems = new_valid_systems
         valid_solutions_indices = new_valid_solutions_indices
+        systems_differences = self.differences_between_systems(valid_systems)
 
         # print for the user
         print(color_string((Colors.DEFAULT, different_solutions_found.format(len(valid_systems)))))
