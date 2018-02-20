@@ -164,10 +164,10 @@ class Package:
         :return:                    List containing the packages
         """
         if "Q" in expac_operation:
-            formatting = list("nvDHNoPRew")
+            formatting = list("nvDHoPRewN")
         else:
             assert "S" in expac_operation
-            formatting = list("nvDHNoPRe")
+            formatting = list("nvDHoPRe")
 
         expac_return = expac(expac_operation, formatting, packages_names)
         return_list = []
@@ -179,10 +179,9 @@ class Package:
                 'version': splitted_line[1],
                 'depends': splitted_line[2].split(),
                 'conflicts': splitted_line[3].split(),
-                'required_by': splitted_line[4].split(),
-                'optdepends': splitted_line[5].split(),
-                'provides': splitted_line[6].split(),
-                'replaces': splitted_line[7].split()
+                'optdepends': splitted_line[4].split(),
+                'provides': splitted_line[5].split(),
+                'replaces': splitted_line[6].split()
             }
 
             if packages_type is PossibleTypes.AUR_PACKAGE or packages_type is PossibleTypes.DEVEL_PACKAGE:
@@ -195,13 +194,14 @@ class Package:
 
             to_expand['type_of'] = type_to_set
 
-            if splitted_line[8] == '(null)':
+            if splitted_line[7] == '(null)':
                 to_expand['pkgbase'] = to_expand['name']
             else:
-                to_expand['pkgbase'] = splitted_line[8]
+                to_expand['pkgbase'] = splitted_line[7]
 
-            if len(splitted_line) >= 10:
-                to_expand['install_reason'] = splitted_line[9]
+            if len(splitted_line) >= 9:
+                to_expand['install_reason'] = splitted_line[8]
+                to_expand['required_by'] = splitted_line[9].split()
 
             if to_expand['name'] in to_expand['conflicts']:
                 to_expand['conflicts'].remove(to_expand['name'])
@@ -464,7 +464,8 @@ class Package:
         # check if there are changes, if there are, ask the user if he wants to see them
         for file in relevant_files:
             if os.path.isfile(os.path.join(git_aurman_dir, file)):
-                if run("git diff --no-index --quiet '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'", shell=True,
+                if run("git diff --no-index --quiet '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
+                       shell=True,
                        cwd=package_dir).returncode == 1:
                     if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
                         run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
