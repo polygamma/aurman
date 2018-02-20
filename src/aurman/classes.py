@@ -423,7 +423,7 @@ class Package:
                 current_solutions = new_solutions
 
         # output for user
-        if found_problems:
+        if found_problems and not current_solutions:
             print("\nWhile searching for solutions the following errors occurred:\n{}\n".format(
                 "\n\n".join([str(problem) for problem in found_problems])))
 
