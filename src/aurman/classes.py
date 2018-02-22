@@ -286,7 +286,7 @@ class Package:
         # dirty... thanks to dep cycle between mesa and libglvnd
         if self in solution.visited_packages and not (self.type_of is PossibleTypes.REPO_PACKAGE):
             index_of_self = solution.visited_packages.index(self)
-            new_dep_cycle = DepAlgoCycle(deepcopy(solution.visited_packages[index_of_self:]))
+            new_dep_cycle = DepAlgoCycle(solution.visited_packages[index_of_self:])
             new_dep_cycle.cycle_packages.append(self)
             if new_dep_cycle not in found_problems:
                 found_problems.add(new_dep_cycle)
@@ -301,11 +301,11 @@ class Package:
             return [deepcopy(solution)]
 
         # conflict
-        possible_conflict_packages = deepcopy(solution.visited_packages)
+        possible_conflict_packages = solution.visited_packages
         conflict_system = System(possible_conflict_packages).conflicting_with(self)
         if conflict_system:
             min_index = min([solution.visited_packages.index(package) for package in conflict_system])
-            way_to_conflict = deepcopy(solution.visited_packages[min_index:])
+            way_to_conflict = solution.visited_packages[min_index:]
             way_to_conflict.append(self)
             new_conflict = DepAlgoConflict(set(conflict_system), way_to_conflict)
             new_conflict.conflicting_packages.add(self)
