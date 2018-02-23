@@ -40,6 +40,8 @@ def process(args):
             pacman(args_as_string, False)
         except InvalidInput:
             return
+        finally:
+            return
 
     # -S or --sync
     # we got "packages_of_user_names" already
