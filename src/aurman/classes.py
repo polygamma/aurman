@@ -277,7 +277,7 @@ class Package:
         # dirty... thanks to dep cycle between mesa and libglvnd
         if self in solution.visited_packages and not (self.type_of is PossibleTypes.REPO_PACKAGE):
             index_of_self = solution.visited_packages.index(self)
-            new_dep_cycle = DepAlgoCycle(deepcopy(solution.visited_packages[index_of_self:]))
+            new_dep_cycle = DepAlgoCycle(solution.visited_packages[index_of_self:])
             new_dep_cycle.cycle_packages.append(self)
             if new_dep_cycle not in found_problems:
                 found_problems.add(new_dep_cycle)
@@ -286,7 +286,7 @@ class Package:
             return [deepcopy(solution)]
 
         # conflict
-        possible_conflict_packages = deepcopy(solution.visited_packages)
+        possible_conflict_packages = solution.visited_packages
         conflict_system = System(possible_conflict_packages).conflicting_with(self)
         if conflict_system:
             min_index = min([solution.visited_packages.index(package) for package in conflict_system])
@@ -1022,10 +1022,14 @@ class System:
         while True:
             # print solutions
             for i in range(0, len(valid_systems)):
-                print(solution_print.format(i + 1, ", ".join(
-                    [color_string((Colors.GREEN, package.name)) for package in systems_differences[1][i][0]]),
-                                            ", ".join([color_string((Colors.RED, package.name)) for package in
-                                                       systems_differences[1][i][1]])))
+                installed_names = [package.name for package in systems_differences[1][i][0]]
+                removed_names = [package.name for package in systems_differences[1][i][1]]
+                installed_names.sort()
+                removed_names.sort()
+
+                print(solution_print.format(i + 1,
+                                            ", ".join([color_string((Colors.GREEN, name)) for name in installed_names]),
+                                            ", ".join([color_string((Colors.RED, name)) for name in removed_names])))
 
             try:
                 user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
