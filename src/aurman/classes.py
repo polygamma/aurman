@@ -318,8 +318,16 @@ class Package:
             finished_solutions = [solution for solution in current_solutions if dep in solution.visited_names]
             not_finished_solutions = [solution for solution in current_solutions if dep not in solution.visited_names]
 
+            new_not_finished_solutions = []
             for solution in not_finished_solutions:
                 solution.visited_names.add(dep)
+                sol_system = System(solution.packages_in_solution)
+                # check if dep provided by one of the packages already in the solution
+                if sol_system.provided_by(dep):
+                    finished_solutions.append(solution)
+                else:
+                    new_not_finished_solutions.append(solution)
+            not_finished_solutions = new_not_finished_solutions
 
             current_solutions = finished_solutions
             problems_copy = copy(found_problems)
