@@ -1022,10 +1022,14 @@ class System:
         while True:
             # print solutions
             for i in range(0, len(valid_systems)):
-                print(solution_print.format(i + 1, ", ".join(
-                    [color_string((Colors.GREEN, package.name)) for package in systems_differences[1][i][0]]),
-                                            ", ".join([color_string((Colors.RED, package.name)) for package in
-                                                       systems_differences[1][i][1]])))
+                installed_names = [package.name for package in systems_differences[1][i][0]]
+                removed_names = [package.name for package in systems_differences[1][i][1]]
+                installed_names.sort()
+                removed_names.sort()
+
+                print(solution_print.format(i + 1,
+                                            ", ".join([color_string((Colors.GREEN, name)) for name in installed_names]),
+                                            ", ".join([color_string((Colors.RED, name)) for name in removed_names])))
 
             try:
                 user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
