@@ -354,7 +354,6 @@ class Package:
             not_finished_solutions = new_not_finished_solutions
 
             current_solutions = finished_solutions
-            problems_copy = copy(found_problems)
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
                     current_solutions.extend(
@@ -365,8 +364,7 @@ class Package:
             # we have solutions left, so the problems are not relevant
             if current_solutions:
                 for problem in copy(found_problems):
-                    if problem not in problems_copy:
-                        found_problems.remove(problem)
+                    found_problems.remove(problem)
 
         for solution in current_solutions:
             solution.packages_in_solution.append(self)
