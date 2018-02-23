@@ -24,6 +24,7 @@ class DepAlgoSolution:
         self.packages_in_solution: List['Package'] = packages_in_solution
         self.visited_packages: List['Package'] = visited_packages
         self.visited_names: Set['str'] = visited_names
+        self.is_valid = True
 
 
 class DepAlgoFoundProblems:
@@ -61,10 +62,10 @@ class DepAlgoConflict(DepAlgoFoundProblems):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
-            other.conflicting_packages)
+            other.conflicting_packages) and tuple(self.way_to_conflict) == tuple(other.way_to_conflict)
 
     def __hash__(self):
-        return hash(frozenset(self.conflicting_packages))
+        return hash((frozenset(self.conflicting_packages), tuple(self.way_to_conflict)))
 
     def get_relevant_packages(self):
         return self.conflicting_packages
@@ -290,7 +291,7 @@ class Package:
             index_of_self = solution.visited_packages.index(self)
             new_dep_cycle = DepAlgoCycle(solution.visited_packages[index_of_self:])
             new_dep_cycle.cycle_packages.append(self)
-            if new_dep_cycle not in found_problems:
+            if solution.is_valid:
                 found_problems.add(new_dep_cycle)
             return []
         elif self in solution.visited_packages:
@@ -305,12 +306,16 @@ class Package:
             way_to_conflict.append(self)
             new_conflict = DepAlgoConflict(set(conflict_system), way_to_conflict)
             new_conflict.conflicting_packages.add(self)
-            if new_conflict not in found_problems:
+            if solution.is_valid:
                 found_problems.add(new_conflict)
-            return []
+            is_conflict = True
+        else:
+            is_conflict = False
 
         solution = deepcopy(solution)
         solution.visited_packages.append(self)
+        if is_conflict:
+            solution.is_valid = False
         current_solutions = [solution]
 
         # AND - every dep has to be fulfilled
@@ -326,6 +331,11 @@ class Package:
                 new_dep_not_fulfilled = DepAlgoNotProvided(dep, self)
                 if new_dep_not_fulfilled not in found_problems:
                     found_problems.add(new_dep_not_fulfilled)
+
+                for solution in current_solutions:
+                    if dep not in solution.visited_names:
+                        solution.is_valid = False
+                        solution.visited_names.add(dep)
 
             # we only need relevant dep providers
             if dep_stripped_name in dep_providers_names and dep not in deps_to_deep_check:
@@ -354,10 +364,10 @@ class Package:
                                                                upstream_system, only_unfulfilled_deps,
                                                                deps_to_deep_check))
 
-            # we have solutions left, so the problems are not relevant
-            if current_solutions:
-                for problem in copy(found_problems):
-                    found_problems.remove(problem)
+        # we have valid solutions left, so the problems are not relevant
+        if [solution for solution in current_solutions if solution.is_valid]:
+            for problem in copy(found_problems):
+                found_problems.remove(problem)
 
         for solution in current_solutions:
             solution.packages_in_solution.append(self)
@@ -390,6 +400,8 @@ class Package:
                         package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
                                                           only_unfulfilled_deps, deps_to_deep_check))
                 current_solutions = new_solutions
+
+            current_solutions = [solution for solution in current_solutions if solution.is_valid]
 
             if current_solutions:
                 break
