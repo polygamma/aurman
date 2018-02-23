@@ -3,7 +3,7 @@ import os
 from copy import deepcopy, copy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Set, Union
+from typing import Sequence, List, Tuple, Set, Union, Dict, Iterable
 
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.colors import Colors, color_string
@@ -27,7 +27,8 @@ class DepAlgoSolution:
 
 
 class DepAlgoFoundProblems:
-    pass
+    def get_relevant_packages(self) -> Iterable['Package']:
+        return []
 
 
 class DepAlgoCycle(DepAlgoFoundProblems):
@@ -43,6 +44,9 @@ class DepAlgoCycle(DepAlgoFoundProblems):
 
     def __hash__(self):
         return hash(tuple(self.cycle_packages))
+
+    def get_relevant_packages(self):
+        return self.cycle_packages
 
 
 class DepAlgoConflict(DepAlgoFoundProblems):
@@ -62,6 +66,9 @@ class DepAlgoConflict(DepAlgoFoundProblems):
     def __hash__(self):
         return hash(frozenset(self.conflicting_packages))
 
+    def get_relevant_packages(self):
+        return self.conflicting_packages
+
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
     def __init__(self, dep_not_provided, package):
@@ -79,6 +86,9 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
 
     def __hash__(self):
         return hash((self.dep_not_provided, self.package))
+
+    def get_relevant_packages(self):
+        return [self.package]
 
 
 class Package:
@@ -257,8 +267,8 @@ class Package:
         return to_return
 
     def solutions_for_dep_problem(self, solution: 'DepAlgoSolution', found_problems: Set['DepAlgoFoundProblems'],
-                                  installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool) -> \
-            List['DepAlgoSolution']:
+                                  installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool,
+                                  deps_to_deep_check: Set[str], package_to_dep_dict: Dict) -> List['DepAlgoSolution']:
         """
         Heart of this AUR helper. Algorithm for dependency solving.
         Also checks for conflicts, dep-cycles and topologically sorts the solutions.
@@ -268,6 +278,9 @@ class Package:
         :param installed_system:        The currently installed system
         :param upstream_system:         The system containing the known upstream packages
         :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
+        :param deps_to_deep_check:      Set containing deps to check all possible dep providers of
+        :param package_to_dep_dict:     Dict containing packages names as keys and a set containing the deps,
+                                        in which the package is involved, as values
         :return:                        The found solutions
         """
         if self in solution.packages_in_solution:
@@ -307,12 +320,23 @@ class Package:
             if only_unfulfilled_deps and installed_system.provided_by(dep):
                 continue
 
+            # append dep to package to dep dict
+            if self.name not in package_to_dep_dict:
+                package_to_dep_dict[self.name] = set()
+            package_to_dep_dict[self.name].add(dep)
+
             dep_providers = upstream_system.provided_by(dep)
+            dep_providers_names = [package.name for package in dep_providers]
+            dep_stripped_name = strip_versioning_from_name(dep)
             # dep not fulfillable, solutions not valid
             if not dep_providers:
                 new_dep_not_fulfilled = DepAlgoNotProvided(dep, self)
                 if new_dep_not_fulfilled not in found_problems:
                     found_problems.add(new_dep_not_fulfilled)
+
+            # we only need relevant dep providers
+            if dep_stripped_name in dep_providers_names and dep not in deps_to_deep_check:
+                dep_providers = [package for package in dep_providers if package.name == dep_stripped_name]
 
             # OR - at least one of the dep providers needs to provide the dep
             finished_solutions = [solution for solution in current_solutions if dep in solution.visited_names]
@@ -335,7 +359,8 @@ class Package:
                 for dep_provider in dep_providers:
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
-                                                               upstream_system, only_unfulfilled_deps))
+                                                               upstream_system, only_unfulfilled_deps,
+                                                               deps_to_deep_check, package_to_dep_dict))
 
             # we have solutions left, so the problems are not relevant
             if current_solutions:
@@ -364,14 +389,32 @@ class Package:
 
         current_solutions = [DepAlgoSolution([], [], set())]
         found_problems = set()
+        deps_to_deep_check = set()
+        package_to_dep_dict = {}
 
-        for package in packages:
-            new_solutions = []
-            for solution in current_solutions:
-                new_solutions.extend(
-                    package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
-                                                      only_unfulfilled_deps))
-            current_solutions = new_solutions
+        while True:
+            for package in packages:
+                new_solutions = []
+                for solution in current_solutions:
+                    new_solutions.extend(
+                        package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
+                                                          only_unfulfilled_deps, deps_to_deep_check,
+                                                          package_to_dep_dict))
+                current_solutions = new_solutions
+
+            if current_solutions:
+                break
+
+            deps_to_deep_check_length = len(deps_to_deep_check)
+            for problem in found_problems:
+                problem_packages = problem.get_relevant_packages()
+                for package in problem_packages:
+                    deps_to_deep_check |= package_to_dep_dict.get(package.name, set())
+            if len(deps_to_deep_check) == deps_to_deep_check_length:
+                break
+
+            found_problems = set()
+            current_solutions = [DepAlgoSolution([], [], set())]
 
         # output for user
         if found_problems and not current_solutions:
