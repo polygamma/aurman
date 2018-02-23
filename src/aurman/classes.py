@@ -1,6 +1,6 @@
 import logging
 import os
-from copy import deepcopy, copy
+from copy import deepcopy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List, Tuple, Set, Union
@@ -24,7 +24,6 @@ class DepAlgoSolution:
         self.packages_in_solution: List['Package'] = packages_in_solution
         self.visited_packages: List['Package'] = visited_packages
         self.visited_names: Set['str'] = visited_names
-        self.is_valid = True  # may be set to False while the algo is searching, e.g. conflict or unfulfilled deps
 
 
 class DepAlgoFoundProblems:
@@ -297,14 +296,10 @@ class Package:
             new_conflict.conflicting_packages.add(self)
             if new_conflict not in found_problems:
                 found_problems.add(new_conflict)
-            conflict_found = True
-        else:
-            conflict_found = False
+            return []
 
         solution = deepcopy(solution)
         solution.visited_packages.append(self)
-        if conflict_found:
-            solution.is_valid = False
         current_solutions = [solution]
 
         # AND - every dep has to be fulfilled
@@ -327,30 +322,16 @@ class Package:
                 solution.visited_names.add(dep)
 
             current_solutions = finished_solutions
-            solution_count = len(current_solutions)
-            copy_problems = deepcopy(found_problems)
-
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps))
 
-            # the new problems are not relevant since we found at least one solution
-            if len(current_solutions) > solution_count:
-                for problem in copy(found_problems):
-                    if problem not in copy_problems:
-                        found_problems.remove(problem)
-            # no new solutions, hence the dep is unfulfilled, so all not finished solutions are invalid
-            else:
-                for solution in not_finished_solutions:
-                    solution.is_valid = False
-                current_solutions.extend(not_finished_solutions)
-
         for solution in current_solutions:
             solution.packages_in_solution.append(self)
 
-        return [solution for solution in current_solutions if solution.is_valid]
+        return current_solutions
 
     @staticmethod
     def dep_solving(packages: Sequence['Package'], installed_system: 'System', upstream_system: 'System',
@@ -1041,14 +1022,10 @@ class System:
         while True:
             # print solutions
             for i in range(0, len(valid_systems)):
-                installed_names = [package.name for package in systems_differences[1][i][0]]
-                removed_names = [package.name for package in systems_differences[1][i][1]]
-                installed_names.sort()
-                removed_names.sort()
-
-                print(solution_print.format(i + 1,
-                                            ", ".join([color_string((Colors.GREEN, name)) for name in installed_names]),
-                                            ", ".join([color_string((Colors.RED, name)) for name in removed_names])))
+                print(solution_print.format(i + 1, ", ".join(
+                    [color_string((Colors.GREEN, package.name)) for package in systems_differences[1][i][0]]),
+                                            ", ".join([color_string((Colors.RED, package.name)) for package in
+                                                       systems_differences[1][i][1]])))
 
             try:
                 user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
