@@ -1,9 +1,9 @@
 import logging
 import os
-from copy import deepcopy
+from copy import deepcopy, copy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Set, Union
+from typing import Sequence, List, Tuple, Set, Union, Iterable
 
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.colors import Colors, color_string
@@ -24,10 +24,12 @@ class DepAlgoSolution:
         self.packages_in_solution: List['Package'] = packages_in_solution
         self.visited_packages: List['Package'] = visited_packages
         self.visited_names: Set['str'] = visited_names
+        self.is_valid = True
 
 
 class DepAlgoFoundProblems:
-    pass
+    def get_relevant_packages(self) -> Iterable['Package']:
+        return []
 
 
 class DepAlgoCycle(DepAlgoFoundProblems):
@@ -44,6 +46,9 @@ class DepAlgoCycle(DepAlgoFoundProblems):
     def __hash__(self):
         return hash(tuple(self.cycle_packages))
 
+    def get_relevant_packages(self):
+        return self.cycle_packages
+
 
 class DepAlgoConflict(DepAlgoFoundProblems):
     def __init__(self, conflicting_packages, way_to_conflict):
@@ -57,10 +62,13 @@ class DepAlgoConflict(DepAlgoFoundProblems):
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
-            other.conflicting_packages)
+            other.conflicting_packages) and tuple(self.way_to_conflict) == tuple(other.way_to_conflict)
 
     def __hash__(self):
-        return hash(frozenset(self.conflicting_packages))
+        return hash((frozenset(self.conflicting_packages), tuple(self.way_to_conflict)))
+
+    def get_relevant_packages(self):
+        return self.conflicting_packages
 
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
@@ -79,6 +87,9 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
 
     def __hash__(self):
         return hash((self.dep_not_provided, self.package))
+
+    def get_relevant_packages(self):
+        return [self.package]
 
 
 class Package:
@@ -257,8 +268,8 @@ class Package:
         return to_return
 
     def solutions_for_dep_problem(self, solution: 'DepAlgoSolution', found_problems: Set['DepAlgoFoundProblems'],
-                                  installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool) -> \
-            List['DepAlgoSolution']:
+                                  installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool,
+                                  deps_to_deep_check: Set[str]) -> List['DepAlgoSolution']:
         """
         Heart of this AUR helper. Algorithm for dependency solving.
         Also checks for conflicts, dep-cycles and topologically sorts the solutions.
@@ -268,6 +279,7 @@ class Package:
         :param installed_system:        The currently installed system
         :param upstream_system:         The system containing the known upstream packages
         :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
+        :param deps_to_deep_check:      Set containing deps to check all possible dep providers of
         :return:                        The found solutions
         """
         if self in solution.packages_in_solution:
@@ -276,10 +288,10 @@ class Package:
         # dep cycle
         # dirty... thanks to dep cycle between mesa and libglvnd
         if self in solution.visited_packages and not (self.type_of is PossibleTypes.REPO_PACKAGE):
-            index_of_self = solution.visited_packages.index(self)
-            new_dep_cycle = DepAlgoCycle(solution.visited_packages[index_of_self:])
-            new_dep_cycle.cycle_packages.append(self)
-            if new_dep_cycle not in found_problems:
+            if solution.is_valid:
+                index_of_self = solution.visited_packages.index(self)
+                new_dep_cycle = DepAlgoCycle(solution.visited_packages[index_of_self:])
+                new_dep_cycle.cycle_packages.append(self)
                 found_problems.add(new_dep_cycle)
             return []
         elif self in solution.visited_packages:
@@ -289,17 +301,21 @@ class Package:
         possible_conflict_packages = solution.visited_packages
         conflict_system = System(possible_conflict_packages).conflicting_with(self)
         if conflict_system:
-            min_index = min([solution.visited_packages.index(package) for package in conflict_system])
-            way_to_conflict = solution.visited_packages[min_index:]
-            way_to_conflict.append(self)
-            new_conflict = DepAlgoConflict(set(conflict_system), way_to_conflict)
-            new_conflict.conflicting_packages.add(self)
-            if new_conflict not in found_problems:
+            if solution.is_valid:
+                min_index = min([solution.visited_packages.index(package) for package in conflict_system])
+                way_to_conflict = solution.visited_packages[min_index:]
+                way_to_conflict.append(self)
+                new_conflict = DepAlgoConflict(set(conflict_system), way_to_conflict)
+                new_conflict.conflicting_packages.add(self)
                 found_problems.add(new_conflict)
-            return []
+            is_conflict = True
+        else:
+            is_conflict = False
 
         solution = deepcopy(solution)
         solution.visited_packages.append(self)
+        if is_conflict:
+            solution.is_valid = False
         current_solutions = [solution]
 
         # AND - every dep has to be fulfilled
@@ -308,25 +324,50 @@ class Package:
                 continue
 
             dep_providers = upstream_system.provided_by(dep)
+            dep_providers_names = [package.name for package in dep_providers]
+            dep_stripped_name = strip_versioning_from_name(dep)
             # dep not fulfillable, solutions not valid
             if not dep_providers:
                 new_dep_not_fulfilled = DepAlgoNotProvided(dep, self)
                 if new_dep_not_fulfilled not in found_problems:
                     found_problems.add(new_dep_not_fulfilled)
 
+                for solution in current_solutions:
+                    if dep not in solution.visited_names:
+                        solution.is_valid = False
+                        solution.visited_names.add(dep)
+
+            # we only need relevant dep providers
+            if dep_stripped_name in dep_providers_names and dep not in deps_to_deep_check:
+                dep_providers = [package for package in dep_providers if package.name == dep_stripped_name]
+
             # OR - at least one of the dep providers needs to provide the dep
             finished_solutions = [solution for solution in current_solutions if dep in solution.visited_names]
             not_finished_solutions = [solution for solution in current_solutions if dep not in solution.visited_names]
 
+            new_not_finished_solutions = []
             for solution in not_finished_solutions:
                 solution.visited_names.add(dep)
+                sol_system = System(solution.packages_in_solution)
+                # check if dep provided by one of the packages already in the solution
+                if sol_system.provided_by(dep):
+                    finished_solutions.append(solution)
+                else:
+                    new_not_finished_solutions.append(solution)
+            not_finished_solutions = new_not_finished_solutions
 
             current_solutions = finished_solutions
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
-                                                               upstream_system, only_unfulfilled_deps))
+                                                               upstream_system, only_unfulfilled_deps,
+                                                               deps_to_deep_check))
+
+        # we have valid solutions left, so the problems are not relevant
+        if [solution for solution in current_solutions if solution.is_valid]:
+            for problem in copy(found_problems):
+                found_problems.remove(problem)
 
         for solution in current_solutions:
             solution.packages_in_solution.append(self)
@@ -349,14 +390,31 @@ class Package:
 
         current_solutions = [DepAlgoSolution([], [], set())]
         found_problems = set()
+        deps_to_deep_check = set()
 
-        for package in packages:
-            new_solutions = []
-            for solution in current_solutions:
-                new_solutions.extend(
-                    package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
-                                                      only_unfulfilled_deps))
-            current_solutions = new_solutions
+        while True:
+            for package in packages:
+                new_solutions = []
+                for solution in current_solutions:
+                    new_solutions.extend(
+                        package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
+                                                          only_unfulfilled_deps, deps_to_deep_check))
+                current_solutions = new_solutions
+
+            current_solutions = [solution for solution in current_solutions if solution.is_valid]
+
+            if current_solutions:
+                break
+
+            deps_to_deep_check_length = len(deps_to_deep_check)
+            for problem in found_problems:
+                problem_packages_names = set([package.name for package in problem.get_relevant_packages()])
+                deps_to_deep_check |= problem_packages_names
+            if len(deps_to_deep_check) == deps_to_deep_check_length:
+                break
+
+            found_problems = set()
+            current_solutions = [DepAlgoSolution([], [], set())]
 
         # output for user
         if found_problems and not current_solutions:
