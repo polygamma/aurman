@@ -1,6 +1,6 @@
 import logging
 import os
-from copy import deepcopy
+from copy import deepcopy, copy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List, Tuple, Set, Union
@@ -322,11 +322,18 @@ class Package:
                 solution.visited_names.add(dep)
 
             current_solutions = finished_solutions
+            problems_copy = copy(found_problems)
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps))
+
+            # we have solutions left, so the problems are not relevant
+            if current_solutions:
+                for problem in copy(found_problems):
+                    if problem not in problems_copy:
+                        found_problems.remove(problem)
 
         for solution in current_solutions:
             solution.packages_in_solution.append(self)
