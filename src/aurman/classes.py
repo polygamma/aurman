@@ -472,8 +472,8 @@ class Package:
         # check if repo has ever been fetched
         if os.path.isdir(package_dir):
             if run("git fetch", shell=True, cwd=package_dir).returncode != 0:
-                logging.error("git fetch of %s failed", self.name)
-                raise ConnectionProblem()
+                logging.error("git fetch of {} failed".format(self.name))
+                raise ConnectionProblem("git fetch of {} failed".format(self.name))
 
             head = run("git rev-parse HEAD", shell=True, stdout=PIPE, universal_newlines=True,
                        cwd=package_dir).stdout.strip()
@@ -484,8 +484,8 @@ class Package:
             if head != u:
                 if run("git reset --hard HEAD && git pull", shell=True, stdout=DEVNULL, stderr=DEVNULL,
                        cwd=package_dir).returncode != 0:
-                    logging.error("sources of %s could not be fetched", self.name)
-                    raise ConnectionProblem()
+                    logging.error("sources of {} could not be fetched".format(self.name))
+                    raise ConnectionProblem("sources of {} could not be fetched".format(self.name))
             else:
                 new_loaded = False
 
@@ -493,21 +493,21 @@ class Package:
         else:
             # create package dir
             if run("install -dm700 '" + package_dir + "'", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
-                logging.error("Creating package dir of %s failed", self.name)
-                raise InvalidInput()
+                logging.error("Creating package dir of {} failed".format(self.name))
+                raise InvalidInput("Creating package dir of {} failed".format(self.name))
 
             # clone repo
             if run("git clone https://aur.archlinux.org/" + self.pkgbase + ".git", shell=True,
                    cwd=Package.cache_dir).returncode != 0:
-                logging.error("Cloning repo of %s failed", self.name)
-                raise ConnectionProblem()
+                logging.error("Cloning repo of {} failed".format(self.name))
+                raise ConnectionProblem("Cloning repo of {} failed".format(self.name))
 
         # if aurman dir does not exist - create
         if not os.path.isdir(git_aurman_dir):
             if run("install -dm700 '" + git_aurman_dir + "'", shell=True, stdout=DEVNULL,
                    stderr=DEVNULL).returncode != 0:
-                logging.error("Creating git_aurman_dir of %s failed", self.name)
-                raise InvalidInput()
+                logging.error("Creating git_aurman_dir of {} failed".format(self.name))
+                raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
 
         # files have not yet been reviewed
         if new_loaded:
@@ -525,15 +525,15 @@ class Package:
 
         # if package dir does not exist - abort
         if not os.path.isdir(package_dir):
-            logging.error("Package dir of %s does not exist", self.name)
-            raise InvalidInput()
+            logging.error("Package dir of {} does not exist".format(self.name))
+            raise InvalidInput("Package dir of {} does not exist".format(self.name))
 
         # if aurman dir does not exist - create
         if not os.path.isdir(git_aurman_dir):
             if run("install -dm700 '" + git_aurman_dir + "'", shell=True, stdout=DEVNULL,
                    stderr=DEVNULL).returncode != 0:
-                logging.error("Creating git_aurman_dir of %s failed", self.name)
-                raise InvalidInput()
+                logging.error("Creating git_aurman_dir of {} failed".format(self.name))
+                raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
 
         # if reviewed file does not exist - create
         if not os.path.isfile(reviewed_file):
@@ -581,8 +581,8 @@ class Package:
                 if ask_user("Do you want to edit " + file + "?", False):
                     if run(Package.default_editor_path + " " + os.path.join(package_dir, file),
                            shell=True).returncode != 0:
-                        logging.error("Editing %s failed", file)
-                        raise InvalidInput()
+                        logging.error("Editing {} failed".format(file))
+                        raise InvalidInput("Editing {} failed".format(file))
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
@@ -595,8 +595,8 @@ class Package:
                     stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir)
 
         else:
-            logging.error("Files of %s are not okay", str(self.name))
-            raise InvalidInput()
+            logging.error("Files of {} are not okay".format(self.name))
+            raise InvalidInput("Files of {} are not okay".format(self.name))
 
     def version_from_srcinfo(self) -> str:
         """
@@ -605,13 +605,13 @@ class Package:
         """
 
         if self.pkgbase is None:
-            logging.error("base package name of %s not known", str(self.name))
-            raise InvalidInput()
+            logging.error("base package name of {} not known".format(self.name))
+            raise InvalidInput("base package name of {} not known".format(self.name))
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         if not os.path.isdir(package_dir):
-            logging.error("package dir of %s does not exist", str(self.name))
-            raise InvalidInput()
+            logging.error("package dir of {} does not exist".format(self.name))
+            raise InvalidInput("package dir of {} does not exist".format(self.name))
 
         src_lines = makepkg("--printsrcinfo", True, package_dir)
         pkgver = None
@@ -631,8 +631,8 @@ class Package:
         if pkgver is not None:
             version += pkgver
         else:
-            logging.info("version of %s must be there", str(self.name))
-            raise InvalidInput()
+            logging.info("version of {} must be there".format(self.name))
+            raise InvalidInput("version of {} must be there".format(self.name))
         if pkgrel is not None:
             version += "-" + pkgrel
 
@@ -660,7 +660,7 @@ class Package:
         makepkg_conf = os.path.join("/etc", "makepkg.conf")
         if not os.path.isfile(makepkg_conf):
             logging.error("makepkg.conf not found")
-            raise InvalidInput()
+            raise InvalidInput("makepkg.conf not found")
 
         with open(makepkg_conf, "r") as f:
             makepkg_conf_lines = f.read().strip().splitlines()
@@ -714,8 +714,8 @@ class Package:
         package_install_file = self.get_package_file_to_install(build_dir, build_version)
 
         if package_install_file is None:
-            logging.error("package file of %s not available", str(self.name))
-            raise InvalidInput()
+            logging.error("package file of {} not available".format(self.name))
+            raise InvalidInput("package file of {} not available".format(self.name))
 
         # install
         pacman("{} {}".format(args_as_string, package_install_file), False, dir_to_execute=build_dir)
@@ -791,7 +791,7 @@ class System:
         for package in packages:
             if package.name in self.all_packages_dict:
                 logging.error("Package {} already known".format(package))
-                raise InvalidInput()
+                raise InvalidInput("Package {} already known".format(package))
 
             self.all_packages_dict[package.name] = package
 
@@ -1102,7 +1102,7 @@ class System:
         # no valid solutions
         if not valid_systems:
             logging.error("No valid solutions found")
-            raise InvalidInput()
+            raise InvalidInput("No valid solutions found")
 
         # only one valid solution - just return
         if len(valid_systems) == 1:
