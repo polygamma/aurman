@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, main
 
 from aurman.own_exceptions import InvalidInput
 from aurman.wrappers import split_query_helper
@@ -15,3 +15,7 @@ class TestSplit_query_helper(TestCase):
             split_query_helper(2, 1, 1, ("a", "b"))
         with self.assertRaises(InvalidInput):
             split_query_helper(3, 1, 1, ("a", "bc"))
+
+
+if __name__ == '__main__':
+    main()

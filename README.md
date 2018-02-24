@@ -1,4 +1,4 @@
-# aurman - AUR helper with almost pacman syntax
+# aurman - AUR helper with almost pacman syntax ![](https://travis-ci.org/polygamma/aurman.svg?branch=master)
 
 ### **aurman** in the AUR: *aurman-git* (https://aur.archlinux.org/packages/aurman-git)
 

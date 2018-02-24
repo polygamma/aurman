@@ -80,7 +80,7 @@ def acquire_sudo():
 
     if run("sudo -v", shell=True).returncode != 0:
         logging.error("acquire sudo failed")
-        raise InvalidInput()
+        raise InvalidInput("acquire sudo failed")
     t = threading.Thread(target=sudo_loop)
     t.daemon = True
     t.start()

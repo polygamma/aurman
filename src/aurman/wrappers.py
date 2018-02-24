@@ -35,7 +35,7 @@ def split_query_helper(max_length: int, base_length_of_query: int, length_per_ap
 
         if current_query_length > max_length:
             logging.error("Query too long because of '{}'".format(append))
-            raise InvalidInput()
+            raise InvalidInput("Query too long because of '{}'".format(append))
 
     return return_list
 
@@ -69,7 +69,7 @@ def expac(option: str, formatting: Sequence[str], targets: Sequence[str]) -> Lis
         expac_return = run(query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
         if expac_return.returncode != 0:
             logging.error("expac query {} failed".format(query))
-            raise InvalidInput()
+            raise InvalidInput("expac query {} failed".format(query))
 
         return_list.extend(expac_return.stdout.strip().splitlines())
 
@@ -108,7 +108,7 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
 
     if pacman_return.returncode != 0:
         logging.error("pacman query {} failed".format(pacman_query))
-        raise InvalidInput()
+        raise InvalidInput("pacman query {} failed".format(pacman_query))
 
     if fetch_output:
         return pacman_return.stdout.strip().splitlines()
@@ -137,7 +137,7 @@ def makepkg(options_as_string: str, fetch_output: bool, dir_to_execute: str) -> 
 
     if makepkg_return.returncode != 0:
         logging.error("makepkg query {} failed".format(makepkg_query))
-        raise InvalidInput()
+        raise InvalidInput("makepkg query {} failed".format(makepkg_query))
 
     if fetch_output:
         return makepkg_return.stdout.strip().splitlines()
