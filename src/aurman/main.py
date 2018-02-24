@@ -16,6 +16,7 @@ def process(args):
     packages_of_user_names = []
     sudo_acquired = False
 
+    # parse parameters of user
     try:
         operation, grouped_args = group_args(args)
     except InvalidInput:
@@ -64,6 +65,7 @@ def process(args):
     # categorize user input
     for_us, for_pacman = Package.user_input_to_categories(packages_of_user_names)
 
+    # in case of sysupgrade or packages relevant for pacman, call pacman
     if sysupgrade or for_pacman:
         if not sudo_acquired:
             acquire_sudo()
@@ -100,10 +102,12 @@ def process(args):
 
     print("fetching needed aur packages...")
     upstream_system.append_packages_by_name(for_us)
+    # fetch info for all installed aur packages, too
     names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
     names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
     upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
+    # if user entered --devel, fetch all needed pkgbuilds etc. now, otherwise this will be done after the dep solving
     if devel:
         print("looking for new pkgbuilds and fetch them...")
         for package in upstream_system.aur_packages_list:
@@ -135,6 +139,7 @@ def process(args):
             else:
                 concrete_packages_to_install.append(package)
 
+    # in case of sysupgrade fetch all installed aur packages, of which newer versions are available
     if sysupgrade:
         installed_aur_packages = [package for package in installed_system.aur_packages_list]
         installed_aur_packages.extend([package for package in installed_system.devel_packages_list])
@@ -148,6 +153,7 @@ def process(args):
     solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system,
                                     only_unfulfilled_deps)
 
+    # validates the found solutions and lets the user choose one of them, if there are more than one valid solutions
     try:
         chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
     except InvalidInput:
