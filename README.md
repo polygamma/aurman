@@ -10,7 +10,7 @@ so for example:
 
 *pacman -R package1 package2 -sc* to *aurman -R --pk package1 package2 -sc*
 
-There are three aurman exclusive flags.
+There are also aurman exclusive flags.
 
 - *--noedit* - will not show changes of PKGBUILDs and .install files. just assumes you are okay with the changes.
 
