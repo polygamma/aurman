@@ -539,11 +539,11 @@ class Package:
                         logging.error("Import PGP key {} failed.".format(pgp_key))
                         raise ConnectionProblem("Import PGP key {} failed.".format(pgp_key))
 
-    def show_pkgbuild(self, no_edit: bool = False):
+    def show_pkgbuild(self, noedit: bool = False):
         """
         Lets the user review and edit unreviewed PKGBUILD and install files of this package
 
-        :param no_edit:     True if the user is just fine with the changes without showing them, False otherwise
+        :param noedit:     True if the user is just fine with the changes without showing them, False otherwise
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
@@ -582,7 +582,7 @@ class Package:
                 relevant_files.append(file)
 
         # check if there are changes, if there are, ask the user if he wants to see them
-        if not no_edit:
+        if not noedit:
             for file in relevant_files:
                 if os.path.isfile(os.path.join(git_aurman_dir, file)):
                     if run("git diff --no-index --quiet '" + "' '".join(
@@ -616,7 +616,7 @@ class Package:
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
-        if no_edit or ask_user("Are you fine with using the files of {}?".format(self.name), True):
+        if noedit or ask_user("Are you fine with using the files of {}?".format(self.name), True):
             with open(reviewed_file, "w") as f:
                 f.write("1")
 
@@ -1188,11 +1188,12 @@ class System:
             else:
                 print(choice_not_valid)
 
-    def show_solution_differences_to_user(self, solution: List['Package']):
+    def show_solution_differences_to_user(self, solution: List['Package'], noconfirm: bool = False):
         """
         Shows the chosen solution to the user with package upgrades etc.
 
         :param solution:    The chosen solution
+        :param noconfirm:   True if the user does not need to confirm the solution, False otherwise
         """
 
         # needed strings
@@ -1233,5 +1234,5 @@ class System:
             [color_string((Colors.LIGHT_MAGENTA, str(self.all_packages_dict[package_name]))) for package_name in
              just_reinstall_names]))
 
-        if not ask_user(color_string((Colors.DEFAULT, user_question)), True):
+        if not noconfirm and not ask_user(color_string((Colors.DEFAULT, user_question)), True):
             raise InvalidInput()
