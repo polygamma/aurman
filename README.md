@@ -1,28 +1,32 @@
-# aurman - AUR helper with almost pacman syntax ![](https://travis-ci.org/polygamma/aurman.svg?branch=master)
+# aurman - AUR helper with almost pacman syntax
 
-### **aurman** in the AUR: *aurman-git* (https://aur.archlinux.org/packages/aurman-git)
+![](https://travis-ci.org/polygamma/aurman.svg?branch=master)
 
-- **Syntax**:
-Pacman syntax with one exception: One has to put *--pk* in front of the packages,
+## aurman in the AUR
+
+**aurman-git** *(https://aur.archlinux.org/packages/aurman-git)*
+
+## Syntax
+Pacman syntax with one exception: One has to put `--pk` in front of the packages,
 so for example:
 
-*pacman -Syu package1 package2* to *aurman -Syu --pk package1 package2*
+> aurman -Syu --pk package1 package2
 
-*pacman -R package1 package2 -sc* to *aurman -R --pk package1 package2 -sc*
+> aurman -R --pk package1 package2 -sc
 
 There are also aurman exclusive flags.
 
-- *--noedit* - will not show changes of PKGBUILDs and .install files. just assumes you are okay with the changes.
+- `--noedit`: will not show changes of PKGBUILDs and .install files. just assumes you are okay with the changes.
 
-- *--devel* - will fetch current development packages versions to decide whether a new version is available or not.
+- `--devel`: will fetch current development packages versions to decide whether a new version is available or not.
 
-- *--deep_search* - dependency solving will ignore currently fulfilled dependencies of your system and try to solve the problem for a system with zero packages installed.
+- `--deep_search`: dependency solving will ignore currently fulfilled dependencies of your system and try to solve the problem for a system with zero packages installed.
 should almost never be needed, but if aurman is not able to find a solution to install packages, try rerunning aurman with this flag.
 but be warned, it could take a few minutes to find solutions.
 
-- *--pgp_fetch* - fetches needed pgp keys without asking the user
+- `--pgp_fetch`: fetches needed pgp keys without asking the user
 
-- **Features**
+## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
   - reliable dependency resolving
@@ -31,10 +35,21 @@ but be warned, it could take a few minutes to find solutions.
   - development package support
   - distinction between explicitly and implicitly installed packages
   - let the user see and edit all needed PKGBUILDs before any of the building of AUR packages starts
+  - fetching of needed pgp keys for package building
 
-- **Screenshots**
-  - dependency solving of complex packages: ![screenshot from 2018-02-23 18-12-48](https://user-images.githubusercontent.com/20651500/36606841-2c28de78-18c5-11e8-8df7-c123536121db.png)
-  - showing errors of malformed aur packages: ![screenshot from 2018-02-23 18-14-03](https://user-images.githubusercontent.com/20651500/36606912-593c8c52-18c5-11e8-85f2-d38895c60e70.png)
-  - deep_search flag yields new possibilities: ![screenshot from 2018-02-23 18-16-18](https://user-images.githubusercontent.com/20651500/36607016-aa9736e2-18c5-11e8-9684-59a4f3352746.png)
-  - showing which changes will be made to the system: ![screenshot from 2018-02-23 18-17-45](https://user-images.githubusercontent.com/20651500/36607080-def95582-18c5-11e8-9030-df28efc2d180.png)
-  - looking for needed pgp keys: ![screenshot from 2018-02-24 12-56-39](https://user-images.githubusercontent.com/20651500/36630164-32ba902c-1962-11e8-9cd5-044785660f21.png)
+## Screenshots
+
+#### dependency solving of complex packages:
+![](https://user-images.githubusercontent.com/20651500/36606841-2c28de78-18c5-11e8-8df7-c123536121db.png)
+
+#### showing errors of malformed aur packages:
+![](https://user-images.githubusercontent.com/20651500/36606912-593c8c52-18c5-11e8-85f2-d38895c60e70.png)
+
+#### deep_search flag yields new possibilities:
+![](https://user-images.githubusercontent.com/20651500/36607016-aa9736e2-18c5-11e8-9684-59a4f3352746.png)
+
+#### showing which changes will be made to the system:
+![](https://user-images.githubusercontent.com/20651500/36607080-def95582-18c5-11e8-9030-df28efc2d180.png)
+
+#### looking for needed pgp keys:
+![](https://user-images.githubusercontent.com/20651500/36630164-32ba902c-1962-11e8-9cd5-044785660f21.png)
