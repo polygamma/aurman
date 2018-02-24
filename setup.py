@@ -16,7 +16,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='aurman',
 
-    version='1.0',  # do not forget to change this
+    version='1.0.2.r0.g2893824',  # do not forget to change this
 
     description='Arch Linux AUR helper',
 
