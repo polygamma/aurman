@@ -62,6 +62,7 @@ def process(args):
     # unrecognized parameters
     if grouped_args['other']:
         logging.info("The following parameters are not recognized yet: {}".format(grouped_args['other']))
+        print(help_to_print)
         return
 
     # categorize user input
@@ -109,17 +110,12 @@ def process(args):
     names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
     upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
-    # if user entered --devel, fetch all needed pkgbuilds etc. now, otherwise this will be done after the dep solving
+    # if user entered --devel, fetch all needed pkgbuilds etc. for the devel packages
     if devel:
-        print("looking for new pkgbuilds and fetch them...")
-        for package in upstream_system.aur_packages_list:
-            package.fetch_pkgbuild()
+        print("looking for new pkgbuilds of devel packages and fetch them...")
         for package in upstream_system.devel_packages_list:
             package.fetch_pkgbuild()
         try:
-            for package in upstream_system.aur_packages_list:
-                package.show_pkgbuild(noedit)
-                package.search_and_fetch_pgp_keys(pgp_fetch)
             for package in upstream_system.devel_packages_list:
                 package.show_pkgbuild(noedit)
                 package.search_and_fetch_pgp_keys(pgp_fetch)
@@ -219,16 +215,19 @@ def process(args):
     args_for_dependency = args_to_string(relevant_args)
 
     # build and install aur packages
-    if not devel:
-        print("looking for new pkgbuilds and fetch them...")
+    print("looking for new pkgbuilds and fetch them...")
+    for package in chosen_solution:
+        if package.type_of is PossibleTypes.DEVEL_PACKAGE:
+            continue
+        package.fetch_pkgbuild()
+    try:
         for package in chosen_solution:
-            package.fetch_pkgbuild()
-        try:
-            for package in chosen_solution:
-                package.show_pkgbuild(noedit)
-                package.search_and_fetch_pgp_keys(pgp_fetch)
-        except InvalidInput:
-            return
+            if package.type_of is PossibleTypes.DEVEL_PACKAGE:
+                continue
+            package.show_pkgbuild(noedit)
+            package.search_and_fetch_pgp_keys(pgp_fetch)
+    except InvalidInput:
+        return
 
     for package in chosen_solution:
         package.build()
