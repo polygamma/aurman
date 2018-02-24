@@ -99,18 +99,18 @@ def group_args(args: Sequence[str]) -> Tuple[str, Dict]:
     for operation in operations:
         if operation in parsed_args:
             if operation_found is not None:
-                logging.error("Multiple operations defined in %s", str(args))
-                raise InvalidInput()
+                logging.error("Multiple operations defined in {}".format(args))
+                raise InvalidInput("Multiple operations defined in {}".format(args))
 
             if parsed_args[operation]:
-                logging.error("Operations with parameter in %s", str(args))
-                raise InvalidInput()
+                logging.error("Operations with parameter in {}".format(args))
+                raise InvalidInput("Operations with parameter in {}".format(args))
 
             operation_found = operation
 
     if operation_found is None:
-        logging.error("No operation defined in %s", str(args))
-        raise InvalidInput()
+        logging.error("No operation defined in {}".format(args))
+        raise InvalidInput("No operation defined in {}".format(args))
 
     del parsed_args[operation_found]
     ordered_dict = {'aurman': {}, 'S': {}, 'U': {}, 'other': {}}
@@ -169,13 +169,13 @@ def parse_args(args: Sequence[str]) -> Dict:
         return return_dict
 
     if not args[0].startswith('-'):
-        logging.error("Parsing %s failed", str(args))
-        raise InvalidInput()
+        logging.error("Parsing {} failed".format(args))
+        raise InvalidInput("Parsing {} failed".format(args))
 
     for arg in args:
         if arg.endswith('-'):
-            logging.error("Parsing %s failed", str(args))
-            raise InvalidInput()
+            logging.error("Parsing {} failed".format(args))
+            raise InvalidInput("Parsing {} failed".format(args))
 
         if arg.startswith('-'):
             if (curr_param not in return_dict) and (curr_param is not None):

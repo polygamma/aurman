@@ -34,11 +34,11 @@ def get_aur_info(package_names: Sequence[str]) -> List[Dict]:
                 ["{}{}".format(query_prefix, parameter) for parameter in query_parameters])), timeout=5).text)[
                                     'results'])
         except requests.exceptions.RequestException:
-            logging.error("Connection problem while requesting AUR info for %s", str(package_names), exc_info=True)
-            raise ConnectionProblem()
+            logging.error("Connection problem while requesting AUR info for {}".format(package_names), exc_info=True)
+            raise ConnectionProblem("Connection problem while requesting AUR info for {}".format(package_names))
         except json.JSONDecodeError:
-            logging.error("Decoding problem while requesting AUR info for %s", str(package_names), exc_info=True)
-            raise InvalidInput()
+            logging.error("Decoding problem while requesting AUR info for {}".format(package_names), exc_info=True)
+            raise InvalidInput("Decoding problem while requesting AUR info for {}".format(package_names))
 
     return results_list
 
