@@ -1,0 +1,8 @@
+language: python
+python:
+  - "3.6"
+install:
+  - python setup.py install
+script:
+  - python src/unit_tests/test_parse_args.py
+  - python src/unit_tests/test_split_query_helper.py
