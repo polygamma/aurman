@@ -6,3 +6,5 @@ install:
 script:
   - python src/unit_tests/test_parse_args.py
   - python src/unit_tests/test_split_query_helper.py
+notifications:
+  email: false
