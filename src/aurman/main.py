@@ -51,6 +51,7 @@ def process(args):
     noedit = 'noedit' in grouped_args['aurman']
     devel = 'devel' in grouped_args['aurman']
     only_unfulfilled_deps = 'deep_search' not in grouped_args['aurman']
+    pgp_fetch = 'pgp_fetch' in grouped_args['aurman']
 
     # do not allow -y without -u
     if ('y' in grouped_args['S'] or 'refresh' in grouped_args['S']) and not sysupgrade:
@@ -116,13 +117,11 @@ def process(args):
             package.fetch_pkgbuild()
         try:
             for package in upstream_system.aur_packages_list:
-                if not noedit:
-                    package.show_pkgbuild()
-                package.search_and_fetch_pgp_keys()
+                package.show_pkgbuild(noedit)
+                package.search_and_fetch_pgp_keys(pgp_fetch)
             for package in upstream_system.devel_packages_list:
-                if not noedit:
-                    package.show_pkgbuild()
-                package.search_and_fetch_pgp_keys()
+                package.show_pkgbuild(noedit)
+                package.search_and_fetch_pgp_keys(pgp_fetch)
         except InvalidInput:
             return
         for package in upstream_system.devel_packages_list:
@@ -225,9 +224,8 @@ def process(args):
             package.fetch_pkgbuild()
         try:
             for package in chosen_solution:
-                if not noedit:
-                    package.show_pkgbuild()
-                package.search_and_fetch_pgp_keys()
+                package.show_pkgbuild(noedit)
+                package.search_and_fetch_pgp_keys(pgp_fetch)
         except InvalidInput:
             return
 

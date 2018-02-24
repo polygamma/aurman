@@ -512,9 +512,11 @@ class Package:
             with open(os.path.join(git_aurman_dir, ".reviewed"), "w") as f:
                 f.write("0")
 
-    def search_and_fetch_pgp_keys(self):
+    def search_and_fetch_pgp_keys(self, fetch_always: bool = False):
         """
         Searches for not imported pgp keys of this package and fetches them
+
+        :param fetch_always:    True if the keys should be fetched without asking the user, False otherwise
         """
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
 
@@ -530,16 +532,18 @@ class Package:
             is_key_known = run("gpg --list-public-keys {}".format(pgp_key), shell=True, stdout=DEVNULL,
                                stderr=DEVNULL).returncode == 0
             if not is_key_known:
-                if ask_user(
+                if fetch_always or ask_user(
                         "PGP Key {} found in PKGBUILD of {} and is not known yet. Do you want to import the key?".format(
                             pgp_key, self.name), True):
                     if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
                         logging.error("Import PGP key {} failed.".format(pgp_key))
                         raise ConnectionProblem("Import PGP key {} failed.".format(pgp_key))
 
-    def show_pkgbuild(self):
+    def show_pkgbuild(self, no_edit: bool = False):
         """
         Lets the user review and edit unreviewed PKGBUILD and install files of this package
+
+        :param no_edit:     True if the user is just fine with the changes without showing them, False otherwise
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
@@ -578,38 +582,41 @@ class Package:
                 relevant_files.append(file)
 
         # check if there are changes, if there are, ask the user if he wants to see them
-        for file in relevant_files:
-            if os.path.isfile(os.path.join(git_aurman_dir, file)):
-                if run("git diff --no-index --quiet '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
-                       shell=True, cwd=package_dir).returncode == 1:
-                    if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
-                        run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
-                            shell=True, cwd=package_dir)
-                        changes_seen = True
+        if not no_edit:
+            for file in relevant_files:
+                if os.path.isfile(os.path.join(git_aurman_dir, file)):
+                    if run("git diff --no-index --quiet '" + "' '".join(
+                            [os.path.join(git_aurman_dir, file), file]) + "'",
+                           shell=True, cwd=package_dir).returncode == 1:
+                        if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
+                            run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
+                                shell=True, cwd=package_dir)
+                            changes_seen = True
+                        else:
+                            changes_seen = False
                     else:
                         changes_seen = False
                 else:
-                    changes_seen = False
-            else:
-                if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
-                    run("git diff --no-index '" + "' '".join([os.path.join("/dev", "null"), file]) + "'", shell=True,
-                        cwd=package_dir)
+                    if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
+                        run("git diff --no-index '" + "' '".join([os.path.join("/dev", "null"), file]) + "'",
+                            shell=True,
+                            cwd=package_dir)
 
-                    changes_seen = True
-                else:
-                    changes_seen = False
+                        changes_seen = True
+                    else:
+                        changes_seen = False
 
-            # if the user wanted to see changes, ask, if he wants to edit the file
-            if changes_seen:
-                if ask_user("Do you want to edit " + file + "?", False):
-                    if run(Package.default_editor_path + " " + os.path.join(package_dir, file),
-                           shell=True).returncode != 0:
-                        logging.error("Editing {} failed".format(file))
-                        raise InvalidInput("Editing {} failed".format(file))
+                # if the user wanted to see changes, ask, if he wants to edit the file
+                if changes_seen:
+                    if ask_user("Do you want to edit " + file + "?", False):
+                        if run(Package.default_editor_path + " " + os.path.join(package_dir, file),
+                               shell=True).returncode != 0:
+                            logging.error("Editing {} failed".format(file))
+                            raise InvalidInput("Editing {} failed".format(file))
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
-        if ask_user("Are you fine with using the files of {}?".format(self.name), True):
+        if no_edit or ask_user("Are you fine with using the files of {}?".format(self.name), True):
             with open(reviewed_file, "w") as f:
                 f.write("1")
 
