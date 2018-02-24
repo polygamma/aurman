@@ -114,14 +114,17 @@ def process(args):
             package.fetch_pkgbuild()
         for package in upstream_system.devel_packages_list:
             package.fetch_pkgbuild()
-        if not noedit:
-            try:
-                for package in upstream_system.aur_packages_list:
+        try:
+            for package in upstream_system.aur_packages_list:
+                if not noedit:
                     package.show_pkgbuild()
-                for package in upstream_system.devel_packages_list:
+                package.search_and_fetch_pgp_keys()
+            for package in upstream_system.devel_packages_list:
+                if not noedit:
                     package.show_pkgbuild()
-            except InvalidInput:
-                return
+                package.search_and_fetch_pgp_keys()
+        except InvalidInput:
+            return
         for package in upstream_system.devel_packages_list:
             package.get_devel_version()
 
@@ -220,12 +223,13 @@ def process(args):
         print("looking for new pkgbuilds and fetch them...")
         for package in chosen_solution:
             package.fetch_pkgbuild()
-        if not noedit:
-            try:
-                for package in chosen_solution:
+        try:
+            for package in chosen_solution:
+                if not noedit:
                     package.show_pkgbuild()
-            except InvalidInput:
-                return
+                package.search_and_fetch_pgp_keys()
+        except InvalidInput:
+            return
 
     for package in chosen_solution:
         package.build()
