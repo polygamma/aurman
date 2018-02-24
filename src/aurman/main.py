@@ -52,6 +52,7 @@ def process(args):
     devel = 'devel' in grouped_args['aurman']
     only_unfulfilled_deps = 'deep_search' not in grouped_args['aurman']
     pgp_fetch = 'pgp_fetch' in grouped_args['aurman']
+    noconfirm = 'noconfirm' in grouped_args['S']
 
     # do not allow -y without -u
     if ('y' in grouped_args['S'] or 'refresh' in grouped_args['S']) and not sysupgrade:
@@ -177,7 +178,7 @@ def process(args):
         return
 
     try:
-        installed_system.show_solution_differences_to_user(chosen_solution)
+        installed_system.show_solution_differences_to_user(chosen_solution, noconfirm)
     except InvalidInput:
         return
 
