@@ -512,6 +512,31 @@ class Package:
             with open(os.path.join(git_aurman_dir, ".reviewed"), "w") as f:
                 f.write("0")
 
+    def search_and_fetch_pgp_keys(self):
+        """
+        Searches for not imported pgp keys of this package and fetches them
+        """
+        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+
+        # if package dir does not exist - abort
+        if not os.path.isdir(package_dir):
+            logging.error("Package dir of {} does not exist".format(self.name))
+            raise InvalidInput("Package dir of {} does not exist".format(self.name))
+
+        pgp_keys = [line.split("=")[1].strip() for line in makepkg("--printsrcinfo", True, package_dir) if
+                    "validpgpkeys =" in line]
+
+        for pgp_key in pgp_keys:
+            is_key_known = run("gpg --list-public-keys {}".format(pgp_key), shell=True, stdout=DEVNULL,
+                               stderr=DEVNULL).returncode == 0
+            if not is_key_known:
+                if ask_user(
+                        "PGP Key {} found in PKGBUILD of {} and is not known yet. Do you want to import the key?".format(
+                            pgp_key, self.name), True):
+                    if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
+                        logging.error("Import PGP key {} failed.".format(pgp_key))
+                        raise ConnectionProblem("Import PGP key {} failed.".format(pgp_key))
+
     def show_pkgbuild(self):
         """
         Lets the user review and edit unreviewed PKGBUILD and install files of this package
