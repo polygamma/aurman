@@ -217,12 +217,12 @@ def process(args):
     # build and install aur packages
     print("looking for new pkgbuilds and fetch them...")
     for package in chosen_solution:
-        if package.type_of is PossibleTypes.DEVEL_PACKAGE:
+        if devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
             continue
         package.fetch_pkgbuild()
     try:
         for package in chosen_solution:
-            if package.type_of is PossibleTypes.DEVEL_PACKAGE:
+            if devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                 continue
             package.show_pkgbuild(noedit)
             package.search_and_fetch_pgp_keys(pgp_fetch)
