@@ -418,11 +418,12 @@ class Package:
                                         Every inner list contains the packages for the solution topologically sorted
         """
 
-        current_solutions = [DepAlgoSolution([], [], set())]
-        found_problems = set()
         deps_to_deep_check = set()
 
         while True:
+            current_solutions = [DepAlgoSolution([], [], set())]
+            found_problems = set()
+
             # calc solutions
             for package in packages:
                 new_solutions = []
@@ -447,9 +448,6 @@ class Package:
             # if there are no new deps to deep check, we are done, too
             if len(deps_to_deep_check) == deps_to_deep_check_length:
                 break
-
-            found_problems = set()
-            current_solutions = [DepAlgoSolution([], [], set())]
 
         # output for user
         if found_problems and not current_solutions:
@@ -722,6 +720,9 @@ class Package:
 
 
 class System:
+    """
+    Class representing a "system", which is a collection of Arch Linux packages.
+    """
 
     @staticmethod
     def get_installed_packages() -> List['Package']:
