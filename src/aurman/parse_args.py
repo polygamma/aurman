@@ -16,7 +16,7 @@ parameters = {
         'u', 'sysupgrade', 'needed'
     ),
     ('aurman',): (
-        'noedit', 'devel', 'pk', 'deep_search'
+        'noedit', 'devel', 'pk', 'deep_search', 'pgp_fetch'
     )
 }
 

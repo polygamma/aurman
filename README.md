@@ -20,6 +20,8 @@ There are three aurman exclusive flags.
 should almost never be needed, but if aurman is not able to find a solution to install packages, try rerunning aurman with this flag.
 but be warned, it could take a few minutes to find solutions.
 
+- *--pgp_fetch* - fetches needed pgp keys without asking the user
+
 - **Features**
 
   - threaded sudo loop in the background so you only have to enter your password once
@@ -35,3 +37,4 @@ but be warned, it could take a few minutes to find solutions.
   - showing errors of malformed aur packages: ![screenshot from 2018-02-23 18-14-03](https://user-images.githubusercontent.com/20651500/36606912-593c8c52-18c5-11e8-85f2-d38895c60e70.png)
   - deep_search flag yields new possibilities: ![screenshot from 2018-02-23 18-16-18](https://user-images.githubusercontent.com/20651500/36607016-aa9736e2-18c5-11e8-9684-59a4f3352746.png)
   - showing which changes will be made to the system: ![screenshot from 2018-02-23 18-17-45](https://user-images.githubusercontent.com/20651500/36607080-def95582-18c5-11e8-9030-df28efc2d180.png)
+  - looking for needed pgp keys: ![screenshot from 2018-02-24 12-56-39](https://user-images.githubusercontent.com/20651500/36630164-32ba902c-1962-11e8-9cd5-044785660f21.png)
