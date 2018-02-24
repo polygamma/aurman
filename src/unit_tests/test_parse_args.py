@@ -36,13 +36,13 @@ class TestParse_args(TestCase):
             parse_args("k".split())
 
     def test_group_args(self):
-        self.assertEqual(("S", {'aurman': {"u": [], "packages": ["a", "b"], "needed": []},
+        self.assertEqual(("S", {'aurman': {"u": [], "pk": ["a", "b"], "needed": []},
                                 'S': {"y": [], "u": [], "needed": []}, 'U': {}, 'other': {}}),
-                         group_args("-Syu --packages a b --needed".split()))
+                         group_args("-Syu --pk a b --needed".split()))
 
-        self.assertEqual(("S", {'aurman': {"u": [], "packages": ["a", "b"], "needed": []},
+        self.assertEqual(("S", {'aurman': {"u": [], "pk": ["a", "b"], "needed": []},
                                 'S': {"y": [], "u": [], "needed": [], "noconfirm": []}, 'U': {"noconfirm": []},
-                                'other': {}}), group_args("-Syu --packages a b --needed --noconfirm".split()))
+                                'other': {}}), group_args("-Syu --pk a b --needed --noconfirm".split()))
 
         self.assertEqual(("R", {'aurman': {}, 'S': {}, 'U': {}, 'other': {"s": [], "c": [], "gg": ["a"]}}),
                          group_args("-Rsc --gg a".split()))
@@ -50,13 +50,13 @@ class TestParse_args(TestCase):
         self.assertEqual(("remove", {'aurman': {}, 'S': {}, 'U': {}, 'other': {"s": [], "c": [], "gg": ["a"]}}),
                          group_args("--remove -sc --gg a".split()))
 
-        self.assertEqual(("sync", {'aurman': {"u": [], "packages": ["a", "b"], "needed": []},
+        self.assertEqual(("sync", {'aurman': {"u": [], "pk": ["a", "b"], "needed": []},
                                    'S': {"y": [], "u": [], "needed": []}, 'U': {}, 'other': {}}),
-                         group_args("-yu --sync --packages a b --needed".split()))
+                         group_args("-yu --sync --pk a b --needed".split()))
 
-        self.assertEqual(("sync", {'aurman': {"u": [], "packages": ["a", "b"], "needed": []},
+        self.assertEqual(("sync", {'aurman': {"u": [], "pk": ["a", "b"], "needed": []},
                                    'S': {"y": [], "u": [], "needed": []}, 'U': {}, 'other': {"t": []}}),
-                         group_args("-yu --sync --packages a b --needed -t".split()))
+                         group_args("-yu --sync --pk a b --needed -t".split()))
 
 
 if __name__ == '__main__':
