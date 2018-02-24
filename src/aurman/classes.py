@@ -13,6 +13,9 @@ from aurman.wrappers import expac, makepkg, pacman
 
 
 class PossibleTypes(Enum):
+    """
+    Enum containing the possible types of packages
+    """
     REPO_PACKAGE = auto()
     AUR_PACKAGE = auto()
     DEVEL_PACKAGE = auto()
@@ -20,19 +23,31 @@ class PossibleTypes(Enum):
 
 
 class DepAlgoSolution:
+    """
+    Class used to track solutions while solving the dependency problem
+    """
+
     def __init__(self, packages_in_solution, visited_packages, visited_names):
         self.packages_in_solution: List['Package'] = packages_in_solution
         self.visited_packages: List['Package'] = visited_packages
-        self.visited_names: Set['str'] = visited_names
-        self.is_valid = True
+        self.visited_names: Set[str] = visited_names
+        self.is_valid: bool = True  # may be set to False by the algorithm in case of conflicts, dep-cycles, ...
 
 
 class DepAlgoFoundProblems:
+    """
+    Base class for the possible problems which may occur during solving the dependency problem
+    """
+
     def get_relevant_packages(self) -> Iterable['Package']:
         return []
 
 
 class DepAlgoCycle(DepAlgoFoundProblems):
+    """
+    Problem class for dependency cycles
+    """
+
     def __init__(self, cycle_packages):
         self.cycle_packages: List['Package'] = cycle_packages
 
@@ -51,6 +66,10 @@ class DepAlgoCycle(DepAlgoFoundProblems):
 
 
 class DepAlgoConflict(DepAlgoFoundProblems):
+    """
+    Problem class for conflicts
+    """
+
     def __init__(self, conflicting_packages, way_to_conflict):
         self.conflicting_packages: Set['Package'] = conflicting_packages
         self.way_to_conflict: List['Package'] = way_to_conflict
@@ -72,6 +91,10 @@ class DepAlgoConflict(DepAlgoFoundProblems):
 
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
+    """
+    Problem class for dependencies without at least one provider
+    """
+
     def __init__(self, dep_not_provided, package):
         self.dep_not_provided: str = dep_not_provided
         self.package: 'Package' = package
@@ -93,6 +116,9 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
 
 
 class Package:
+    """
+    Class representing Arch Linux packages
+    """
     # default editor path
     default_editor_path = os.environ.get("EDITOR", os.path.join("usr", "bin", "nano"))
     # directory of the cache
@@ -312,6 +338,7 @@ class Package:
         else:
             is_conflict = False
 
+        # copy solution and add self to visited packages, maybe flag as invalid
         solution = deepcopy(solution)
         solution.visited_packages.append(self)
         if is_conflict:
@@ -345,17 +372,18 @@ class Package:
             finished_solutions = [solution for solution in current_solutions if dep in solution.visited_names]
             not_finished_solutions = [solution for solution in current_solutions if dep not in solution.visited_names]
 
+            # check if dep provided by one of the packages already in a solution
             new_not_finished_solutions = []
             for solution in not_finished_solutions:
                 solution.visited_names.add(dep)
                 sol_system = System(solution.packages_in_solution)
-                # check if dep provided by one of the packages already in the solution
                 if sol_system.provided_by(dep):
                     finished_solutions.append(solution)
                 else:
                     new_not_finished_solutions.append(solution)
             not_finished_solutions = new_not_finished_solutions
 
+            # calc and append new solutions
             current_solutions = finished_solutions
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
@@ -369,9 +397,11 @@ class Package:
             for problem in copy(found_problems):
                 found_problems.remove(problem)
 
+        # add self to packages in solution, those are always topologically sorted
         for solution in current_solutions:
             solution.packages_in_solution.append(self)
 
+        # may contain invalid solutions !!!
         return current_solutions
 
     @staticmethod
@@ -393,6 +423,7 @@ class Package:
         deps_to_deep_check = set()
 
         while True:
+            # calc solutions
             for package in packages:
                 new_solutions = []
                 for solution in current_solutions:
@@ -401,8 +432,10 @@ class Package:
                                                           only_unfulfilled_deps, deps_to_deep_check))
                 current_solutions = new_solutions
 
+            # delete invalid solutions
             current_solutions = [solution for solution in current_solutions if solution.is_valid]
 
+            # in case of at least one solution, we are done
             if current_solutions:
                 break
 
@@ -410,6 +443,8 @@ class Package:
             for problem in found_problems:
                 problem_packages_names = set([package.name for package in problem.get_relevant_packages()])
                 deps_to_deep_check |= problem_packages_names
+
+            # if there are no new deps to deep check, we are done, too
             if len(deps_to_deep_check) == deps_to_deep_check_length:
                 break
 
@@ -616,6 +651,12 @@ class Package:
 
     @staticmethod
     def get_build_dir(package_dir):
+        """
+        Gets the build directoy, if it is different from the package dir
+
+        :param package_dir:     The package dir of the package
+        :return:                The build dir in case there is one, the package dir otherwise
+        """
         makepkg_conf = os.path.join("/etc", "makepkg.conf")
         if not os.path.isfile(makepkg_conf):
             logging.error("makepkg.conf not found")
@@ -631,7 +672,14 @@ class Package:
         else:
             return package_dir
 
-    def get_package_install_file(self, build_dir: str, build_version: str) -> Union[str, None]:
+    def get_package_file_to_install(self, build_dir: str, build_version: str) -> Union[str, None]:
+        """
+        Gets the .pkg. file of the package to install
+
+        :param build_dir:       Build dir of the package
+        :param build_version:   Build version to look for
+        :return:                The name of the package file to install, None if there is none
+        """
         files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
         for file in files_in_build_dir:
             if file.startswith(self.name + "-" + build_version + "-") and ".pkg." in \
@@ -641,20 +689,29 @@ class Package:
             return None
 
     def build(self):
+        """
+        Build this package
+
+        """
         # check if build needed
         build_version = self.version
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         build_dir = Package.get_build_dir(package_dir)
 
-        if self.get_package_install_file(build_dir, build_version) is None:
+        if self.get_package_file_to_install(build_dir, build_version) is None:
             makepkg("-cf --noconfirm", False, package_dir)
 
     def install(self, args_as_string: str):
+        """
+        Install this package
+
+        :param args_as_string: Args for pacman
+        """
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
 
         # get name of package install file
         build_version = self.version_from_srcinfo()
-        package_install_file = self.get_package_install_file(build_dir, build_version)
+        package_install_file = self.get_package_file_to_install(build_dir, build_version)
 
         if package_install_file is None:
             logging.error("package file of %s not available", str(self.name))
