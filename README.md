@@ -42,7 +42,7 @@ but be warned, it could take a few minutes to find solutions.
   - distinction between explicitly and implicitly installed packages
   - let the user see and edit all needed PKGBUILDs before any of the building of AUR packages starts
   - fetching of needed pgp keys for package building
-  - pacman --search for repo and aur packages
+  - pacman --search for repo and aur packages (aur results sorted by user votes)
 
 ## Screenshots
 
@@ -60,3 +60,6 @@ but be warned, it could take a few minutes to find solutions.
 
 #### looking for needed pgp keys:
 ![](https://user-images.githubusercontent.com/20651500/36630164-32ba902c-1962-11e8-9cd5-044785660f21.png)
+
+#### searching for packages:
+![](https://user-images.githubusercontent.com/20651500/36640527-d3124e70-1a20-11e8-9fa9-be90901dae0e.png)
