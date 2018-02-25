@@ -32,6 +32,8 @@ but be warned, it could take a few minutes to find solutions.
 
 - `--repo`: do things only for regular repo
 
+- `--domain name`: change the base url for aur requests *(https://aur.archlinux.org is the default)*
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once

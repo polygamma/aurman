@@ -19,7 +19,7 @@ parameters = {
         'y', 'refresh'
     ),
     ('aurman',): (
-        'noedit', 'devel', 'pk', 'deep_search', 'pgp_fetch', 'keyserver', 'aur', 'repo'
+        'noedit', 'devel', 'pk', 'deep_search', 'pgp_fetch', 'keyserver', 'aur', 'repo', 'domain'
     )
 }
 
