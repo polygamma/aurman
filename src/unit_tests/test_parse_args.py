@@ -40,7 +40,7 @@ class TestParse_args(TestCase):
                                 'S': {"y": [], "u": [], "needed": []}, 'U': {}, 'other': {}}),
                          group_args("-Syu --pk a b --needed".split()))
 
-        self.assertEqual(("S", {'aurman': {"u": [], "pk": ["a", "b"], "needed": []},
+        self.assertEqual(("S", {'aurman': {"u": [], "pk": ["a", "b"], "needed": [], "noconfirm": []},
                                 'S': {"y": [], "u": [], "needed": [], "noconfirm": []}, 'U': {"noconfirm": []},
                                 'other': {}}), group_args("-Syu --pk a b --needed --noconfirm".split()))
 
