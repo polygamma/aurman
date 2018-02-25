@@ -4,19 +4,22 @@ from typing import Sequence, Dict, Tuple
 from aurman.own_exceptions import InvalidInput
 
 parameters = {
+    ('S', 'sync', 'U', 'upgrade', 'aurman'): (
+        'noconfirm',
+    ),
     ('S', 'sync', 'U', 'upgrade'): (
         'b', 'dbpath', 'r', 'root', 'v', 'verbose', 'arch', 'cachedir', 'color', 'config', 'debug', 'gpgdir', 'hookdir',
-        'logfile', 'noconfirm', 'confirm', 'd', 'nodeps', 'assume-installed', 'dbonly', 'noprogressbar', 'noscriptlet',
+        'logfile', 'confirm', 'd', 'nodeps', 'assume-installed', 'dbonly', 'noprogressbar', 'noscriptlet',
         'p', 'print', 'print-format', 'force', 'asdeps', 'asexplicit', 'ignore', 'ignoregroup'
-    ),
-    ('S', 'sync'): (
-        'y', 'refresh'
     ),
     ('aurman', 'S', 'sync'): (
         'u', 'sysupgrade', 'needed'
     ),
+    ('S', 'sync'): (
+        'y', 'refresh'
+    ),
     ('aurman',): (
-        'noedit', 'devel', 'pk', 'deep_search', 'pgp_fetch'
+        'noedit', 'devel', 'pk', 'deep_search', 'pgp_fetch', 'keyserver'
     )
 }
 

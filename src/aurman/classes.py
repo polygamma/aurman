@@ -512,11 +512,12 @@ class Package:
             with open(os.path.join(git_aurman_dir, ".reviewed"), "w") as f:
                 f.write("0")
 
-    def search_and_fetch_pgp_keys(self, fetch_always: bool = False):
+    def search_and_fetch_pgp_keys(self, fetch_always: bool = False, keyserver: str = None):
         """
         Searches for not imported pgp keys of this package and fetches them
 
         :param fetch_always:    True if the keys should be fetched without asking the user, False otherwise
+        :param keyserver:       keyserver to fetch the pgp keys from
         """
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
 
@@ -535,9 +536,15 @@ class Package:
                 if fetch_always or ask_user(
                         "PGP Key {} found in PKGBUILD of {} and is not known yet. Do you want to import the key?".format(
                             pgp_key, self.name), True):
-                    if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
-                        logging.error("Import PGP key {} failed.".format(pgp_key))
-                        raise ConnectionProblem("Import PGP key {} failed.".format(pgp_key))
+                    if keyserver is None:
+                        if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
+                            logging.error("Import PGP key {} failed.".format(pgp_key))
+                            raise ConnectionProblem("Import PGP key {} failed.".format(pgp_key))
+                    else:
+                        if run("gpg --keyserver {} --recv-keys {}".format(keyserver, pgp_key),
+                               shell=True).returncode != 0:
+                            logging.error("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
+                            raise ConnectionProblem("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
 
     def show_pkgbuild(self, noedit: bool = False):
         """

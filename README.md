@@ -26,6 +26,8 @@ but be warned, it could take a few minutes to find solutions.
 
 - `--pgp_fetch`: fetches needed pgp keys without asking the user
 
+- `--keyserver name`: you may specify a keyserver to fetch the pgp keys from
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
