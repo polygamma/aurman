@@ -8,6 +8,8 @@ import requests
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
 from aurman.wrappers import split_query_helper
 
+aur_domain = "https://aur.archlinux.org"
+
 
 def get_aur_info(package_names: Sequence[str], search: bool = False) -> List[Dict]:
     """
@@ -21,10 +23,10 @@ def get_aur_info(package_names: Sequence[str], search: bool = False) -> List[Dic
 
     max_query_length = 8000
     if not search:
-        query_url = "https://aur.archlinux.org/rpc/?v=5&type=info"
+        query_url = aur_domain + "/rpc/?v=5&type=info"
         query_prefix = "&arg[]="
     else:
-        query_url = "https://aur.archlinux.org/rpc/?v=5&type=search"
+        query_url = aur_domain + "/rpc/?v=5&type=search"
         query_prefix = "&arg="
     query_url_length = len(query_url.encode("utf8"))
     query_prefix_length = len(query_prefix.encode("utf8"))

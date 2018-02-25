@@ -2,6 +2,7 @@ import logging
 from copy import deepcopy
 from sys import argv
 
+import aurman.aur_utilities
 from aurman.classes import System, Package, PossibleTypes
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import group_args, args_to_string
@@ -67,6 +68,13 @@ def process(args):
             keyserver = grouped_args['aurman']['keyserver'][0]
         except IndexError:
             logging.error("You need to specify the name of the keyserver")
+            return
+
+    if 'domain' in grouped_args['aurman']:
+        try:
+            aurman.aur_utilities.aur_domain = grouped_args['aurman']['domain'][0]
+        except IndexError:
+            logging.error("You need to specify the domain")
             return
 
     # do not allow -y without -u
