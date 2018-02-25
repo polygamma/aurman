@@ -2,7 +2,6 @@ import logging
 from copy import deepcopy
 from sys import argv
 
-import aurman.aur_utilities
 from aurman.classes import System, Package, PossibleTypes
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import group_args, args_to_string
@@ -14,6 +13,8 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(fun
 
 
 def process(args):
+    import aurman.aur_utilities
+
     packages_of_user_names = []
     sudo_acquired = False
 

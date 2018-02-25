@@ -205,7 +205,7 @@ class Package:
             pacman_conf_lines = f.read().strip().splitlines()
 
         for line in pacman_conf_lines:
-            if "[" in line and "#" not in line:
+            if "[" in line and ("#" not in line or line.index("[") < line.index("#")):
                 repos.append(line[line.index("[") + 1:line.index("]")])
 
         return repos
