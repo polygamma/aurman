@@ -462,6 +462,7 @@ class Package:
         In cache_dir/package_base_name/.git/aurman will be copies of the last reviewed PKGBUILD and .install files
         In cache_dir/package_base_name/.git/aurman/.reviewed will be saved if the current PKGBUILD and .install files have been reviewed
         """
+        import aurman.aur_utilities
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         git_aurman_dir = os.path.join(package_dir, ".git", "aurman")
@@ -495,7 +496,7 @@ class Package:
                 raise InvalidInput("Creating package dir of {} failed".format(self.name))
 
             # clone repo
-            if run("git clone https://aur.archlinux.org/" + self.pkgbase + ".git", shell=True,
+            if run("git clone {}/".format(aurman.aur_utilities.aur_domain) + self.pkgbase + ".git", shell=True,
                    cwd=Package.cache_dir).returncode != 0:
                 logging.error("Cloning repo of {} failed".format(self.name))
                 raise ConnectionProblem("Cloning repo of {} failed".format(self.name))
