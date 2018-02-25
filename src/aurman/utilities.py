@@ -33,11 +33,18 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
 
         search_return = get_aur_info(found_names)
 
-        for ret_dict in sorted(search_return, key=lambda x: int(x['NumVotes']), reverse=True):
-            first_line = "aur/{} {} ({}, {})".format(ret_dict['Name'], ret_dict['Version'], ret_dict['NumVotes'],
-                                                     ret_dict['Popularity'])
+        for ret_dict in sorted(search_return, key=lambda x: float(x['Popularity']), reverse=True):
+            repo_with_slash = color_string((Colors.BOLD, Colors.LIGHT_MAGENTA, "aur/"))
+            name = color_string((Colors.BOLD, ret_dict['Name']))
+            if ret_dict['OutOfDate'] is None:
+                version = color_string((Colors.BOLD, Colors.GREEN, ret_dict['Version']))
+            else:
+                version = color_string((Colors.BOLD, Colors.RED, ret_dict['Version']))
+
+            first_line = "{}{} {} ({}, {})".format(repo_with_slash, name, version, ret_dict['NumVotes'],
+                                                   ret_dict['Popularity'])
             if ret_dict['Name'] in installed_system.all_packages_dict:
-                first_line += " [installed]"
+                first_line += " {}".format(color_string((Colors.BOLD, Colors.CYAN, "[installed]")))
             print(first_line)
             print("    {}".format(ret_dict['Description']))
 

@@ -55,6 +55,14 @@ def process(args):
     pgp_fetch = 'pgp_fetch' in grouped_args['aurman']
     noconfirm = 'noconfirm' in grouped_args['aurman']
     search = ('s' in grouped_args['aurman']) or ('search' in grouped_args['aurman'])
+    search_arguments = []
+    if search:
+        if 's' in grouped_args['aurman']:
+            search_arguments.extend(grouped_args['aurman']['s'])
+        if 'search' in grouped_args['aurman']:
+            search_arguments.extend(grouped_args['aurman']['search'])
+        search_arguments.extend(packages_of_user_names)
+
     aur = 'aur' in grouped_args['aurman']  # do only aur things
     repo = 'repo' in grouped_args['aurman']  # do only repo things
     if repo and aur:
@@ -95,9 +103,13 @@ def process(args):
         else:
             installed_system = None
         relevant_args = deepcopy(grouped_args['S'])
-        relevant_args[''] = packages_of_user_names
+        if 's' in relevant_args:
+            del relevant_args['s']
+        if 'search' in relevant_args:
+            del relevant_args['search']
+        relevant_args['s'] = search_arguments
         relevant_args[operation] = []
-        search_and_print(packages_of_user_names, installed_system, args_to_string(relevant_args), repo, aur)
+        search_and_print(search_arguments, installed_system, args_to_string(relevant_args), repo, aur)
         return
 
     # categorize user input
