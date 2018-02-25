@@ -59,9 +59,12 @@ def process(args):
     if search:
         if 's' in grouped_args['aurman']:
             search_arguments.extend(grouped_args['aurman']['s'])
+            del grouped_args['S']['s']
         if 'search' in grouped_args['aurman']:
             search_arguments.extend(grouped_args['aurman']['search'])
+            del grouped_args['S']['search']
         search_arguments.extend(packages_of_user_names)
+        grouped_args['S']['s'] = search_arguments
 
     aur = 'aur' in grouped_args['aurman']  # do only aur things
     repo = 'repo' in grouped_args['aurman']  # do only repo things
@@ -102,12 +105,7 @@ def process(args):
             installed_system = System(System.get_installed_packages())
         else:
             installed_system = None
-        relevant_args = deepcopy(grouped_args['S'])
-        if 's' in relevant_args:
-            del relevant_args['s']
-        if 'search' in relevant_args:
-            del relevant_args['search']
-        relevant_args['s'] = search_arguments
+        relevant_args = grouped_args['S']
         relevant_args[operation] = []
         search_and_print(search_arguments, installed_system, args_to_string(relevant_args), repo, aur)
         return
