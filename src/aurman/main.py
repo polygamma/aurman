@@ -56,7 +56,11 @@ def process(args):
     if 'keyserver' not in grouped_args['aurman']:
         keyserver = None
     else:
-        keyserver = grouped_args['aurman']['keyserver'][0]
+        try:
+            keyserver = grouped_args['aurman']['keyserver'][0]
+        except IndexError:
+            logging.error("You need to specify the name of the keyserver")
+            return
 
     # do not allow -y without -u
     if ('y' in grouped_args['S'] or 'refresh' in grouped_args['S']) and not sysupgrade:
