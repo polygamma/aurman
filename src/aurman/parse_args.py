@@ -8,9 +8,9 @@ parameters = {
         'noconfirm',
     ),
     ('S', 'sync', 'U', 'upgrade'): (
-        'b', 'dbpath', 'r', 'root', 'v', 'verbose', 'arch', 'cachedir', 'color', 'config', 'debug', 'gpgdir', 'hookdir',
-        'logfile', 'confirm', 'd', 'nodeps', 'assume-installed', 'dbonly', 'noprogressbar', 'noscriptlet',
-        'p', 'print', 'print-format', 'force', 'asdeps', 'asexplicit', 'ignore', 'ignoregroup'
+        'r', 'root', 'v', 'verbose', 'arch', 'cachedir', 'color', 'debug', 'gpgdir', 'hookdir', 'logfile', 'confirm',
+        'd', 'nodeps', 'assume-installed', 'dbonly', 'noprogressbar', 'noscriptlet', 'p', 'print', 'print-format',
+        'force', 'asdeps', 'asexplicit', 'ignore', 'ignoregroup'
     ),
     ('aurman', 'S', 'sync'): (
         'u', 'sysupgrade', 'needed', 's', 'search'
