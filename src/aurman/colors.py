@@ -20,6 +20,8 @@ class Colors:
     LIGHT_MAGENTA = "\033[95m"
     LIGHT_CYAN = "\033[96m"
     WHITE = "\033[97m"
+    BOLD = "\033[1m"
+    DIM = "\033[2m"
 
 
 def color_string(args: Sequence[str]) -> str:
