@@ -5,6 +5,8 @@ from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List, Tuple, Set, Union, Iterable
 
+from pycman.config import PacmanConfig
+
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.colors import Colors, color_string
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
@@ -194,21 +196,7 @@ class Package:
 
         :return:    a list containing the known repos (ordered by occurrence in pacman.conf)
         """
-        repos = []
-
-        pacman_conf = os.path.join("/etc", "pacman.conf")
-        if not os.path.isfile(pacman_conf):
-            logging.error("pacman.conf not found")
-            raise InvalidInput("pacman.conf not found")
-
-        with open(pacman_conf, "r") as f:
-            pacman_conf_lines = f.read().strip().splitlines()
-
-        for line in pacman_conf_lines:
-            if "[" in line and ("#" not in line or line.index("[") < line.index("#")):
-                repos.append(line[line.index("[") + 1:line.index("]")])
-
-        return repos
+        return [db.name for db in PacmanConfig(conf="/etc/pacman.conf").initialize_alpm().get_syncdbs()]
 
     @staticmethod
     def get_packages_from_expac(expac_operation: str, packages_names: Sequence[str], packages_type: PossibleTypes) -> \
