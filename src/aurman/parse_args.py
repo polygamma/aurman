@@ -13,13 +13,13 @@ parameters = {
         'p', 'print', 'print-format', 'force', 'asdeps', 'asexplicit', 'ignore', 'ignoregroup'
     ),
     ('aurman', 'S', 'sync'): (
-        'u', 'sysupgrade', 'needed'
+        'u', 'sysupgrade', 'needed', 's', 'search'
     ),
     ('S', 'sync'): (
         'y', 'refresh'
     ),
     ('aurman',): (
-        'noedit', 'devel', 'pk', 'deep_search', 'pgp_fetch', 'keyserver'
+        'noedit', 'devel', 'pk', 'deep_search', 'pgp_fetch', 'keyserver', 'aur', 'repo'
     )
 }
 
