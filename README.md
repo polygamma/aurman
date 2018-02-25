@@ -64,4 +64,4 @@ but be warned, it could take a few minutes to find solutions.
 ![](https://user-images.githubusercontent.com/20651500/36630164-32ba902c-1962-11e8-9cd5-044785660f21.png)
 
 #### searching for packages:
-![](https://user-images.githubusercontent.com/20651500/36640527-d3124e70-1a20-11e8-9fa9-be90901dae0e.png)
+![](https://user-images.githubusercontent.com/20651500/36643259-249bbccc-1a49-11e8-9fd6-aa752bc5b5ad.png)
