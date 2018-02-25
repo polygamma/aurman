@@ -3,10 +3,43 @@ import threading
 import time
 from pyalpm import vercmp
 from subprocess import run, DEVNULL
-from typing import Tuple
+from typing import Tuple, Sequence
 
+from aurman.aur_utilities import get_aur_info
 from aurman.colors import color_string, Colors
 from aurman.own_exceptions import InvalidInput
+
+
+def search_and_print(names: Sequence[str], installed_system, pacman_params: str, repo: bool, aur: bool):
+    """
+    Searches for something and prints the results
+
+    :param names:               The things to search for
+    :param installed_system:    A system containing the installed packages
+    :param pacman_params:       parameters for pacman as string
+    :param repo:                search only in repo
+    :param aur:                 search only in aur
+    """
+    if not names:
+        return
+
+    if not aur:
+        run("pacman {}".format(pacman_params), shell=True)
+
+    if not repo:
+        found_names = set(ret_dict['Name'] for ret_dict in get_aur_info([names[0]], True))
+        for i in range(1, len(names)):
+            found_names &= set(ret_dict['Name'] for ret_dict in get_aur_info([names[i]], True))
+
+        search_return = get_aur_info(found_names)
+
+        for ret_dict in sorted(search_return, key=lambda x: int(x['NumVotes']), reverse=True):
+            first_line = "aur/{} {} ({}, {})".format(ret_dict['Name'], ret_dict['Version'], ret_dict['NumVotes'],
+                                                     ret_dict['Popularity'])
+            if ret_dict['Name'] in installed_system.all_packages_dict:
+                first_line += " [installed]"
+            print(first_line)
+            print("    {}".format(ret_dict['Description']))
 
 
 def split_name_with_versioning(name: str) -> Tuple[str, str, str]:

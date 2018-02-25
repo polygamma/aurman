@@ -17,4 +17,12 @@ should almost never be needed, but if aurman is not able to find a solution to i
 but be warned, it could take a few minutes to find solutions.
 
 --pgp_fetch: fetches needed pgp keys without asking the user
+
+--keyserver name: you may specify a keyserver to fetch the pgp keys from
+
+--aur: do things only for aur
+
+--repo: do things only for regular repo
+
+--domain name: change the base url for aur requests (https://aur.archlinux.org is the default)
 """

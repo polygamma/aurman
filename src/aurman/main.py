@@ -2,11 +2,12 @@ import logging
 from copy import deepcopy
 from sys import argv
 
+import aurman.aur_utilities
 from aurman.classes import System, Package, PossibleTypes
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import group_args, args_to_string
 from aurman.print_help import help_to_print
-from aurman.utilities import acquire_sudo, version_comparison
+from aurman.utilities import acquire_sudo, version_comparison, search_and_print
 from aurman.wrappers import pacman
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -52,7 +53,29 @@ def process(args):
     devel = 'devel' in grouped_args['aurman']
     only_unfulfilled_deps = 'deep_search' not in grouped_args['aurman']
     pgp_fetch = 'pgp_fetch' in grouped_args['aurman']
-    noconfirm = 'noconfirm' in grouped_args['S']
+    noconfirm = 'noconfirm' in grouped_args['aurman']
+    search = ('s' in grouped_args['aurman']) or ('search' in grouped_args['aurman'])
+    aur = 'aur' in grouped_args['aurman']  # do only aur things
+    repo = 'repo' in grouped_args['aurman']  # do only repo things
+    if repo and aur:
+        logging.error("--repo and --aur is not what you want")
+        return
+
+    if 'keyserver' not in grouped_args['aurman']:
+        keyserver = None
+    else:
+        try:
+            keyserver = grouped_args['aurman']['keyserver'][0]
+        except IndexError:
+            logging.error("You need to specify the name of the keyserver")
+            return
+
+    if 'domain' in grouped_args['aurman']:
+        try:
+            aurman.aur_utilities.aur_domain = grouped_args['aurman']['domain'][0]
+        except IndexError:
+            logging.error("You need to specify the domain")
+            return
 
     # do not allow -y without -u
     if ('y' in grouped_args['S'] or 'refresh' in grouped_args['S']) and not sysupgrade:
@@ -65,11 +88,23 @@ def process(args):
         print(help_to_print)
         return
 
+    # if user just wants to search
+    if search:
+        if not repo:
+            installed_system = System(System.get_installed_packages())
+        else:
+            installed_system = None
+        relevant_args = deepcopy(grouped_args['S'])
+        relevant_args[''] = packages_of_user_names
+        relevant_args[operation] = []
+        search_and_print(packages_of_user_names, installed_system, args_to_string(relevant_args), repo, aur)
+        return
+
     # categorize user input
     for_us, for_pacman = Package.user_input_to_categories(packages_of_user_names)
 
     # in case of sysupgrade or packages relevant for pacman, call pacman
-    if sysupgrade or for_pacman:
+    if (sysupgrade or for_pacman) and not aur:
         if not sudo_acquired:
             acquire_sudo()
             sudo_acquired = True
@@ -82,7 +117,8 @@ def process(args):
         except InvalidInput:
             return
 
-    if not sysupgrade and not for_us:
+    # nothing to do for us
+    if (not sysupgrade and not for_us) or repo:
         return
 
     # delete -u --sysupgrade -y --refresh from -S dict
@@ -118,7 +154,7 @@ def process(args):
         try:
             for package in upstream_system.devel_packages_list:
                 package.show_pkgbuild(noedit)
-                package.search_and_fetch_pgp_keys(pgp_fetch)
+                package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
         except InvalidInput:
             return
         for package in upstream_system.devel_packages_list:
@@ -225,7 +261,7 @@ def process(args):
             if devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                 continue
             package.show_pkgbuild(noedit)
-            package.search_and_fetch_pgp_keys(pgp_fetch)
+            package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
     except InvalidInput:
         return
 
