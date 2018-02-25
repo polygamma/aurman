@@ -200,14 +200,31 @@ class Package:
         :param packages_type:       The type of the packages. PossibleTypes Enum value
         :return:                    List containing the packages
         """
+
+        # will contain the known repos in case of "-S" query
+        repos = []
+
         if "Q" in expac_operation:
             formatting = list("nvDHoPRewN")
+
         else:
             assert "S" in expac_operation
-            formatting = list("nvDHoPRe")
+            formatting = list("nvDHoPRer")
+
+            pacman_conf = os.path.join("/etc", "pacman.conf")
+            if not os.path.isfile(pacman_conf):
+                logging.error("pacman.conf not found")
+                raise InvalidInput("pacman.conf not found")
+
+            with open(pacman_conf, "r") as f:
+                pacman_conf_lines = f.read().strip().splitlines()
+
+            for line in pacman_conf_lines:
+                if "[" in line and "#" not in line:
+                    repos.append(line[line.index("[") + 1:line.index("]")])
 
         expac_return = expac(expac_operation, formatting, packages_names)
-        return_list = []
+        return_dict = {}
 
         for line in expac_return:
             splitted_line = line.split("?!")
@@ -236,21 +253,29 @@ class Package:
             else:
                 to_expand['pkgbase'] = splitted_line[7]
 
-            if len(splitted_line) >= 9:
+            if "Q" in expac_operation:
                 to_expand['install_reason'] = splitted_line[8]
                 to_expand['required_by'] = splitted_line[9].split()
+            else:
+                assert "S" in expac_operation
+                to_expand['repo'] = splitted_line[8]
+
+                if to_expand['name'] in return_dict and repos.index(return_dict[to_expand['name']].repo) > repos.index(
+                        to_expand['repo']):
+                    continue
 
             if to_expand['name'] in to_expand['conflicts']:
                 to_expand['conflicts'].remove(to_expand['name'])
 
-            return_list.append(Package(**to_expand))
+            return_dict[to_expand['name']] = Package(**to_expand)
 
-        return return_list
+        return list(return_dict.values())
 
     def __init__(self, name: str, version: str, depends: Sequence[str] = None, conflicts: Sequence[str] = None,
                  required_by: Sequence[str] = None, optdepends: Sequence[str] = None, provides: Sequence[str] = None,
                  replaces: Sequence[str] = None, pkgbase: str = None, install_reason: str = None,
-                 makedepends: Sequence[str] = None, checkdepends: Sequence[str] = None, type_of: PossibleTypes = None):
+                 makedepends: Sequence[str] = None, checkdepends: Sequence[str] = None, type_of: PossibleTypes = None,
+                 repo: str = None):
         self.name = name  # %n
         self.version = version  # %v
         self.depends = depends  # %D
@@ -264,6 +289,7 @@ class Package:
         self.makedepends = makedepends  # aur only
         self.checkdepends = checkdepends  # aur only
         self.type_of = type_of  # PossibleTypes Enum value
+        self.repo = repo  # %r (only useful for upstream repo packages)
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.name == other.name and self.version == other.version
