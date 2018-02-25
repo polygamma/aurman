@@ -28,6 +28,10 @@ but be warned, it could take a few minutes to find solutions.
 
 - `--keyserver name`: you may specify a keyserver to fetch the pgp keys from
 
+- `--aur`: do things only for aur
+
+- `--repo`: do things only for regular repo
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
@@ -38,6 +42,7 @@ but be warned, it could take a few minutes to find solutions.
   - distinction between explicitly and implicitly installed packages
   - let the user see and edit all needed PKGBUILDs before any of the building of AUR packages starts
   - fetching of needed pgp keys for package building
+  - pacman --search for repo and aur packages
 
 ## Screenshots
 

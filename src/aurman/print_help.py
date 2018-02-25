@@ -19,4 +19,8 @@ but be warned, it could take a few minutes to find solutions.
 --pgp_fetch: fetches needed pgp keys without asking the user
 
 --keyserver name: you may specify a keyserver to fetch the pgp keys from
+
+--aur: do things only for aur
+
+--repo: do things only for regular repo
 """
