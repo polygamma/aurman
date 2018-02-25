@@ -188,6 +188,29 @@ class Package:
         return return_list
 
     @staticmethod
+    def get_known_repos() -> List[str]:
+        """
+        Returns the known repos from the pacman.conf
+
+        :return:    a list containing the known repos (ordered by occurrence in pacman.conf)
+        """
+        repos = []
+
+        pacman_conf = os.path.join("/etc", "pacman.conf")
+        if not os.path.isfile(pacman_conf):
+            logging.error("pacman.conf not found")
+            raise InvalidInput("pacman.conf not found")
+
+        with open(pacman_conf, "r") as f:
+            pacman_conf_lines = f.read().strip().splitlines()
+
+        for line in pacman_conf_lines:
+            if "[" in line and "#" not in line:
+                repos.append(line[line.index("[") + 1:line.index("]")])
+
+        return repos
+
+    @staticmethod
     def get_packages_from_expac(expac_operation: str, packages_names: Sequence[str], packages_type: PossibleTypes) -> \
             List['Package']:
         """
@@ -200,28 +223,13 @@ class Package:
         :param packages_type:       The type of the packages. PossibleTypes Enum value
         :return:                    List containing the packages
         """
-
-        # will contain the known repos in case of "-S" query
-        repos = []
-
         if "Q" in expac_operation:
             formatting = list("nvDHoPRewN")
-
+            repos = []
         else:
             assert "S" in expac_operation
             formatting = list("nvDHoPRer")
-
-            pacman_conf = os.path.join("/etc", "pacman.conf")
-            if not os.path.isfile(pacman_conf):
-                logging.error("pacman.conf not found")
-                raise InvalidInput("pacman.conf not found")
-
-            with open(pacman_conf, "r") as f:
-                pacman_conf_lines = f.read().strip().splitlines()
-
-            for line in pacman_conf_lines:
-                if "[" in line and "#" not in line:
-                    repos.append(line[line.index("[") + 1:line.index("]")])
+            repos = Package.get_known_repos()
 
         expac_return = expac(expac_operation, formatting, packages_names)
         return_dict = {}
