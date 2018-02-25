@@ -52,7 +52,11 @@ def process(args):
     devel = 'devel' in grouped_args['aurman']
     only_unfulfilled_deps = 'deep_search' not in grouped_args['aurman']
     pgp_fetch = 'pgp_fetch' in grouped_args['aurman']
-    noconfirm = 'noconfirm' in grouped_args['S']
+    noconfirm = 'noconfirm' in grouped_args['aurman']
+    if 'keyserver' not in grouped_args['aurman']:
+        keyserver = None
+    else:
+        keyserver = grouped_args['aurman']['keyserver'][0]
 
     # do not allow -y without -u
     if ('y' in grouped_args['S'] or 'refresh' in grouped_args['S']) and not sysupgrade:
@@ -118,7 +122,7 @@ def process(args):
         try:
             for package in upstream_system.devel_packages_list:
                 package.show_pkgbuild(noedit)
-                package.search_and_fetch_pgp_keys(pgp_fetch)
+                package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
         except InvalidInput:
             return
         for package in upstream_system.devel_packages_list:
@@ -225,7 +229,7 @@ def process(args):
             if devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                 continue
             package.show_pkgbuild(noedit)
-            package.search_and_fetch_pgp_keys(pgp_fetch)
+            package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
     except InvalidInput:
         return
 
