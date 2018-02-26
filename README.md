@@ -9,7 +9,7 @@
 ## Syntax
 
 ##### Usage
-aurman <operation> [ options ] [ target(s) ] - see also https://www.archlinux.org/pacman/pacman.8.html
+aurman < operation > [ options ] [ target(s) ] - see also https://www.archlinux.org/pacman/pacman.8.html
 
 ##### Description
 aurman is meant as a **pacman wrapper**.
