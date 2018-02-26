@@ -7,14 +7,42 @@
 **aurman-git** *(https://aur.archlinux.org/packages/aurman-git)*
 
 ## Syntax
-Pacman syntax with one exception: One has to put `--pk` in front of the packages,
-so for example:
 
-> aurman -Syu --pk package1 package2
+##### Usage
+aurman <operation> [ options ] [ target(s) ] - see also https://www.archlinux.org/pacman/pacman.8.html
 
-> aurman -R --pk package1 package2 -sc
+##### Description
+aurman is meant as a **pacman wrapper**.
+All pacman operations are supported, but calling aurman with an operation besides `--sync` or `-S` will **just pass the arguments to pacman**.
 
-There are also aurman exclusive flags.
+##### the following native pacman options for `--sync` or `-S` will be forwarded to pacman
+
+- `-r`, `--root`
+- `-v`, `--verbose`
+- `--cachedir`
+- `--color`
+- `--debug`
+- `--gpgdir`
+- `--hookdir`
+- `--logfile`
+- `--noconfirm`
+- `--confirm`
+- `--force`
+- `--asdeps`
+- `--asexplicit`
+- `--needed`
+- `-s`, `--search`
+- `-u`, `--sysupgrade`
+- `-y`, `--refresh`
+
+##### the following native pacman options for `--sync` or `-S` will also be used by aurman for aur packages
+
+- `--noconfirm`
+- `--needed`
+- `-s`, `--search`
+- `-u`, `--sysupgrade`
+
+##### aurman exclusive options for `--sync` or `-S`
 
 - `--noedit`: will not show changes of PKGBUILDs and .install files. just assumes you are okay with the changes.
 
@@ -30,7 +58,7 @@ but be warned, it could take a few minutes to find solutions.
 
 - `--aur`: do things only for aur
 
-- `--repo`: do things only for regular repo
+- `--repo`: do things only for regular repos
 
 - `--domain name`: change the base url for aur requests *(https://aur.archlinux.org is the default)*
 
@@ -49,19 +77,19 @@ but be warned, it could take a few minutes to find solutions.
 ## Screenshots
 
 #### dependency solving of complex packages:
-![](https://user-images.githubusercontent.com/20651500/36606841-2c28de78-18c5-11e8-8df7-c123536121db.png)
+![](https://user-images.githubusercontent.com/20651500/36660892-fbd4c0ea-1ad9-11e8-8496-16c9cb3000bb.png)
 
 #### showing errors of malformed aur packages:
-![](https://user-images.githubusercontent.com/20651500/36606912-593c8c52-18c5-11e8-85f2-d38895c60e70.png)
+![](https://user-images.githubusercontent.com/20651500/36660903-0a36518a-1ada-11e8-93ef-3c40c6eccc9a.png)
 
 #### deep_search flag yields new possibilities:
-![](https://user-images.githubusercontent.com/20651500/36607016-aa9736e2-18c5-11e8-9684-59a4f3352746.png)
+![](https://user-images.githubusercontent.com/20651500/36660920-139c17fa-1ada-11e8-9219-37c723915a88.png)
 
 #### showing which changes will be made to the system:
-![](https://user-images.githubusercontent.com/20651500/36607080-def95582-18c5-11e8-9030-df28efc2d180.png)
+![](https://user-images.githubusercontent.com/20651500/36660949-1f887d9c-1ada-11e8-9133-4bda3acb5e40.png)
 
 #### looking for needed pgp keys:
-![](https://user-images.githubusercontent.com/20651500/36630164-32ba902c-1962-11e8-9cd5-044785660f21.png)
+![](https://user-images.githubusercontent.com/20651500/36660952-20816aba-1ada-11e8-9e7e-fb5f223460ae.png)
 
 #### searching for packages:
-![](https://user-images.githubusercontent.com/20651500/36643259-249bbccc-1a49-11e8-9fd6-aa752bc5b5ad.png)
+![](https://user-images.githubusercontent.com/20651500/36660956-223b43c6-1ada-11e8-9178-eb106d73a81f.png)
