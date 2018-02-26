@@ -4,7 +4,7 @@ from sys import argv
 
 from aurman.classes import System, Package, PossibleTypes
 from aurman.own_exceptions import InvalidInput
-from aurman.parse_args import group_args, args_to_string
+from aurman.parse_args import PacmanOperations, parse_pacman_args
 from aurman.print_help import help_to_print
 from aurman.utilities import acquire_sudo, version_comparison, search_and_print
 from aurman.wrappers import pacman
@@ -15,88 +15,57 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(fun
 def process(args):
     import aurman.aur_utilities
 
-    packages_of_user_names = []
     sudo_acquired = False
 
     # parse parameters of user
     try:
-        operation, grouped_args = group_args(args)
+        pacman_args = parse_pacman_args(args)
     except InvalidInput:
         print(help_to_print)
         return
 
-    # delete own pk parameter. Was just for parsing.
-    if 'pk' in grouped_args['other']:
-        grouped_args['other'][''] = grouped_args['other']['pk']
-        del grouped_args['other']['pk']
-
-    elif 'pk' in grouped_args['aurman']:
-        packages_of_user_names = grouped_args['aurman']['pk']
-        del grouped_args['aurman']['pk']
-
     # if not -S or --sync, just redirect to pacman
-    if operation not in ['S', 'sync']:
-        relevant_args = grouped_args['other']
-        relevant_args[operation] = []
-        args_as_string = args_to_string(relevant_args)
+    if pacman_args.operation is not PacmanOperations.SYNC:
         try:
-            pacman(args_as_string, False)
+            pacman(" ".join(args), False)
         except InvalidInput:
             return
         finally:
             return
 
     # -S or --sync
-    # we got "packages_of_user_names" already
-    sysupgrade = ('u' in grouped_args['aurman']) or ('sysupgrade' in grouped_args['aurman'])
-    needed = 'needed' in grouped_args['aurman']
-    noedit = 'noedit' in grouped_args['aurman']
-    devel = 'devel' in grouped_args['aurman']
-    only_unfulfilled_deps = 'deep_search' not in grouped_args['aurman']
-    pgp_fetch = 'pgp_fetch' in grouped_args['aurman']
-    noconfirm = 'noconfirm' in grouped_args['aurman']
-    search = ('s' in grouped_args['aurman']) or ('search' in grouped_args['aurman'])
-    search_arguments = []
-    if search:
-        if 's' in grouped_args['aurman']:
-            search_arguments.extend(grouped_args['aurman']['s'])
-            del grouped_args['S']['s']
-        if 'search' in grouped_args['aurman']:
-            search_arguments.extend(grouped_args['aurman']['search'])
-            del grouped_args['S']['search']
-        search_arguments.extend(packages_of_user_names)
-        grouped_args['S']['s'] = search_arguments
+    packages_of_user_names = pacman_args.targets
+    sysupgrade = pacman_args.sysupgrade
+    needed = pacman_args.needed
+    noedit = pacman_args.noedit
+    devel = pacman_args.devel
+    only_unfulfilled_deps = not pacman_args.deep_search
+    pgp_fetch = pacman_args.pgp_fetch
+    noconfirm = pacman_args.noconfirm
+    search = pacman_args.search
 
-    aur = 'aur' in grouped_args['aurman']  # do only aur things
-    repo = 'repo' in grouped_args['aurman']  # do only repo things
+    aur = pacman_args.aur  # do only aur things
+    repo = pacman_args.repo  # do only repo things
     if repo and aur:
         logging.error("--repo and --aur is not what you want")
         return
 
-    if 'keyserver' not in grouped_args['aurman']:
-        keyserver = None
+    if pacman_args.keyserver:
+        keyserver = pacman_args.keyserver[0]
     else:
-        try:
-            keyserver = grouped_args['aurman']['keyserver'][0]
-        except IndexError:
-            logging.error("You need to specify the name of the keyserver")
-            return
+        keyserver = None
 
-    if 'domain' in grouped_args['aurman']:
-        try:
-            aurman.aur_utilities.aur_domain = grouped_args['aurman']['domain'][0]
-        except IndexError:
-            logging.error("You need to specify the domain")
-            return
+    if pacman_args.domain:
+        aurman.aur_utilities.aur_domain = pacman_args.domain[0]
 
     # do not allow -y without -u
-    if ('y' in grouped_args['S'] or 'refresh' in grouped_args['S']) and not sysupgrade:
+    if pacman_args.refresh and not sysupgrade:
         logging.info("-y without -u is not allowed!")
         return
 
     # unrecognized parameters
-    if grouped_args['other']:
-        logging.info("The following parameters are not recognized yet: {}".format(grouped_args['other']))
+    if pacman_args.invalid_args:
+        logging.info("The following parameters are not recognized yet: {}".format(pacman_args.invalid_args))
         print(help_to_print)
         return
 
@@ -106,9 +75,7 @@ def process(args):
             installed_system = System(System.get_installed_packages())
         else:
             installed_system = None
-        relevant_args = grouped_args['S']
-        relevant_args[operation] = []
-        search_and_print(search_arguments, installed_system, args_to_string(relevant_args), repo, aur)
+        search_and_print(search, installed_system, str(pacman_args), repo, aur)
         return
 
     # categorize user input
@@ -119,12 +86,10 @@ def process(args):
         if not sudo_acquired:
             acquire_sudo()
             sudo_acquired = True
-        relevant_args = deepcopy(grouped_args['S'])
-        relevant_args[''] = for_pacman
-        relevant_args[operation] = []
-        args_as_string = args_to_string(relevant_args)
+        pacman_args_copy = deepcopy(pacman_args)
+        pacman_args_copy.targets = for_pacman
         try:
-            pacman(args_as_string, False)
+            pacman(str(pacman_args_copy), False)
         except InvalidInput:
             return
 
@@ -132,17 +97,10 @@ def process(args):
     if (not sysupgrade and not for_us) or repo:
         return
 
-    # delete -u --sysupgrade -y --refresh from -S dict
+    # delete -u --sysupgrade -y --refresh from parsed args
     # not needed anymore
-    s_dict = grouped_args['S']
-    if 'u' in s_dict:
-        del s_dict['u']
-    if 'sysupgrade' in s_dict:
-        del s_dict['sysupgrade']
-    if 'y' in s_dict:
-        del s_dict['y']
-    if 'refresh' in s_dict:
-        del s_dict['refresh']
+    pacman_args.sysupgrade = False
+    pacman_args.refresh = False
 
     print("\nanalyzing installed packages...")
     installed_system = System(System.get_installed_packages())
@@ -243,23 +201,22 @@ def process(args):
         acquire_sudo()
 
     if repo_packages_names:
-        relevant_args = deepcopy(grouped_args['S'])
-        relevant_args[''] = repo_packages_names
-        relevant_args[operation] = []
-        relevant_args['asdeps'] = []
-        args_as_string = args_to_string(relevant_args)
+        pacman_args_copy = deepcopy(pacman_args)
+        pacman_args_copy.targets = repo_packages_names
+        pacman_args_copy.asdeps = True
         try:
-            pacman(args_as_string, False)
+            pacman(str(pacman_args_copy), False)
         except InvalidInput:
             return
 
     # generate pacman args for the aur packages
-    relevant_args = deepcopy(grouped_args['U'])
-    relevant_args['U'] = []
+    pacman_args_copy = deepcopy(pacman_args)
+    pacman_args_copy.operation = PacmanOperations.UPGRADE
+    pacman_args_copy.targets = []
 
-    args_for_explicit = args_to_string(relevant_args)
-    relevant_args['asdeps'] = []
-    args_for_dependency = args_to_string(relevant_args)
+    args_for_explicit = str(pacman_args_copy)
+    pacman_args_copy.asdeps = True
+    args_for_dependency = str(pacman_args_copy)
 
     # build and install aur packages
     print("looking for new pkgbuilds and fetch them...")
