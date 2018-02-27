@@ -1,0 +1,115 @@
+class Colors:
+    """
+    Class used for colored output
+    """
+
+    @staticmethod
+    def __concat_str(*args):
+        return ''.join([str(arg) for arg in args])
+
+    BLACK = lambda *x: Colors.__concat_str("\033[30m", *x, "\033[39m")
+    RED = lambda *x: Colors.__concat_str("\033[31m", *x, "\033[39m")
+    GREEN = lambda *x: Colors.__concat_str("\033[32m", *x, "\033[39m")
+    YELLOW = lambda *x: Colors.__concat_str("\033[33m", *x, "\033[39m")
+    BLUE = lambda *x: Colors.__concat_str("\033[34m", *x, "\033[39m")
+    MAGENTA = lambda *x: Colors.__concat_str("\033[35m", *x, "\033[39m")
+    CYAN = lambda *x: Colors.__concat_str("\033[36m", *x, "\033[39m")
+    LIGHT_GRAY = lambda *x: Colors.__concat_str("\033[37m", *x, "\033[39m")
+    DARK_GRAY = lambda *x: Colors.__concat_str("\033[90m", *x, "\033[39m")
+    LIGHT_RED = lambda *x: Colors.__concat_str("\033[91m", *x, "\033[39m")
+    LIGHT_GREEN = lambda *x: Colors.__concat_str("\033[92m", *x, "\033[39m")
+    LIGHT_YELLOW = lambda *x: Colors.__concat_str("\033[93m", *x, "\033[39m")
+    LIGHT_BLUE = lambda *x: Colors.__concat_str("\033[94m", *x, "\033[39m")
+    LIGHT_MAGENTA = lambda *x: Colors.__concat_str("\033[95m", *x, "\033[39m")
+    LIGHT_CYAN = lambda *x: Colors.__concat_str("\033[96m", *x, "\033[39m")
+    WHITE = lambda *x: Colors.__concat_str("\033[97m", *x, "\033[39m")
+    BOLD = lambda *x: Colors.__concat_str("\033[1m", *x, "\033[21m")
+    DIM = lambda *x: Colors.__concat_str("\033[2m", *x, "\033[22m")
+
+
+def aurman_status(string: str, new_line: bool = False, to_print: bool = True) -> str:
+    """
+    Generates an aurman status
+
+    :param string:      The string for the status message
+    :param new_line:    Whether to start with a newline or not
+    :param to_print:    If the generated status should be printed
+    :return:            The generated status
+    """
+    if not new_line:
+        our_string = ""
+    else:
+        our_string = "\n"
+
+    our_string += "{} {}".format(Colors.LIGHT_GREEN("~~"), string)
+
+    if to_print:
+        print(our_string)
+
+    return our_string
+
+
+def aurman_error(string: str, new_line: bool = False, to_print: bool = True) -> str:
+    """
+    Generates an aurman error
+
+    :param string:      The string for the error message
+    :param new_line:    Whether to start with a newline or not
+    :param to_print:    If the generated error should be printed
+    :return:            The generated error
+    """
+    if not new_line:
+        our_string = ""
+    else:
+        our_string = "\n"
+
+    our_string += "{} {}".format(Colors.RED("!!"), string)
+
+    if to_print:
+        print(our_string)
+
+    return our_string
+
+
+def aurman_note(string: str, new_line: bool = False, to_print: bool = True) -> str:
+    """
+    Generates an aurman note
+
+    :param string:      The string for the note message
+    :param new_line:    Whether to start with a newline or not
+    :param to_print:    If the generated note should be printed
+    :return:            The generated note
+    """
+    if not new_line:
+        our_string = ""
+    else:
+        our_string = "\n"
+
+    our_string += "{} {}".format(Colors.LIGHT_CYAN("::"), string)
+
+    if to_print:
+        print(our_string)
+
+    return our_string
+
+
+def aurman_question(string: str, new_line: bool = False, to_print: bool = True) -> str:
+    """
+    Generates an aurman question
+
+    :param string:      The string for the question message
+    :param new_line:    Whether to start with a newline or not
+    :param to_print:    If the generated question should be printed
+    :return:            The generated question
+    """
+    if not new_line:
+        our_string = ""
+    else:
+        our_string = "\n"
+
+    our_string += "{} {}".format(Colors.LIGHT_YELLOW("??"), string)
+
+    if to_print:
+        print(our_string)
+
+    return our_string
