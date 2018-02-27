@@ -1,9 +1,9 @@
 import logging
 from copy import deepcopy
-from sys import argv
+from sys import argv, stdout
 
 from aurman.classes import System, Package, PossibleTypes
-from aurman.coloring import aurman_error, aurman_status, aurman_note
+from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
 from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
@@ -26,12 +26,20 @@ def process(args):
 
     # show help
     if pacman_args.operation is PacmanOperations.HELP:
-        print(aurman_help)
+        # remove colors in case of not terminal
+        if stdout.isatty():
+            print(aurman_help)
+        else:
+            print(Colors.strip_colors(str(aurman_help)))
         return
 
     # show version
     if pacman_args.operation is PacmanOperations.VERSION:
-        aurman_note(expac("-Q", ("v",), ("aurman-git",))[0])
+        # remove colors in case of not terminal
+        if stdout.isatty():
+            aurman_note(expac("-Q", ("v",), ("aurman-git",))[0])
+        else:
+            print(expac("-Q", ("v",), ("aurman-git",))[0])
         return
 
     # if not -S or --sync, just redirect to pacman
