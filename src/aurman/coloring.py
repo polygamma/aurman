@@ -7,6 +7,20 @@ class Colors:
     def __concat_str(*args):
         return ''.join([str(arg) for arg in args])
 
+    @staticmethod
+    def strip_colors(string: str) -> str:
+        """
+        Strips coloring from a string
+
+        :param string:  The string to strip the coloring from
+        :return:        The string without coloring
+        """
+
+        while "\033[" in string:
+            beginning_index = string.index("\033[")
+            string = string.replace(string[beginning_index:string.index("m", beginning_index) + 1], '')
+        return string
+
     BLACK = lambda *x: Colors.__concat_str("\033[30m", *x, "\033[39m")
     RED = lambda *x: Colors.__concat_str("\033[31m", *x, "\033[39m")
     GREEN = lambda *x: Colors.__concat_str("\033[32m", *x, "\033[39m")
