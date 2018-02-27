@@ -8,7 +8,7 @@ from typing import Sequence, List, Tuple, Set, Union, Iterable
 from pycman.config import PacmanConfig
 
 from aurman.aur_utilities import is_devel, get_aur_info
-from aurman.colors import Colors, color_string
+from aurman.coloring import aurman_status, aurman_note, aurman_error, aurman_question, Colors
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
 from aurman.utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
 from aurman.wrappers import expac, makepkg, pacman
@@ -55,7 +55,7 @@ class DepAlgoCycle(DepAlgoFoundProblems):
 
     def __repr__(self):
         return "Dep cycle: " + " -> ".join(
-            [color_string((Colors.LIGHT_MAGENTA, str(package))) for package in self.cycle_packages])
+            [Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.cycle_packages])
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and tuple(self.cycle_packages) == tuple(other.cycle_packages)
@@ -77,9 +77,12 @@ class DepAlgoConflict(DepAlgoFoundProblems):
         self.way_to_conflict: List['Package'] = way_to_conflict
 
     def __repr__(self):
-        return "Conflicts between: " + ", ".join([color_string((Colors.LIGHT_MAGENTA, str(package))) for package in
-                                                  self.conflicting_packages]) + "\nWay to conflict: " + " -> ".join(
-            [color_string((Colors.LIGHT_MAGENTA, str(package))) for package in self.way_to_conflict])
+        return_string = "Conflicts between: " + ", ".join(
+            [Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.conflicting_packages])
+        return_string += "\nWay to conflict: " + " -> ".join(
+            [Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.way_to_conflict])
+
+        return return_string
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
@@ -102,9 +105,8 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
         self.package: 'Package' = package
 
     def __repr__(self):
-        return "Not provided: {} but needed by {}".format(
-            color_string((Colors.LIGHT_MAGENTA, str(self.dep_not_provided))),
-            color_string((Colors.LIGHT_MAGENTA, str(self.package))))
+        return "Not provided: {} but needed by {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.dep_not_provided)),
+                                                          Colors.BOLD(Colors.LIGHT_MAGENTA(self.package)))
 
     def __eq__(self, other):
         return isinstance(other,
@@ -473,8 +475,9 @@ class Package:
 
         # output for user
         if found_problems and not current_solutions:
-            print("\nWhile searching for solutions the following errors occurred:\n{}\n".format(
-                "\n\n".join([str(problem) for problem in found_problems])))
+            aurman_error("While searching for solutions the following errors occurred:\n"
+                         "{}\n".format("\n".join([aurman_note(problem, False, False) for problem in found_problems])),
+                         True)
 
         return [solution.packages_in_solution for solution in current_solutions]
 
@@ -557,8 +560,8 @@ class Package:
                                stderr=DEVNULL).returncode == 0
             if not is_key_known:
                 if fetch_always or ask_user(
-                        "PGP Key {} found in PKGBUILD of {} and is not known yet. Do you want to import the key?".format(
-                            pgp_key, self.name), True):
+                        "PGP Key {} found in PKGBUILD of {} and is not known yet. "
+                        "Do you want to import the key?".format(pgp_key, self.name), True):
                     if keyserver is None:
                         if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
                             logging.error("Import PGP key {} failed.".format(pgp_key))
@@ -1146,9 +1149,12 @@ class System:
         """
 
         # needed strings
-        different_solutions_found = "\nWe found {} different valid solutions.\nYou will be shown the differences between the solutions.\nChoose one of them by entering the corresponding number.\n"
-        solution_print = "\nNumber {}:\nGetting installed: {}\nGetting removed: {}\n"
-        choice_not_valid = color_string((Colors.LIGHT_RED, "That was not a valid choice!"))
+        different_solutions_found = aurman_status("We found {} different valid solutions.\n"
+                                                  "You will be shown the differences between the solutions.\n"
+                                                  "Choose one of them by entering the corresponding number.\n",
+                                                  True, False)
+        solution_print = aurman_note("Number {}:\nGetting installed: {}\nGetting removed: {}\n", True, False)
+        choice_not_valid = aurman_error("That was not a valid choice!", False, False)
 
         # calculating new systems and finding valid systems
         new_systems = [self.hypothetical_append_packages_to_system(solution) for solution in solutions]
@@ -1195,7 +1201,7 @@ class System:
         systems_differences = self.differences_between_systems(valid_systems)
 
         # print for the user
-        print(color_string((Colors.DEFAULT, different_solutions_found.format(len(valid_systems)))))
+        print(different_solutions_found.format(len(valid_systems)))
 
         while True:
             # print solutions
@@ -1206,11 +1212,12 @@ class System:
                 removed_names.sort()
 
                 print(solution_print.format(i + 1,
-                                            ", ".join([color_string((Colors.GREEN, name)) for name in installed_names]),
-                                            ", ".join([color_string((Colors.RED, name)) for name in removed_names])))
+                                            ", ".join(
+                                                [Colors.BOLD(Colors.LIGHT_GREEN(name)) for name in installed_names]),
+                                            ", ".join([Colors.BOLD(Colors.RED(name)) for name in removed_names])))
 
             try:
-                user_input = int(input(color_string((Colors.DEFAULT, "Enter the number: "))))
+                user_input = int(input(aurman_question("Enter the number: ", False, False)))
                 if 1 <= user_input <= len(valid_systems):
                     return solutions[valid_solutions_indices[user_input - 1]]
             except ValueError:
@@ -1227,11 +1234,11 @@ class System:
         """
 
         # needed strings
-        package_to_install = "\nThe following {} package(s) are getting installed:\n"
-        packages_to_uninstall = "\nThe following {} package(s) are getting removed:\n"
-        packages_to_upgrade = "\nThe following {} package(s) are getting updated:\n"
-        packages_to_reinstall = "\nThe following {} packages(s) are just getting reinstalled:\n"
-        user_question = "\nDo you want to continue?"
+        package_to_install = aurman_note("The following {} package(s) are getting installed:", True, False)
+        packages_to_uninstall = aurman_note("The following {} package(s) are getting removed:", True, False)
+        packages_to_upgrade = aurman_note("The following {} package(s) are getting updated:", True, False)
+        packages_to_reinstall = aurman_note("The following {} package(s) are getting reinstalled:", True, False)
+        user_question = "Do you want to continue?"
 
         new_system = self.hypothetical_append_packages_to_system(solution)
         differences_to_this_system_tuple = self.differences_between_systems((new_system,))[0]
@@ -1244,25 +1251,28 @@ class System:
         just_reinstall_names = set([package.name for package in solution]) - set.union(
             *[to_upgrade_names, to_install_names, to_uninstall_names])
 
-        print(color_string((Colors.DEFAULT, package_to_install.format(len(to_install_names)))))
-        print(", ".join(
-            [color_string((Colors.GREEN, str(new_system.all_packages_dict[package_name]))) for package_name in
-             to_install_names]))
+        if to_install_names:
+            print(package_to_install.format(len(to_install_names)))
+            print(", ".join(
+                [Colors.BOLD(Colors.LIGHT_GREEN(new_system.all_packages_dict[package_name])) for package_name in
+                 to_install_names]))
 
-        print(color_string((Colors.DEFAULT, packages_to_uninstall.format(len(to_uninstall_names)))))
-        print(", ".join([color_string((Colors.RED, str(self.all_packages_dict[package_name]))) for package_name in
-                         to_uninstall_names]))
+        if to_uninstall_names:
+            print(packages_to_uninstall.format(len(to_uninstall_names)))
+            print(", ".join(
+                [Colors.BOLD(Colors.RED(self.all_packages_dict[package_name])) for package_name in to_uninstall_names]))
 
-        print(color_string((Colors.DEFAULT, packages_to_upgrade.format(len(to_upgrade_names)))))
-        print(''.join(["{} -> {}\n".format(color_string((Colors.RED, str(self.all_packages_dict[package_name]))),
-                                           color_string(
-                                               (Colors.GREEN, str(new_system.all_packages_dict[package_name])))) for
-                       package_name in to_upgrade_names]))
+        if to_upgrade_names:
+            print(packages_to_upgrade.format(len(to_upgrade_names)))
+            print(''.join(["{} -> {}\n".format(Colors.BOLD(Colors.RED(self.all_packages_dict[package_name])),
+                                               Colors.BOLD(
+                                                   Colors.LIGHT_GREEN(new_system.all_packages_dict[package_name]))) for
+                           package_name in to_upgrade_names]))
 
-        print(color_string((Colors.DEFAULT, packages_to_reinstall.format(len(just_reinstall_names)))))
-        print(", ".join(
-            [color_string((Colors.LIGHT_MAGENTA, str(self.all_packages_dict[package_name]))) for package_name in
-             just_reinstall_names]))
+        if just_reinstall_names:
+            print(packages_to_reinstall.format(len(just_reinstall_names)))
+            print(", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(self.all_packages_dict[package_name])) for package_name in
+                             just_reinstall_names]))
 
-        if not noconfirm and not ask_user(color_string((Colors.DEFAULT, user_question)), True):
+        if not noconfirm and not ask_user(user_question, True):
             raise InvalidInput()

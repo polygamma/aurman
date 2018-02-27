@@ -6,7 +6,7 @@ from subprocess import run, DEVNULL
 from typing import Tuple, Sequence
 
 from aurman.aur_utilities import get_aur_info
-from aurman.colors import color_string, Colors
+from aurman.coloring import Colors, aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
 
 
@@ -34,17 +34,17 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
         search_return = get_aur_info(found_names)
 
         for ret_dict in sorted(search_return, key=lambda x: float(x['Popularity']), reverse=True):
-            repo_with_slash = color_string((Colors.BOLD, Colors.LIGHT_MAGENTA, "aur/"))
-            name = color_string((Colors.BOLD, ret_dict['Name']))
+            repo_with_slash = Colors.BOLD(Colors.LIGHT_MAGENTA("aur/"))
+            name = Colors.BOLD(ret_dict['Name'])
             if ret_dict['OutOfDate'] is None:
-                version = color_string((Colors.BOLD, Colors.GREEN, ret_dict['Version']))
+                version = Colors.BOLD(Colors.GREEN(ret_dict['Version']))
             else:
-                version = color_string((Colors.BOLD, Colors.RED, ret_dict['Version']))
+                version = Colors.BOLD(Colors.RED(ret_dict['Version']))
 
             first_line = "{}{} {} ({}, {})".format(repo_with_slash, name, version, ret_dict['NumVotes'],
                                                    ret_dict['Popularity'])
             if ret_dict['Name'] in installed_system.all_packages_dict:
-                first_line += " {}".format(color_string((Colors.BOLD, Colors.CYAN, "[installed]")))
+                first_line += " {}".format(Colors.BOLD(Colors.CYAN("[installed]")))
             print(first_line)
             print("    {}".format(ret_dict['Description']))
 
@@ -145,7 +145,7 @@ def ask_user(question: str, default: bool) -> bool:
         choices = "N/y"
 
     while True:
-        user_choice = str(input("{} {}: ".format(question, choices))).strip().lower()
+        user_choice = str(input(aurman_question("{} {}: ".format(question, choices), False, False))).strip().lower()
         if user_choice in yes or user_choice in no:
             return user_choice in yes
-        print(color_string((Colors.LIGHT_RED, "That was not a valid choice!")))
+        aurman_error("That was not a valid choice!")
