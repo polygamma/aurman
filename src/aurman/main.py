@@ -3,11 +3,12 @@ from copy import deepcopy
 from sys import argv
 
 from aurman.classes import System, Package, PossibleTypes
+from aurman.coloring import aurman_error, aurman_status, aurman_note
+from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
-from aurman.print_help import help_to_print
 from aurman.utilities import acquire_sudo, version_comparison, search_and_print
-from aurman.wrappers import pacman
+from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
 
@@ -21,7 +22,16 @@ def process(args):
     try:
         pacman_args = parse_pacman_args(args)
     except InvalidInput:
-        print(help_to_print)
+        return
+
+    # show help
+    if pacman_args.operation is PacmanOperations.HELP:
+        print(aurman_help)
+        return
+
+    # show version
+    if pacman_args.operation is PacmanOperations.VERSION:
+        aurman_note(expac("-Q", ("v",), ("aurman-git",))[0])
         return
 
     # if not -S or --sync, just redirect to pacman
@@ -66,7 +76,6 @@ def process(args):
     # unrecognized parameters
     if pacman_args.invalid_args:
         logging.info("The following parameters are not recognized yet: {}".format(pacman_args.invalid_args))
-        print(help_to_print)
         return
 
     # if user just wants to search
@@ -102,13 +111,13 @@ def process(args):
     pacman_args.sysupgrade = False
     pacman_args.refresh = False
 
-    print("\nanalyzing installed packages...")
+    aurman_status("analyzing installed packages...", True)
     installed_system = System(System.get_installed_packages())
 
-    print("fetching upstream repo packages...")
+    aurman_status("fetching upstream repo packages...")
     upstream_system = System(System.get_repo_packages())
 
-    print("fetching needed aur packages...")
+    aurman_status("fetching needed aur packages...")
     upstream_system.append_packages_by_name(for_us)
     # fetch info for all installed aur packages, too
     names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
@@ -117,7 +126,7 @@ def process(args):
 
     # if user entered --devel, fetch all needed pkgbuilds etc. for the devel packages
     if devel:
-        print("looking for new pkgbuilds of devel packages and fetch them...")
+        aurman_status("looking for new pkgbuilds of devel packages and fetch them...")
         for package in upstream_system.devel_packages_list:
             package.fetch_pkgbuild()
         try:
@@ -153,7 +162,7 @@ def process(args):
                 if upstream_package not in concrete_packages_to_install:
                     concrete_packages_to_install.append(upstream_package)
 
-    print("calculating solutions...")
+    aurman_status("calculating solutions...")
     solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system,
                                     only_unfulfilled_deps)
 
@@ -161,8 +170,8 @@ def process(args):
     try:
         chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
     except InvalidInput:
-        print(
-            "we could not find a solution.\nif you think that there should be one, rerun aurman with the --deep_search flag")
+        aurman_error("we could not find a solution.")
+        aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
         return
 
     # needed because deep_search ignores installed packages
@@ -175,7 +184,7 @@ def process(args):
 
     # solution contains no packages
     if not chosen_solution:
-        print("nothing to do... everything is up to date")
+        aurman_note("nothing to do... everything is up to date")
         return
 
     try:
@@ -204,6 +213,7 @@ def process(args):
         pacman_args_copy = deepcopy(pacman_args)
         pacman_args_copy.targets = repo_packages_names
         pacman_args_copy.asdeps = True
+        pacman_args_copy.asexplicit = False
         try:
             pacman(str(pacman_args_copy), False)
         except InvalidInput:
@@ -216,10 +226,11 @@ def process(args):
 
     args_for_explicit = str(pacman_args_copy)
     pacman_args_copy.asdeps = True
+    pacman_args_copy.asexplicit = False
     args_for_dependency = str(pacman_args_copy)
 
     # build and install aur packages
-    print("looking for new pkgbuilds and fetch them...")
+    aurman_status("looking for new pkgbuilds and fetch them...")
     for package in chosen_solution:
         if devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
             continue
