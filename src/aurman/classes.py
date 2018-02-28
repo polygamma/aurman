@@ -1,9 +1,8 @@
 import logging
 import os
-from copy import deepcopy, copy
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Set, Union, Iterable
+from typing import Sequence, List, Tuple, Set, Union
 
 from pycman.config import PacmanConfig
 
@@ -35,14 +34,19 @@ class DepAlgoSolution:
         self.visited_names: Set[str] = visited_names
         self.is_valid: bool = True  # may be set to False by the algorithm in case of conflicts, dep-cycles, ...
 
+    def solution_copy(self):
+        to_return = DepAlgoSolution(self.packages_in_solution[:], self.visited_packages[:], set(self.visited_names))
+        to_return.is_valid = self.is_valid
+        return to_return
+
 
 class DepAlgoFoundProblems:
     """
     Base class for the possible problems which may occur during solving the dependency problem
     """
 
-    def get_relevant_packages(self) -> Iterable['Package']:
-        return []
+    def get_relevant_packages(self) -> Set['Package']:
+        return set()
 
 
 class DepAlgoCycle(DepAlgoFoundProblems):
@@ -54,17 +58,17 @@ class DepAlgoCycle(DepAlgoFoundProblems):
         self.cycle_packages: List['Package'] = cycle_packages
 
     def __repr__(self):
-        return "Dep cycle: " + " -> ".join(
-            [Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.cycle_packages])
+        return "Dep cycle: {}".format(
+            " -> ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.cycle_packages]))
 
     def __eq__(self, other):
-        return isinstance(other, self.__class__) and tuple(self.cycle_packages) == tuple(other.cycle_packages)
+        return isinstance(other, self.__class__) and frozenset(self.cycle_packages) == frozenset(other.cycle_packages)
 
     def __hash__(self):
-        return hash(tuple(self.cycle_packages))
+        return hash(frozenset(self.cycle_packages))
 
     def get_relevant_packages(self):
-        return self.cycle_packages
+        return set(self.cycle_packages)
 
 
 class DepAlgoConflict(DepAlgoFoundProblems):
@@ -72,27 +76,35 @@ class DepAlgoConflict(DepAlgoFoundProblems):
     Problem class for conflicts
     """
 
-    def __init__(self, conflicting_packages, way_to_conflict):
+    def __init__(self, conflicting_packages, ways_to_conflict):
         self.conflicting_packages: Set['Package'] = conflicting_packages
-        self.way_to_conflict: List['Package'] = way_to_conflict
+        self.ways_to_conflict: List[List['Package']] = ways_to_conflict
 
     def __repr__(self):
-        return_string = "Conflicts between: " + ", ".join(
-            [Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.conflicting_packages])
-        return_string += "\nWay to conflict: " + " -> ".join(
-            [Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.way_to_conflict])
+        return_string = "Conflicts between: {}".format(
+            ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.conflicting_packages]))
+
+        for way_to_conflict in self.ways_to_conflict:
+            return_string += "\nWay to package {}: {}".format(way_to_conflict[len(way_to_conflict) - 1], " -> ".join(
+                [Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in way_to_conflict]))
 
         return return_string
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and frozenset(self.conflicting_packages) == frozenset(
-            other.conflicting_packages) and tuple(self.way_to_conflict) == tuple(other.way_to_conflict)
+            other.conflicting_packages)
 
     def __hash__(self):
-        return hash((frozenset(self.conflicting_packages), tuple(self.way_to_conflict)))
+        return hash(frozenset(self.conflicting_packages))
 
     def get_relevant_packages(self):
-        return self.conflicting_packages
+        return_set = set(self.conflicting_packages)
+
+        for way_to_conflict in self.ways_to_conflict:
+            for package in way_to_conflict:
+                return_set.add(package)
+
+        return return_set
 
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
@@ -116,7 +128,7 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
         return hash((self.dep_not_provided, self.package))
 
     def get_relevant_packages(self):
-        return [self.package]
+        return {self.package}
 
 
 class Package:
@@ -273,7 +285,7 @@ class Package:
                  required_by: Sequence[str] = None, optdepends: Sequence[str] = None, provides: Sequence[str] = None,
                  replaces: Sequence[str] = None, pkgbase: str = None, install_reason: str = None,
                  makedepends: Sequence[str] = None, checkdepends: Sequence[str] = None, type_of: PossibleTypes = None,
-                 repo: str = None):
+                 repo: str = None, way_to_self: List['Package'] = None):
         self.name = name  # %n
         self.version = version  # %v
         self.depends = depends  # %D
@@ -288,6 +300,7 @@ class Package:
         self.checkdepends = checkdepends  # aur only
         self.type_of = type_of  # PossibleTypes Enum value
         self.repo = repo  # %r (only useful for upstream repo packages)
+        self.way_to_self = way_to_self  # way to this package during solution finding
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.name == other.name and self.version == other.version
@@ -333,37 +346,44 @@ class Package:
         :return:                        The found solutions
         """
         if self in solution.packages_in_solution:
-            return [deepcopy(solution)]
+            return [solution.solution_copy()]
 
         # dep cycle
         # dirty... thanks to dep cycle between mesa and libglvnd
         if self in solution.visited_packages and not (self.type_of is PossibleTypes.REPO_PACKAGE):
             if solution.is_valid:
                 index_of_self = solution.visited_packages.index(self)
-                new_dep_cycle = DepAlgoCycle(solution.visited_packages[index_of_self:])
-                new_dep_cycle.cycle_packages.append(self)
-                found_problems.add(new_dep_cycle)
-            return []
+                cycle_packages = []
+                for i in range(index_of_self, len(solution.visited_packages)):
+                    curr_package = solution.visited_packages[i]
+                    if curr_package not in solution.packages_in_solution:
+                        cycle_packages.append(curr_package)
+                cycle_packages.append(self)
+                found_problems.add(DepAlgoCycle(cycle_packages))
+            invalid_sol = solution.solution_copy()
+            invalid_sol.is_valid = False
+            return [invalid_sol]
         elif self in solution.visited_packages:
-            return [deepcopy(solution)]
+            return [solution.solution_copy()]
 
         # conflict
-        possible_conflict_packages = solution.visited_packages
-        conflict_system = System(possible_conflict_packages).conflicting_with(self)
+        conflict_system = System(solution.visited_packages).conflicting_with(self)
         if conflict_system:
             if solution.is_valid:
-                min_index = min([solution.visited_packages.index(package) for package in conflict_system])
-                way_to_conflict = solution.visited_packages[min_index:]
-                way_to_conflict.append(self)
-                new_conflict = DepAlgoConflict(set(conflict_system), way_to_conflict)
-                new_conflict.conflicting_packages.add(self)
-                found_problems.add(new_conflict)
+                conflicting_packages = set(conflict_system)
+                conflicting_packages.add(self)
+                ways_to_conflict = []
+                for package in conflicting_packages:
+                    way_to_conflict = package.way_to_self[:]
+                    way_to_conflict.append(package)
+                    ways_to_conflict.append(way_to_conflict)
+                found_problems.add(DepAlgoConflict(conflicting_packages, ways_to_conflict))
             is_conflict = True
         else:
             is_conflict = False
 
         # copy solution and add self to visited packages, maybe flag as invalid
-        solution = deepcopy(solution)
+        solution = solution.solution_copy()
         solution.visited_packages.append(self)
         if is_conflict:
             solution.is_valid = False
@@ -379,9 +399,7 @@ class Package:
             dep_stripped_name = strip_versioning_from_name(dep)
             # dep not fulfillable, solutions not valid
             if not dep_providers:
-                new_dep_not_fulfilled = DepAlgoNotProvided(dep, self)
-                if new_dep_not_fulfilled not in found_problems:
-                    found_problems.add(new_dep_not_fulfilled)
+                found_problems.add(DepAlgoNotProvided(dep, self))
 
                 for solution in current_solutions:
                     if dep not in solution.visited_names:
@@ -411,6 +429,9 @@ class Package:
             current_solutions = finished_solutions
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
+                    if not dep_provider.way_to_self:
+                        dep_provider.way_to_self.extend(self.way_to_self)
+                        dep_provider.way_to_self.append(self)
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps,
@@ -418,8 +439,7 @@ class Package:
 
         # we have valid solutions left, so the problems are not relevant
         if [solution for solution in current_solutions if solution.is_valid]:
-            for problem in copy(found_problems):
-                found_problems.remove(problem)
+            found_problems.clear()
 
         # add self to packages in solution, those are always topologically sorted
         for solution in current_solutions:
@@ -447,6 +467,8 @@ class Package:
         while True:
             current_solutions = [DepAlgoSolution([], [], set())]
             found_problems = set()
+            for package in upstream_system.all_packages_dict.values():
+                package.way_to_self = []
 
             # calc solutions
             for package in packages:
@@ -1025,7 +1047,7 @@ class System:
         :return:            the new system
         """
 
-        new_system = deepcopy(self)
+        new_system = System(list(self.all_packages_dict.values()))
 
         deleted_packages = []
         for package in packages:
