@@ -29,17 +29,25 @@ class DepAlgoSolution:
     """
 
     def __init__(self, packages_in_solution, visited_packages, visited_names):
-        self.packages_in_solution: List['Package'] = packages_in_solution
-        self.visited_packages: List['Package'] = visited_packages
-        self.visited_names: Set[str] = visited_names
+        self.packages_in_solution: List['Package'] = packages_in_solution  # containing the packages of the solution
+        self.visited_packages: List['Package'] = visited_packages  # needed for tracking dep cycles
+        self.visited_names: Set[str] = visited_names  # needed for tracking provided deps
         self.is_valid: bool = True  # may be set to False by the algorithm in case of conflicts, dep-cycles, ...
-        self.dict_to_way: Dict[str, List['Package']] = {}
+        self.dict_to_way: Dict[str, List['Package']] = {}  # needed for tracking the way the packages have been called
+        self.dict_to_deps: Dict[str, Set[str]] = {}  # needed for tracking which deps are being provided by the packages
+        self.dict_call_as_needed: Dict[str, bool] = {}  # needed for tracking if package may be removed
+        self.installed_solution_packages: Set['Package'] = set()  # needed for tracking which packages are installed
 
     def solution_copy(self):
         to_return = DepAlgoSolution(self.packages_in_solution[:], self.visited_packages[:], set(self.visited_names))
         to_return.is_valid = self.is_valid
         for key, value in self.dict_to_way.items():
             to_return.dict_to_way[key] = value[:]
+        for key, value in self.dict_to_deps.items():
+            to_return.dict_to_deps[key] = set(value)
+        for key, value in self.dict_call_as_needed.items():
+            to_return.dict_call_as_needed[key] = value
+        to_return.installed_solution_packages = set(self.installed_solution_packages)
         return to_return
 
 
@@ -48,8 +56,8 @@ class DepAlgoFoundProblems:
     Base class for the possible problems which may occur during solving the dependency problem
     """
 
-    def get_relevant_packages(self) -> Set['Package']:
-        return set()
+    def __init__(self):
+        self.relevant_packages: Set['Package'] = set()
 
 
 class DepAlgoCycle(DepAlgoFoundProblems):
@@ -58,6 +66,7 @@ class DepAlgoCycle(DepAlgoFoundProblems):
     """
 
     def __init__(self, cycle_packages):
+        super().__init__()
         self.cycle_packages: List['Package'] = cycle_packages
 
     def __repr__(self):
@@ -70,9 +79,6 @@ class DepAlgoCycle(DepAlgoFoundProblems):
     def __hash__(self):
         return hash(frozenset(self.cycle_packages))
 
-    def get_relevant_packages(self):
-        return set(self.cycle_packages)
-
 
 class DepAlgoConflict(DepAlgoFoundProblems):
     """
@@ -80,6 +86,7 @@ class DepAlgoConflict(DepAlgoFoundProblems):
     """
 
     def __init__(self, conflicting_packages, ways_to_conflict):
+        super().__init__()
         self.conflicting_packages: Set['Package'] = conflicting_packages
         self.ways_to_conflict: List[List['Package']] = ways_to_conflict
 
@@ -100,15 +107,6 @@ class DepAlgoConflict(DepAlgoFoundProblems):
     def __hash__(self):
         return hash(frozenset(self.conflicting_packages))
 
-    def get_relevant_packages(self):
-        return_set = set(self.conflicting_packages)
-
-        for way_to_conflict in self.ways_to_conflict:
-            for package in way_to_conflict:
-                return_set.add(package)
-
-        return return_set
-
 
 class DepAlgoNotProvided(DepAlgoFoundProblems):
     """
@@ -116,6 +114,7 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
     """
 
     def __init__(self, dep_not_provided, package):
+        super().__init__()
         self.dep_not_provided: str = dep_not_provided
         self.package: 'Package' = package
 
@@ -129,9 +128,6 @@ class DepAlgoNotProvided(DepAlgoFoundProblems):
 
     def __hash__(self):
         return hash((self.dep_not_provided, self.package))
-
-    def get_relevant_packages(self):
-        return {self.package}
 
 
 class Package:
@@ -229,7 +225,7 @@ class Package:
         :return:                    List containing the packages
         """
         if "Q" in expac_operation:
-            formatting = list("nvDHoPRewN")
+            formatting = list("nvDHoPRew")
             repos = []
         else:
             assert "S" in expac_operation
@@ -268,7 +264,6 @@ class Package:
 
             if "Q" in expac_operation:
                 to_expand['install_reason'] = splitted_line[8]
-                to_expand['required_by'] = splitted_line[9].split()
             else:
                 assert "S" in expac_operation
                 to_expand['repo'] = splitted_line[8]
@@ -285,15 +280,13 @@ class Package:
         return list(return_dict.values())
 
     def __init__(self, name: str, version: str, depends: Sequence[str] = None, conflicts: Sequence[str] = None,
-                 required_by: Sequence[str] = None, optdepends: Sequence[str] = None, provides: Sequence[str] = None,
-                 replaces: Sequence[str] = None, pkgbase: str = None, install_reason: str = None,
-                 makedepends: Sequence[str] = None, checkdepends: Sequence[str] = None, type_of: PossibleTypes = None,
-                 repo: str = None):
+                 optdepends: Sequence[str] = None, provides: Sequence[str] = None, replaces: Sequence[str] = None,
+                 pkgbase: str = None, install_reason: str = None, makedepends: Sequence[str] = None,
+                 checkdepends: Sequence[str] = None, type_of: PossibleTypes = None, repo: str = None):
         self.name = name  # %n
         self.version = version  # %v
         self.depends = depends  # %D
         self.conflicts = conflicts  # %H
-        self.required_by = required_by  # %N (only useful for installed packages)
         self.optdepends = optdepends  # %o
         self.provides = provides  # %P
         self.replaces = replaces  # %R
@@ -313,24 +306,26 @@ class Package:
     def __repr__(self):
         return "{}-{}".format(self.name, self.version)
 
-    def relevant_deps(self) -> List[str]:
+    def relevant_deps(self, only_make_check: bool = False, only_depends: bool = False) -> List[str]:
         """
         Fetches the relevant deps of this package.
         self.depends for not aur packages,
         otherwise also self.makedepends and self.checkdepends
 
-        :return:
+        :param only_make_check:     True if one only wants make and check depends
+        :param only_depends:        True if one only wants depends
+        :return:                    The relevant deps
         """
         to_return = []
 
-        if self.depends is not None:
+        if self.depends is not None and not only_make_check:
             to_return.extend(self.depends)
-        if self.makedepends is not None:
+        if self.makedepends is not None and not only_depends:
             to_return.extend(self.makedepends)
-        if self.checkdepends is not None:
+        if self.checkdepends is not None and not only_depends:
             to_return.extend(self.checkdepends)
 
-        return to_return
+        return list(set(to_return))
 
     def solutions_for_dep_problem(self, solution: 'DepAlgoSolution', found_problems: Set['DepAlgoFoundProblems'],
                                   installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool,
@@ -347,7 +342,7 @@ class Package:
         :param deps_to_deep_check:      Set containing deps to check all possible dep providers of
         :return:                        The found solutions
         """
-        if self in solution.packages_in_solution:
+        if self in solution.installed_solution_packages:
             return [solution.solution_copy()]
 
         # dep cycle
@@ -357,44 +352,33 @@ class Package:
                 index_of_self = solution.visited_packages.index(self)
                 cycle_packages = []
                 for i in range(index_of_self, len(solution.visited_packages)):
-                    curr_package = solution.visited_packages[i]
-                    if curr_package not in solution.packages_in_solution:
-                        cycle_packages.append(curr_package)
+                    cycle_packages.append(solution.visited_packages[i])
                 cycle_packages.append(self)
-                found_problems.add(DepAlgoCycle(cycle_packages))
+
+                # create the problem
+                cycle_problem = DepAlgoCycle(cycle_packages)
+                for package in cycle_packages:
+                    cycle_problem.relevant_packages.add(package)
+                    cycle_problem.relevant_packages |= set(solution.dict_to_way.get(package.name, []))
+                found_problems.add(cycle_problem)
             invalid_sol = solution.solution_copy()
             invalid_sol.is_valid = False
             return [invalid_sol]
+
+        # pacman has to handle deps between repo packages
         elif self in solution.visited_packages:
             return [solution.solution_copy()]
 
-        # conflict
-        conflict_system = System(solution.visited_packages).conflicting_with(self)
-        if conflict_system:
-            if solution.is_valid:
-                conflicting_packages = set(conflict_system)
-                conflicting_packages.add(self)
-                ways_to_conflict = []
-                for package in conflicting_packages:
-                    way_to_conflict = solution.dict_to_way.get(package.name, [])[:]
-                    way_to_conflict.append(package)
-                    ways_to_conflict.append(way_to_conflict)
-                found_problems.add(DepAlgoConflict(conflicting_packages, ways_to_conflict))
-            is_conflict = True
-        else:
-            is_conflict = False
-
         # copy solution and add self to visited packages, maybe flag as invalid
         solution = solution.solution_copy()
+        is_build_available = self in solution.packages_in_solution
         own_way = solution.dict_to_way.get(self.name, [])
         solution.visited_packages.append(self)
-        if is_conflict:
-            solution.is_valid = False
         current_solutions = [solution]
 
         # AND - every dep has to be fulfilled
         for dep in self.relevant_deps():
-            if only_unfulfilled_deps and installed_system.provided_by(dep):
+            if is_build_available or only_unfulfilled_deps and installed_system.provided_by(dep):
                 continue
 
             dep_providers = upstream_system.provided_by(dep)
@@ -402,12 +386,16 @@ class Package:
             dep_stripped_name = strip_versioning_from_name(dep)
             # dep not fulfillable, solutions not valid
             if not dep_providers:
-                found_problems.add(DepAlgoNotProvided(dep, self))
-
                 for solution in current_solutions:
                     if dep not in solution.visited_names:
                         solution.is_valid = False
                         solution.visited_names.add(dep)
+
+                # create problem
+                dep_problem = DepAlgoNotProvided(dep, self)
+                dep_problem.relevant_packages.add(self)
+                dep_problem.relevant_packages |= set(own_way)
+                found_problems.add(dep_problem)
 
             # we only need relevant dep providers
             if dep_stripped_name in dep_providers_names and dep not in deps_to_deep_check:
@@ -421,7 +409,7 @@ class Package:
             new_not_finished_solutions = []
             for solution in not_finished_solutions:
                 solution.visited_names.add(dep)
-                sol_system = System(solution.packages_in_solution)
+                sol_system = System(tuple(solution.installed_solution_packages))
                 if sol_system.provided_by(dep):
                     finished_solutions.append(solution)
                 else:
@@ -432,13 +420,66 @@ class Package:
             current_solutions = finished_solutions
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
+                    # way to the package being called in the current solution
                     if dep_provider.name not in solution.dict_to_way:
                         solution.dict_to_way[dep_provider.name] = own_way[:]
                         solution.dict_to_way[dep_provider.name].append(self)
+                    # tracking for which deps the package being called has been chosen as provider
+                    if dep_provider.name not in solution.dict_to_deps:
+                        solution.dict_to_deps[dep_provider.name] = set()
+                    solution.dict_to_deps[dep_provider.name].add(dep)
+                    # call this function recursively on the dep provider
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps,
                                                                deps_to_deep_check))
+
+        # conflict checking
+        for solution in current_solutions:
+            if not solution.is_valid:
+                continue
+
+            installed_packages = list(solution.installed_solution_packages)
+            conf_system = System(installed_packages).conflicting_with(self)
+            if not conf_system:
+                continue
+
+            packages_to_append = solution.packages_in_solution[:]
+            packages_to_append.append(self)
+            new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
+            for package in installed_packages:
+                if solution.dict_call_as_needed.get(package.name,
+                                                    False) and package.name not in new_system.all_packages_dict:
+                    break
+            # solution possible at this point
+            else:
+                for package in installed_packages:
+                    if package.name not in new_system.all_packages_dict:
+                        solution.installed_solution_packages.remove(package)
+                        if package.name in solution.dict_to_deps:
+                            for dep in solution.dict_to_deps[package.name]:
+                                solution.visited_names.remove(dep)
+                            del solution.dict_to_deps[package.name]
+                        if package.name in solution.dict_to_way:
+                            del solution.dict_to_way[package.name]
+                continue
+
+            # solution not possible!
+            solution.is_valid = False
+            conflicting_packages = set(conf_system)
+            conflicting_packages.add(self)
+            ways_to_conflict = []
+            for package in conflicting_packages:
+                way_to_conflict = solution.dict_to_way.get(package.name, [])[:]
+                way_to_conflict.append(package)
+                ways_to_conflict.append(way_to_conflict)
+
+            # create the problem
+            conflict_problem = DepAlgoConflict(conflicting_packages, ways_to_conflict)
+            for way_to_conflict in ways_to_conflict:
+                for package in way_to_conflict:
+                    conflict_problem.relevant_packages.add(package)
+            found_problems.add(conflict_problem)
 
         # we have valid solutions left, so the problems are not relevant
         if [solution for solution in current_solutions if solution.is_valid]:
@@ -446,7 +487,9 @@ class Package:
 
         # add self to packages in solution, those are always topologically sorted
         for solution in current_solutions:
+            solution.installed_solution_packages.add(self)
             solution.packages_in_solution.append(self)
+            solution.visited_packages.remove(self)
 
         # may contain invalid solutions !!!
         return current_solutions
@@ -472,6 +515,21 @@ class Package:
             found_problems = set()
 
             # calc solutions
+            # for every single package first
+            for package in packages:
+                new_solutions = []
+                for solution in current_solutions:
+                    solution.dict_call_as_needed = {package.name: True}
+                    new_solutions.extend(
+                        package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
+                                                          only_unfulfilled_deps, deps_to_deep_check))
+                current_solutions = new_solutions
+
+            # now for all packages together
+            for solution in current_solutions:
+                solution.dict_call_as_needed = {}
+                for package in packages:
+                    solution.dict_call_as_needed[package.name] = True
             for package in packages:
                 new_solutions = []
                 for solution in current_solutions:
@@ -489,7 +547,7 @@ class Package:
 
             deps_to_deep_check_length = len(deps_to_deep_check)
             for problem in found_problems:
-                problem_packages_names = set([package.name for package in problem.get_relevant_packages()])
+                problem_packages_names = set([package.name for package in problem.relevant_packages])
                 deps_to_deep_check |= problem_packages_names
 
             # if there are no new deps to deep check, we are done, too
@@ -964,9 +1022,7 @@ class System:
         return_list = []
 
         if name in self.all_packages_dict:
-            possible_conflict_package = self.all_packages_dict[name]
-            if version != possible_conflict_package.version:
-                return_list.append(possible_conflict_package)
+            return_list.append(self.all_packages_dict[name])
 
         for conflict in package.conflicts:
             conflict_name, conflict_cmp, conflict_version = split_name_with_versioning(conflict)
@@ -1026,20 +1082,23 @@ class System:
 
             packages_names_to_fetch = [dep for dep in relevant_deps if dep not in self.all_packages_dict]
 
-    def are_all_deps_fulfilled(self, package: 'Package') -> bool:
+    def are_all_deps_fulfilled(self, package: 'Package', only_make_check: bool = False,
+                               only_depends: bool = False) -> bool:
         """
         if all deps of the package are fulfilled on the system
-        :param package:     the package to check the deps of
-        :return:            True if the deps are fulfilled, False otherwise
+        :param package:             the package to check the deps of
+        :param only_make_check:     True if one only wants make and check depends
+        :param only_depends:        True if one only wants depends
+        :return:                    True if the deps are fulfilled, False otherwise
         """
 
-        for dep in package.relevant_deps():
+        for dep in package.relevant_deps(only_make_check=only_make_check, only_depends=only_depends):
             if not self.provided_by(dep):
                 return False
         else:
             return True
 
-    def hypothetical_append_packages_to_system(self, packages: Sequence['Package']) -> 'System':
+    def hypothetical_append_packages_to_system(self, packages: List['Package']) -> 'System':
         """
         hypothetically appends packages to this system (only makes sense for the installed system)
         and removes all conflicting packages and packages whose deps are not fulfilled anymore.
@@ -1050,52 +1109,48 @@ class System:
 
         new_system = System(list(self.all_packages_dict.values()))
 
-        deleted_packages = []
-        for package in packages:
-            if package.name in new_system.all_packages_dict:
-                deleted_packages.append(new_system.all_packages_dict[package.name])
-                del new_system.all_packages_dict[package.name]
+        # sort by repo and aur packages
+        packages = packages[:]
+        repo_packages = []
+        for package in packages[:]:
+            if package.type_of is PossibleTypes.REPO_PACKAGE:
+                repo_packages.append(package)
+                packages.remove(package)
+
+        # find conflicts with repo packages and append repo packages
+        conflicting_packages = []
+        for package in repo_packages:
+            conflicting_packages.extend(new_system.conflicting_with(package))
+        conflicting_packages = set(conflicting_packages)
+        for package in conflicting_packages:
+            del new_system.all_packages_dict[package.name]
         new_system = System(list(new_system.all_packages_dict.values()))
-
-        to_delete_packages = []
-        for package in packages:
-            to_delete_packages.extend(new_system.conflicting_with(package))
-        to_delete_packages = list(set(to_delete_packages))
-        new_system.append_packages(packages)
-
-        while to_delete_packages or deleted_packages:
-            for to_delete_package in to_delete_packages:
-                deleted_packages.append(to_delete_package)
-                del new_system.all_packages_dict[to_delete_package.name]
-            new_system = System(list(new_system.all_packages_dict.values()))
-
-            to_delete_packages = []
-            was_required_by_packages = []
-            for deleted_package in deleted_packages:
-                if deleted_package.required_by is not None:
-                    was_required_by_packages.extend(
-                        [new_system.all_packages_dict[required_by] for required_by in deleted_package.required_by if
-                         required_by in new_system.all_packages_dict])
-            deleted_packages = []
-
-            for was_required_by_package in was_required_by_packages:
-                if not new_system.are_all_deps_fulfilled(was_required_by_package):
-                    if was_required_by_package not in to_delete_packages:
-                        to_delete_packages.append(was_required_by_package)
+        new_system.append_packages(repo_packages)
 
         while True:
+            # find packages with unfulfilled deps
             to_delete_packages = []
-            for package in packages:
-                if package.name in new_system.all_packages_dict:
-                    if not new_system.are_all_deps_fulfilled(package):
-                        to_delete_packages.append(package)
+            for package in new_system.all_packages_dict.values():
+                if not new_system.are_all_deps_fulfilled(package, only_depends=True):
+                    to_delete_packages.append(package)
 
-            if not to_delete_packages:
-                return new_system
+            if to_delete_packages:
+                for package in to_delete_packages:
+                    del new_system.all_packages_dict[package.name]
+                new_system = System(list(new_system.all_packages_dict.values()))
+                continue
+            elif packages:
+                package = packages.pop(0)
+                conflicting_packages = new_system.conflicting_with(package)
+                for conf_package in conflicting_packages:
+                    del new_system.all_packages_dict[conf_package.name]
+                new_system = System(list(new_system.all_packages_dict.values()))
+                new_system.append_packages([package])
+                continue
 
-            for to_delete_package in to_delete_packages:
-                del new_system.all_packages_dict[to_delete_package.name]
-            new_system = System(list(new_system.all_packages_dict.values()))
+            break
+
+        return new_system
 
     def differences_between_systems(self, other_systems: Sequence['System']) -> Tuple[
         Tuple[Set['Package'], Set['Package']], List[Tuple[Set['Package'], Set['Package']]]]:
@@ -1271,7 +1326,8 @@ class System:
         to_upgrade_names = to_install_names & to_uninstall_names
         to_install_names -= to_upgrade_names
         to_uninstall_names -= to_upgrade_names
-        just_reinstall_names = set([package.name for package in solution]) - set.union(
+        just_reinstall_names = set(
+            [package.name for package in solution if package.name in new_system.all_packages_dict]) - set.union(
             *[to_upgrade_names, to_install_names, to_uninstall_names])
 
         if to_install_names:
