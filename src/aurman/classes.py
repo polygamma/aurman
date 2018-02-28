@@ -554,20 +554,16 @@ class Package:
             if current_solutions:
                 break
 
-            if not single_first:
-                single_first = True
-                continue
-            else:
-                single_first = False
-
             deps_to_deep_check_length = len(deps_to_deep_check)
             for problem in found_problems:
                 problem_packages_names = set([package.name for package in problem.relevant_packages])
                 deps_to_deep_check |= problem_packages_names
 
             # if there are no new deps to deep check, we are done, too
-            if len(deps_to_deep_check) == deps_to_deep_check_length:
+            if len(deps_to_deep_check) == deps_to_deep_check_length and single_first:
                 break
+            elif len(deps_to_deep_check) == deps_to_deep_check_length:
+                single_first = True
 
         # output for user
         if found_problems and not current_solutions:
