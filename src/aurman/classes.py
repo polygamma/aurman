@@ -2,7 +2,7 @@ import logging
 import os
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Set, Union
+from typing import Sequence, List, Tuple, Set, Union, Dict
 
 from pycman.config import PacmanConfig
 
@@ -33,10 +33,13 @@ class DepAlgoSolution:
         self.visited_packages: List['Package'] = visited_packages
         self.visited_names: Set[str] = visited_names
         self.is_valid: bool = True  # may be set to False by the algorithm in case of conflicts, dep-cycles, ...
+        self.dict_to_way: Dict[str, List['Package']] = {}
 
     def solution_copy(self):
         to_return = DepAlgoSolution(self.packages_in_solution[:], self.visited_packages[:], set(self.visited_names))
         to_return.is_valid = self.is_valid
+        for key, value in self.dict_to_way.items():
+            to_return.dict_to_way[key] = value[:]
         return to_return
 
 
@@ -285,7 +288,7 @@ class Package:
                  required_by: Sequence[str] = None, optdepends: Sequence[str] = None, provides: Sequence[str] = None,
                  replaces: Sequence[str] = None, pkgbase: str = None, install_reason: str = None,
                  makedepends: Sequence[str] = None, checkdepends: Sequence[str] = None, type_of: PossibleTypes = None,
-                 repo: str = None, way_to_self: List['Package'] = None):
+                 repo: str = None):
         self.name = name  # %n
         self.version = version  # %v
         self.depends = depends  # %D
@@ -300,7 +303,6 @@ class Package:
         self.checkdepends = checkdepends  # aur only
         self.type_of = type_of  # PossibleTypes Enum value
         self.repo = repo  # %r (only useful for upstream repo packages)
-        self.way_to_self = way_to_self  # way to this package during solution finding
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.name == other.name and self.version == other.version
@@ -374,7 +376,7 @@ class Package:
                 conflicting_packages.add(self)
                 ways_to_conflict = []
                 for package in conflicting_packages:
-                    way_to_conflict = package.way_to_self[:]
+                    way_to_conflict = solution.dict_to_way.get(package.name, [])[:]
                     way_to_conflict.append(package)
                     ways_to_conflict.append(way_to_conflict)
                 found_problems.add(DepAlgoConflict(conflicting_packages, ways_to_conflict))
@@ -384,6 +386,7 @@ class Package:
 
         # copy solution and add self to visited packages, maybe flag as invalid
         solution = solution.solution_copy()
+        own_way = solution.dict_to_way.get(self.name, [])
         solution.visited_packages.append(self)
         if is_conflict:
             solution.is_valid = False
@@ -429,9 +432,9 @@ class Package:
             current_solutions = finished_solutions
             for solution in not_finished_solutions:
                 for dep_provider in dep_providers:
-                    if not dep_provider.way_to_self:
-                        dep_provider.way_to_self.extend(self.way_to_self)
-                        dep_provider.way_to_self.append(self)
+                    if dep_provider.name not in solution.dict_to_way:
+                        solution.dict_to_way[dep_provider.name] = own_way[:]
+                        solution.dict_to_way[dep_provider.name].append(self)
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps,
@@ -467,8 +470,6 @@ class Package:
         while True:
             current_solutions = [DepAlgoSolution([], [], set())]
             found_problems = set()
-            for package in upstream_system.all_packages_dict.values():
-                package.way_to_self = []
 
             # calc solutions
             for package in packages:
