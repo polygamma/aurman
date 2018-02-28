@@ -425,8 +425,11 @@ class Package:
                 for dep_provider in dep_providers:
                     # way to the package being called in the current solution
                     if dep_provider.name not in solution.dict_to_way:
+                        way_added = True
                         solution.dict_to_way[dep_provider.name] = own_way[:]
                         solution.dict_to_way[dep_provider.name].append(self)
+                    else:
+                        way_added = False
                     # tracking for which deps the package being called has been chosen as provider
                     if dep_provider.name not in solution.dict_to_deps:
                         solution.dict_to_deps[dep_provider.name] = set()
@@ -436,6 +439,10 @@ class Package:
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, only_unfulfilled_deps,
                                                                deps_to_deep_check))
+                    # remove added things
+                    solution.dict_to_deps[dep_provider.name].remove(dep)
+                    if way_added:
+                        del solution.dict_to_way[dep_provider.name]
 
         # conflict checking
         for solution in current_solutions:
