@@ -1142,17 +1142,22 @@ class System:
         for package in repo_packages:
             conflicting_packages.extend(new_system.conflicting_with(package))
         conflicting_packages = set(conflicting_packages)
-        for package in conflicting_packages:
-            del new_system.all_packages_dict[package.name]
-        new_system = System(list(new_system.all_packages_dict.values()))
+        if conflicting_packages:
+            has_been_deleted = True
+            for package in conflicting_packages:
+                del new_system.all_packages_dict[package.name]
+            new_system = System(list(new_system.all_packages_dict.values()))
+        else:
+            has_been_deleted = False
         new_system.append_packages(repo_packages)
 
         while True:
             # find packages with unfulfilled deps
             to_delete_packages = []
-            for package in new_system.all_packages_dict.values():
-                if not new_system.are_all_deps_fulfilled(package, only_depends=True):
-                    to_delete_packages.append(package)
+            if has_been_deleted:
+                for package in new_system.all_packages_dict.values():
+                    if not new_system.are_all_deps_fulfilled(package, only_depends=True):
+                        to_delete_packages.append(package)
 
             if to_delete_packages:
                 for package in to_delete_packages:
@@ -1162,10 +1167,14 @@ class System:
             elif packages:
                 package = packages.pop(0)
                 conflicting_packages = new_system.conflicting_with(package)
-                for conf_package in conflicting_packages:
-                    del new_system.all_packages_dict[conf_package.name]
-                new_system = System(list(new_system.all_packages_dict.values()))
-                new_system.append_packages([package])
+                if conflicting_packages:
+                    has_been_deleted = True
+                    for conf_package in conflicting_packages:
+                        del new_system.all_packages_dict[conf_package.name]
+                    new_system = System(list(new_system.all_packages_dict.values()))
+                else:
+                    has_been_deleted = False
+                new_system.append_packages((package,))
                 continue
 
             break
