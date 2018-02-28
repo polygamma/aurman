@@ -378,7 +378,10 @@ class Package:
 
         # AND - every dep has to be fulfilled
         for dep in self.relevant_deps():
-            if is_build_available or only_unfulfilled_deps and installed_system.provided_by(dep):
+            if only_unfulfilled_deps and installed_system.provided_by(dep):
+                continue
+
+            if is_build_available and dep not in self.relevant_deps(only_depends=True):
                 continue
 
             dep_providers = upstream_system.provided_by(dep)
@@ -446,7 +449,10 @@ class Package:
 
             packages_to_append = solution.packages_in_solution[:]
             packages_to_append.append(self)
-            new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
+            if only_unfulfilled_deps:
+                new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
+            else:
+                new_system = System(()).hypothetical_append_packages_to_system(packages_to_append)
             for package in installed_packages:
                 if solution.dict_call_as_needed.get(package.name,
                                                     False) and package.name not in new_system.all_packages_dict:
@@ -509,6 +515,7 @@ class Package:
         """
 
         deps_to_deep_check = set()
+        single_first = False
 
         while True:
             current_solutions = [DepAlgoSolution([], [], set())]
@@ -516,14 +523,16 @@ class Package:
 
             # calc solutions
             # for every single package first
-            for package in packages:
-                new_solutions = []
-                for solution in current_solutions:
-                    solution.dict_call_as_needed = {package.name: True}
-                    new_solutions.extend(
-                        package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
-                                                          only_unfulfilled_deps, deps_to_deep_check))
-                current_solutions = new_solutions
+            if single_first:
+                for package in packages:
+                    new_solutions = []
+                    for solution in current_solutions:
+                        solution.dict_call_as_needed = {package.name: True}
+                        new_solutions.extend(
+                            package.solutions_for_dep_problem(solution, found_problems, installed_system,
+                                                              upstream_system, only_unfulfilled_deps,
+                                                              deps_to_deep_check))
+                    current_solutions = new_solutions
 
             # now for all packages together
             for solution in current_solutions:
@@ -544,6 +553,12 @@ class Package:
             # in case of at least one solution, we are done
             if current_solutions:
                 break
+
+            if not single_first:
+                single_first = True
+                continue
+            else:
+                single_first = False
 
             deps_to_deep_check_length = len(deps_to_deep_check)
             for problem in found_problems:
@@ -1116,6 +1131,15 @@ class System:
             if package.type_of is PossibleTypes.REPO_PACKAGE:
                 repo_packages.append(package)
                 packages.remove(package)
+        # remove duplicates for the repo packages only
+        repo_packages = list(set(repo_packages))
+
+        # check that there is no conflict between repo packages
+        repo_system = System(())
+        for package in repo_packages:
+            if repo_system.conflicting_with(package):
+                return new_system
+            repo_system.append_packages((package,))
 
         # find conflicts with repo packages and append repo packages
         conflicting_packages = []
