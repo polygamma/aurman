@@ -727,7 +727,9 @@ class Package:
                     if run("git diff --no-index --quiet '" + "' '".join(
                             [os.path.join(git_aurman_dir, file), file]) + "'",
                            shell=True, cwd=package_dir).returncode == 1:
-                        if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
+                        if ask_user("Do you want to view the changes of {} of {}?".format(
+                                Colors.BOLD(Colors.LIGHT_MAGENTA(file)), Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
+                                False):
                             run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
                                 shell=True, cwd=package_dir)
                             changes_seen = True
@@ -737,7 +739,9 @@ class Package:
                     else:
                         changes_seen = False
                 else:
-                    if ask_user("Do you want to view the changes of " + file + " of " + self.name + " ?", False):
+                    if ask_user("Do you want to view the changes of {} of {}?".format(
+                            Colors.BOLD(Colors.LIGHT_MAGENTA(file)), Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
+                            False):
                         run("git diff --no-index '" + "' '".join([os.path.join("/dev", "null"), file]) + "'",
                             shell=True,
                             cwd=package_dir)
@@ -749,7 +753,7 @@ class Package:
 
                 # if the user wanted to see changes, ask, if he wants to edit the file
                 if changes_seen:
-                    if ask_user("Do you want to edit " + file + "?", False):
+                    if ask_user("Do you want to edit {}?".format(Colors.BOLD(Colors.LIGHT_MAGENTA(file))), False):
                         if run(Package.default_editor_path + " " + os.path.join(package_dir, file),
                                shell=True).returncode != 0:
                             logging.error("Editing {} failed".format(file))
