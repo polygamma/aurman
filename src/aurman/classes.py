@@ -369,7 +369,7 @@ class Package:
         elif self in solution.visited_packages:
             return [solution.solution_copy()]
 
-        # copy solution and add self to visited packages, maybe flag as invalid
+        # copy solution and add self to visited packages
         solution = solution.solution_copy()
         is_build_available = self in solution.packages_in_solution
         own_way = solution.dict_to_way.get(self.name, [])
