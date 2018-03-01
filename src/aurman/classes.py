@@ -663,7 +663,8 @@ class Package:
             if not is_key_known:
                 if fetch_always or ask_user(
                         "PGP Key {} found in PKGBUILD of {} and is not known yet. "
-                        "Do you want to import the key?".format(pgp_key, self.name), True):
+                        "Do you want to import the key?".format(Colors.BOLD(Colors.LIGHT_MAGENTA(pgp_key)),
+                                                                Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), True):
                     if keyserver is None:
                         if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
                             logging.error("Import PGP key {} failed.".format(pgp_key))
@@ -716,6 +717,9 @@ class Package:
             if file.endswith(".install"):
                 relevant_files.append(file)
 
+        # If the user saw any changes
+        any_changes_seen = False
+
         # check if there are changes, if there are, ask the user if he wants to see them
         if not noedit:
             for file in relevant_files:
@@ -727,6 +731,7 @@ class Package:
                             run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
                                 shell=True, cwd=package_dir)
                             changes_seen = True
+                            any_changes_seen = True
                         else:
                             changes_seen = False
                     else:
@@ -738,6 +743,7 @@ class Package:
                             cwd=package_dir)
 
                         changes_seen = True
+                        any_changes_seen = True
                     else:
                         changes_seen = False
 
@@ -751,7 +757,9 @@ class Package:
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
-        if noedit or ask_user("Are you fine with using the files of {}?".format(self.name), True):
+        if noedit or not any_changes_seen or ask_user(
+                "Are you {} with using the files of {}?".format(Colors.BOLD(Colors.LIGHT_MAGENTA("fine")),
+                                                                Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), True):
             with open(reviewed_file, "w") as f:
                 f.write("1")
 
