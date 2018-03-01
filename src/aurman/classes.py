@@ -570,7 +570,10 @@ class Package:
             if len(deps_to_deep_check) == deps_to_deep_check_length and single_first:
                 break
             elif len(deps_to_deep_check) == deps_to_deep_check_length:
-                single_first = True
+                if len(packages) > 1:
+                    single_first = True
+                else:
+                    break
 
         # output for user
         if found_problems and not current_solutions:
