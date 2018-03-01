@@ -171,8 +171,10 @@ def process(args):
                     concrete_packages_to_install.append(upstream_package)
 
     aurman_status("calculating solutions...")
-    solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system,
-                                    only_unfulfilled_deps)
+    if only_unfulfilled_deps:
+        solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system)
+    else:
+        solutions = Package.dep_solving(concrete_packages_to_install, System(()), upstream_system)
 
     # validates the found solutions and lets the user choose one of them, if there are more than one valid solutions
     try:
