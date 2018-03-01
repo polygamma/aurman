@@ -328,7 +328,7 @@ class Package:
         return list(set(to_return))
 
     def solutions_for_dep_problem(self, solution: 'DepAlgoSolution', found_problems: Set['DepAlgoFoundProblems'],
-                                  installed_system: 'System', upstream_system: 'System', only_unfulfilled_deps: bool,
+                                  installed_system: 'System', upstream_system: 'System',
                                   deps_to_deep_check: Set[str]) -> List['DepAlgoSolution']:
         """
         Heart of this AUR helper. Algorithm for dependency solving.
@@ -338,7 +338,6 @@ class Package:
         :param found_problems:          A set containing found problems while searching for solutions
         :param installed_system:        The currently installed system
         :param upstream_system:         The system containing the known upstream packages
-        :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
         :param deps_to_deep_check:      Set containing deps to check all possible dep providers of
         :return:                        The found solutions
         """
@@ -378,7 +377,7 @@ class Package:
 
         # AND - every dep has to be fulfilled
         for dep in self.relevant_deps():
-            if only_unfulfilled_deps and installed_system.provided_by(dep):
+            if installed_system.provided_by(dep):
                 continue
 
             if is_build_available and dep not in self.relevant_deps(only_depends=True):
@@ -437,8 +436,7 @@ class Package:
                     # call this function recursively on the dep provider
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
-                                                               upstream_system, only_unfulfilled_deps,
-                                                               deps_to_deep_check))
+                                                               upstream_system, deps_to_deep_check))
                     # remove added things
                     solution.dict_to_deps[dep_provider.name].remove(dep)
                     if way_added:
@@ -456,10 +454,7 @@ class Package:
 
             packages_to_append = solution.packages_in_solution[:]
             packages_to_append.append(self)
-            if only_unfulfilled_deps:
-                new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
-            else:
-                new_system = System(()).hypothetical_append_packages_to_system(packages_to_append)
+            new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
             for package in installed_packages:
                 if solution.dict_call_as_needed.get(package.name,
                                                     False) and package.name not in new_system.all_packages_dict:
@@ -508,15 +503,14 @@ class Package:
         return current_solutions
 
     @staticmethod
-    def dep_solving(packages: Sequence['Package'], installed_system: 'System', upstream_system: 'System',
-                    only_unfulfilled_deps: bool) -> List[List['Package']]:
+    def dep_solving(packages: Sequence['Package'], installed_system: 'System', upstream_system: 'System') -> List[
+        List['Package']]:
         """
         Solves deps for packages.
 
         :param packages:                The packages in a sequence
         :param installed_system:        The system containing the installed packages
         :param upstream_system:         The system containing the known upstream packages
-        :param only_unfulfilled_deps:   True (default) if one only wants to fetch unfulfilled deps packages, False otherwise
         :return:                        A list containing the solutions.
                                         Every inner list contains the packages for the solution topologically sorted
         """
@@ -537,8 +531,7 @@ class Package:
                         solution.dict_call_as_needed = {package.name: True}
                         new_solutions.extend(
                             package.solutions_for_dep_problem(solution, found_problems, installed_system,
-                                                              upstream_system, only_unfulfilled_deps,
-                                                              deps_to_deep_check))
+                                                              upstream_system, deps_to_deep_check))
                     current_solutions = new_solutions
 
             # now for all packages together
@@ -551,7 +544,7 @@ class Package:
                 for solution in current_solutions:
                     new_solutions.extend(
                         package.solutions_for_dep_problem(solution, found_problems, installed_system, upstream_system,
-                                                          only_unfulfilled_deps, deps_to_deep_check))
+                                                          deps_to_deep_check))
                 current_solutions = new_solutions
 
             # delete invalid solutions
