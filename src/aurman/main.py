@@ -45,7 +45,7 @@ def process(args):
     # if not -S or --sync, just redirect to pacman
     if pacman_args.operation is not PacmanOperations.SYNC:
         try:
-            pacman(" ".join(args), False)
+            pacman(" ".join(args), False, sudo=False)
         except InvalidInput:
             return
         finally:
