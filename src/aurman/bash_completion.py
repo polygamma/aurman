@@ -65,6 +65,7 @@ def possible_completions():
                 option = word.replace("-", "")
                 opt_index = i
                 break
+            continue
 
         values = word[1:]
         for value in values:
