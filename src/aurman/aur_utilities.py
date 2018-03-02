@@ -11,13 +11,14 @@ from aurman.wrappers import split_query_helper
 aur_domain = "https://aur.archlinux.org"
 
 
-def get_aur_info(package_names: Sequence[str], search: bool = False) -> List[Dict]:
+def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bool = False) -> List[Dict]:
     """
     Fetches AUR infos for package_names via AurJson.
     https://wiki.archlinux.org/index.php/AurJson
 
     :param package_names:   The names of the packages in a sequence
     :param search:          True if one wants to search instead of getting info
+    :param by_name:         If one wants to search by name only
     :return:                A list containing the "results" values of the RPC answer.
     """
 
@@ -27,6 +28,8 @@ def get_aur_info(package_names: Sequence[str], search: bool = False) -> List[Dic
         query_prefix = "&arg[]="
     else:
         query_url = aur_domain + "/rpc/?v=5&type=search"
+        if by_name:
+            query_url += "&by=name"
         query_prefix = "&arg="
     query_url_length = len(query_url.encode("utf8"))
     query_prefix_length = len(query_prefix.encode("utf8"))
