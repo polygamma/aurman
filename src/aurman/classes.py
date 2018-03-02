@@ -452,8 +452,7 @@ class Package:
             new_not_finished_solutions = []
             for solution in not_finished_solutions:
                 solution.visited_names.add(dep)
-                sol_system = System(tuple(solution.installed_solution_packages))
-                if sol_system.provided_by(dep):
+                if System(tuple(solution.installed_solution_packages)).provided_by(dep):
                     finished_solutions.append(solution)
                 else:
                     new_not_finished_solutions.append(solution)
@@ -489,16 +488,18 @@ class Package:
                 continue
 
             installed_packages = list(solution.installed_solution_packages)
-            conf_system = System(installed_packages).conflicting_with(self)
-            if not conf_system:
-                continue
-
             packages_to_append = solution.packages_in_solution[:]
             packages_to_append.append(self)
             new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
+            if self.name not in new_system.all_packages_dict:
+                self_not_added = True
+            else:
+                self_not_added = False
+
             for package in installed_packages:
-                if solution.dict_call_as_needed.get(package.name,
-                                                    False) and package.name not in new_system.all_packages_dict:
+                if self_not_added or \
+                        solution.dict_call_as_needed.get(package.name, False) \
+                        and package.name not in new_system.all_packages_dict:
                     break
             # solution possible at this point
             else:
@@ -511,11 +512,12 @@ class Package:
                             del solution.dict_to_deps[package.name]
                         if package.name in solution.dict_to_way:
                             del solution.dict_to_way[package.name]
-                continue
+                if not self_not_added:
+                    continue
 
             # solution not possible!
             solution.is_valid = False
-            conflicting_packages = set(conf_system)
+            conflicting_packages = set(System(installed_packages).conflicting_with(self))
             conflicting_packages.add(self)
             ways_to_conflict = []
             for package in conflicting_packages:
@@ -1165,6 +1167,30 @@ class System:
         else:
             return True
 
+    @staticmethod
+    def calc_install_chunks(packages_to_chunk: Sequence['Package']) -> List[List['Package']]:
+        """
+        Calculates the chunks in which the given packages would be installed.
+        Repo packages are installed at once, AUR packages one by one.
+        e.g. AUR1, Repo1, Repo2, AUR2 yields: AUR1, Repo1 AND Repo2, AUR2
+
+        :param packages_to_chunk:   The packages to calc the chunks of
+        :return:                    The packages in chunks
+        """
+        current_list: List['Package'] = []
+        return_list: List[List['Package']] = [current_list]
+
+        for package in packages_to_chunk:
+            if current_list and (package.type_of is not PossibleTypes.REPO_PACKAGE
+                                 or current_list[0].type_of is not package.type_of):
+
+                current_list = [package]
+                return_list.append(current_list)
+            else:
+                current_list.append(package)
+
+        return return_list
+
     def hypothetical_append_packages_to_system(self, packages: List['Package']) -> 'System':
         """
         hypothetically appends packages to this system (only makes sense for the installed system)
@@ -1175,65 +1201,45 @@ class System:
         """
 
         new_system = System(list(self.all_packages_dict.values()))
+        if not packages:
+            return new_system
 
-        # sort by repo and aur packages
-        packages = packages[:]
-        repo_packages = []
-        for package in packages[:]:
-            if package.type_of is PossibleTypes.REPO_PACKAGE:
-                repo_packages.append(package)
-                packages.remove(package)
-        # remove duplicates for the repo packages only
-        repo_packages = list(set(repo_packages))
+        for package_chunk in System.calc_install_chunks(packages):
+            # check if packages in chunk conflict each other
+            package_chunk_system = System(())
+            for package in package_chunk:
+                if package_chunk_system.conflicting_with(package):
+                    break
+                package_chunk_system.append_packages((package,))
+            # no conflicts
+            else:
+                # calculate conflicting packages
+                conflicting_new_system_packages = []
+                for package in package_chunk:
+                    conflicting_new_system_packages.extend(new_system.conflicting_with(package))
+                conflicting_new_system_packages = set(conflicting_new_system_packages)
 
-        # check that there is no conflict between repo packages
-        repo_system = System(())
-        for package in repo_packages:
-            if repo_system.conflicting_with(package):
-                return new_system
-            repo_system.append_packages((package,))
-
-        # find conflicts with repo packages and append repo packages
-        conflicting_packages = []
-        for package in repo_packages:
-            conflicting_packages.extend(new_system.conflicting_with(package))
-        conflicting_packages = set(conflicting_packages)
-        if conflicting_packages:
-            has_been_deleted = True
-            for package in conflicting_packages:
-                del new_system.all_packages_dict[package.name]
-            new_system = System(list(new_system.all_packages_dict.values()))
-        else:
-            has_been_deleted = False
-        new_system.append_packages(repo_packages)
-
-        while True:
-            # find packages with unfulfilled deps
-            to_delete_packages = []
-            if has_been_deleted:
-                for package in new_system.all_packages_dict.values():
-                    if not new_system.are_all_deps_fulfilled(package, only_depends=True):
-                        to_delete_packages.append(package)
-
-            if to_delete_packages:
-                for package in to_delete_packages:
-                    del new_system.all_packages_dict[package.name]
-                new_system = System(list(new_system.all_packages_dict.values()))
-                continue
-            elif packages:
-                package = packages.pop(0)
-                conflicting_packages = new_system.conflicting_with(package)
-                if conflicting_packages:
-                    has_been_deleted = True
-                    for conf_package in conflicting_packages:
-                        del new_system.all_packages_dict[conf_package.name]
+                # remove conflicting packages
+                if conflicting_new_system_packages:
+                    for package in conflicting_new_system_packages:
+                        del new_system.all_packages_dict[package.name]
                     new_system = System(list(new_system.all_packages_dict.values()))
-                else:
-                    has_been_deleted = False
-                new_system.append_packages((package,))
-                continue
+                # append packages
+                new_system.append_packages(package_chunk)
 
-            break
+                # delete packages whose deps are not fulfilled anymore
+                while True:
+                    to_delete_packages = []
+                    for package in new_system.all_packages_dict.values():
+                        if not new_system.are_all_deps_fulfilled(package, only_depends=True):
+                            to_delete_packages.append(package)
+
+                    if not to_delete_packages:
+                        break
+
+                    for package in to_delete_packages:
+                        del new_system.all_packages_dict[package.name]
+                    new_system = System(list(new_system.all_packages_dict.values()))
 
         return new_system
 
