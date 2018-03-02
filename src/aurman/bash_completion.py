@@ -52,7 +52,7 @@ def possible_completions():
         print(" ".join(options))
         return
 
-    # get option before cur
+    # get valid option before cur
     option = None
     opt_index = None
     for i in reversed(range(0, index)):
@@ -67,8 +67,7 @@ def possible_completions():
                 break
             continue
 
-        values = word[1:]
-        for value in values:
+        for value in reversed(word[1:]):
             if "-{}".format(value) in options:
                 option = value
                 opt_index = i
