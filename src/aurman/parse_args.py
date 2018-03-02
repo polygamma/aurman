@@ -40,6 +40,8 @@ pacman_options = {
     "asdeps": ("asdeps", 0, ()),
     "asexplicit": ("asexplicit", 0, ()),
     "needed": ("needed", 0, ()),
+    "ignore": ("ignore", 1, ()),
+    "ignoregroup": ("ignoregroup", 1, ()),
 
     "s": ("search", 2, (PacmanOperations.SYNC,)),
     "search": ("search", 2, (PacmanOperations.SYNC,)),
