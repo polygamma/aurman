@@ -190,7 +190,8 @@ class Package:
                 'replaces': package_dict.get('Replaces', []),
                 'pkgbase': package_dict['PackageBase'],
                 'makedepends': package_dict.get('MakeDepends', []),
-                'checkdepends': package_dict.get('CheckDepends', [])
+                'checkdepends': package_dict.get('CheckDepends', []),
+                'groups': package_dict.get('Groups', [])
             }
 
             if is_devel(name):
@@ -203,12 +204,14 @@ class Package:
         return return_list
 
     @staticmethod
-    def get_ignored_packages_names(ign_packages_names: Sequence[str], ign_groups_names: Sequence[str]) -> Set[str]:
+    def get_ignored_packages_names(ign_packages_names: Sequence[str], ign_groups_names: Sequence[str],
+                                   installed_system: 'System') -> Set[str]:
         """
         Returns the names of the ignored packages from the pacman.conf + the names from the command line
 
         :param ign_packages_names:  Names of packages to ignore
         :param ign_groups_names:    Names of groups to ignore
+        :param installed_system:    System containing the installed packages
         :return:                    a set containing the names of the ignored packages
         """
         handler = PacmanConfig(conf="/etc/pacman.conf").initialize_alpm()
@@ -229,13 +232,11 @@ class Package:
             return return_set
 
         # fetch packages names of groups to ignore
-        for db in handler.get_syncdbs():
-            for grp_name in ignored_groups_names:
-                grp_packages = db.read_grp(grp_name)
-                if grp_packages is None:
-                    continue
-                for pkg in grp_packages[1]:
-                    return_set.add(pkg.name)
+        for package_name in installed_system.all_packages_dict:
+            package = installed_system.all_packages_dict[package_name]
+            for package_group in package.groups:
+                if package_group in ignored_groups_names:
+                    return_set.add(package_name)
 
         return return_set
 
@@ -262,11 +263,11 @@ class Package:
         :return:                    List containing the packages
         """
         if "Q" in expac_operation:
-            formatting = list("nvDHoPRew")
+            formatting = list("nvDHoPReGw")
             repos = []
         else:
             assert "S" in expac_operation
-            formatting = list("nvDHoPRer")
+            formatting = list("nvDHoPReGr")
             repos = Package.get_known_repos()
 
         expac_return = expac(expac_operation, formatting, packages_names)
@@ -281,7 +282,8 @@ class Package:
                 'conflicts': splitted_line[3].split(),
                 'optdepends': splitted_line[4].split(),
                 'provides': splitted_line[5].split(),
-                'replaces': splitted_line[6].split()
+                'replaces': splitted_line[6].split(),
+                'groups': splitted_line[8].split()
             }
 
             if packages_type is PossibleTypes.AUR_PACKAGE or packages_type is PossibleTypes.DEVEL_PACKAGE:
@@ -300,10 +302,10 @@ class Package:
                 to_expand['pkgbase'] = splitted_line[7]
 
             if "Q" in expac_operation:
-                to_expand['install_reason'] = splitted_line[8]
+                to_expand['install_reason'] = splitted_line[9]
             else:
                 assert "S" in expac_operation
-                to_expand['repo'] = splitted_line[8]
+                to_expand['repo'] = splitted_line[9]
 
                 if to_expand['name'] in return_dict and repos.index(return_dict[to_expand['name']].repo) > repos.index(
                         to_expand['repo']):
@@ -319,7 +321,8 @@ class Package:
     def __init__(self, name: str, version: str, depends: Sequence[str] = None, conflicts: Sequence[str] = None,
                  optdepends: Sequence[str] = None, provides: Sequence[str] = None, replaces: Sequence[str] = None,
                  pkgbase: str = None, install_reason: str = None, makedepends: Sequence[str] = None,
-                 checkdepends: Sequence[str] = None, type_of: PossibleTypes = None, repo: str = None):
+                 checkdepends: Sequence[str] = None, type_of: PossibleTypes = None, repo: str = None,
+                 groups: Sequence[str] = None):
         self.name = name  # %n
         self.version = version  # %v
         self.depends = depends  # %D
@@ -333,6 +336,7 @@ class Package:
         self.checkdepends = checkdepends  # aur only
         self.type_of = type_of  # PossibleTypes Enum value
         self.repo = repo  # %r (only useful for upstream repo packages)
+        self.groups = groups  # %G
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.name == other.name and self.version == other.version
