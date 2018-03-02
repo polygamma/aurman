@@ -236,32 +236,25 @@ def process(args):
     except InvalidInput:
         return
 
-    # split packages
-    repo_packages_names = []
-    # for aur packages only sets of names needed
-    explicit_aur_packages_names = set()
-    for package in chosen_solution[:]:
-        if package.type_of is PossibleTypes.REPO_PACKAGE:
-            repo_packages_names.append(package.name)
-            # concrete repo packages instances not needed anymore
-            chosen_solution.remove(package)
-        elif package.name in for_us or ((package.name in installed_system.all_packages_dict) and (
-                installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
-            explicit_aur_packages_names.add(package.name)
+    aurman_status("looking for new pkgbuilds and fetch them...")
+    for package in chosen_solution:
+        if package.type_of is PossibleTypes.REPO_PACKAGE \
+                or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
+            continue
+        package.fetch_pkgbuild()
+    try:
+        for package in chosen_solution:
+            if package.type_of is PossibleTypes.REPO_PACKAGE \
+                    or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
+                continue
+            package.show_pkgbuild(noedit)
+            package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
+    except InvalidInput:
+        return
 
-    # install repo packages
+    # install packages
     if not sudo_acquired:
         acquire_sudo()
-
-    if repo_packages_names:
-        pacman_args_copy = deepcopy(pacman_args)
-        pacman_args_copy.targets = repo_packages_names
-        pacman_args_copy.asdeps = True
-        pacman_args_copy.asexplicit = False
-        try:
-            pacman(str(pacman_args_copy), False)
-        except InvalidInput:
-            return
 
     # generate pacman args for the aur packages
     pacman_args_copy = deepcopy(pacman_args)
@@ -273,30 +266,34 @@ def process(args):
     pacman_args_copy.asexplicit = False
     args_for_dependency = str(pacman_args_copy)
 
-    # build and install aur packages
-    aurman_status("looking for new pkgbuilds and fetch them...")
-    for package in chosen_solution:
-        if devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
-            continue
-        package.fetch_pkgbuild()
-    try:
-        for package in chosen_solution:
-            if devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
-                continue
-            package.show_pkgbuild(noedit)
-            package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
-    except InvalidInput:
-        return
+    # calc chunks to install
+    solution_packages_chunks = System.calc_install_chunks(chosen_solution)
 
-    for package in chosen_solution:
-        package.build()
-        try:
-            if package.name in explicit_aur_packages_names:
-                package.install(args_for_explicit)
-            else:
-                package.install(args_for_dependency)
-        except InvalidInput:
-            return
+    # install the chunks
+    for package_chunk in solution_packages_chunks:
+        # repo chunk
+        if package_chunk[0].type_of is PossibleTypes.REPO_PACKAGE:
+            pacman_args_copy = deepcopy(pacman_args)
+            pacman_args_copy.targets = [package.name for package in package_chunk]
+            pacman_args_copy.asdeps = True
+            pacman_args_copy.asexplicit = False
+            try:
+                pacman(str(pacman_args_copy), False)
+            except InvalidInput:
+                return
+        # aur chunks always consist of one package
+        else:
+            package = package_chunk[0]
+            package.build()
+            try:
+                if package.name in for_us \
+                        or ((package.name in installed_system.all_packages_dict)
+                            and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
+                    package.install(args_for_explicit)
+                else:
+                    package.install(args_for_dependency)
+            except InvalidInput:
+                return
 
 
 def main():
