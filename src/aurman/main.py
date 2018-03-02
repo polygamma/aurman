@@ -148,7 +148,8 @@ def process(args):
             package.get_devel_version()
 
     aurman_status("fetching ignored packages...")
-    ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup)
+    ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup,
+                                                                installed_system)
     # explicitly typed in names will not be ignored
     ignored_packages_names -= set(for_us)
     for ignored_packages_name in ignored_packages_names:
