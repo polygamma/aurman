@@ -90,6 +90,11 @@ native_points.append(HelpOption(["--asexplicit"],
                                 "Install packages explicitly"))
 native_points.append(HelpOption(["--needed"],
                                 "Do not reinstall the targets that are already up-to-date"))
+native_points.append(HelpOption(["--ignore"],
+                                "Directs pacman to ignore upgrades of package even if there is one available"))
+native_points.append(HelpOption(["--ignoregroup"],
+                                "Directs pacman to ignore upgrades of all packages in group, "
+                                "even if there is one available."))
 native_points.append(HelpOption(["-s", "--search"],
                                 "This will search each package in the sync databases for names or descriptions"))
 native_points.append(HelpOption(["-u", "--sysupgrade"],
@@ -108,8 +113,11 @@ native_aurman_points.append(HelpOption(["--noconfirm"],
                                        "Bypass any and all 'Are you sure?' messages"))
 native_aurman_points.append(HelpOption(["--needed"],
                                        "Do not reinstall the targets that are already up-to-date"))
+native_aurman_points.append(HelpOption(["--ignore"],
+                                       "Directs aurman to ignore upgrades of package even if there is one available"))
 native_aurman_points.append(HelpOption(["-s", "--search"],
-                                       "This will search each package in the sync databases for names or descriptions"))
+                                       "This will search each package in the sync databases and aur "
+                                       "for names or descriptions"))
 native_aurman_points.append(HelpOption(["-u", "--sysupgrade"],
                                        "Upgrades all packages that are out-of-date"))
 
