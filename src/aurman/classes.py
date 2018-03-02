@@ -488,6 +488,12 @@ class Package:
                 continue
 
             installed_packages = list(solution.installed_solution_packages)
+            conf_system = System(installed_packages).conflicting_with(self)
+            # if there are no conflicts, nothing will get deleted, so we may
+            # safely assume that no conflicts lead to an invalid solution
+            if not conf_system:
+                continue
+
             packages_to_append = solution.packages_in_solution[:]
             packages_to_append.append(self)
             new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
@@ -517,7 +523,7 @@ class Package:
 
             # solution not possible!
             solution.is_valid = False
-            conflicting_packages = set(System(installed_packages).conflicting_with(self))
+            conflicting_packages = set(conf_system)
             conflicting_packages.add(self)
             ways_to_conflict = []
             for package in conflicting_packages:
