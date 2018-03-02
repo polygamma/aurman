@@ -205,13 +205,13 @@ class Package:
 
     @staticmethod
     def get_ignored_packages_names(ign_packages_names: Sequence[str], ign_groups_names: Sequence[str],
-                                   installed_system: 'System') -> Set[str]:
+                                   upstream_system: 'System') -> Set[str]:
         """
         Returns the names of the ignored packages from the pacman.conf + the names from the command line
 
         :param ign_packages_names:  Names of packages to ignore
         :param ign_groups_names:    Names of groups to ignore
-        :param installed_system:    System containing the installed packages
+        :param upstream_system:     System containing the upstream packages
         :return:                    a set containing the names of the ignored packages
         """
         handler = PacmanConfig(conf="/etc/pacman.conf").initialize_alpm()
@@ -232,8 +232,8 @@ class Package:
             return return_set
 
         # fetch packages names of groups to ignore
-        for package_name in installed_system.all_packages_dict:
-            package = installed_system.all_packages_dict[package_name]
+        for package_name in upstream_system.all_packages_dict:
+            package = upstream_system.all_packages_dict[package_name]
             for package_group in package.groups:
                 if package_group in ignored_groups_names:
                     return_set.add(package_name)
