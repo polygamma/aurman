@@ -1221,11 +1221,17 @@ class System:
 
                 # remove conflicting packages
                 if conflicting_new_system_packages:
+                    deleted_packages = True
                     for package in conflicting_new_system_packages:
                         del new_system.all_packages_dict[package.name]
                     new_system = System(list(new_system.all_packages_dict.values()))
+                else:
+                    deleted_packages = False
+
                 # append packages
                 new_system.append_packages(package_chunk)
+                if not deleted_packages:
+                    continue
 
                 # delete packages whose deps are not fulfilled anymore
                 while True:
