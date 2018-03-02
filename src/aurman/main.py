@@ -123,6 +123,11 @@ def process(args):
     aurman_status("analyzing installed packages...", True)
     installed_system = System(System.get_installed_packages())
 
+    if installed_system.not_repo_not_aur_packages_list:
+        aurman_status("the following packages are neither in known repos nor in the aur")
+        for package in installed_system.not_repo_not_aur_packages_list:
+            aurman_note("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
+
     aurman_status("fetching upstream repo packages...")
     upstream_system = System(System.get_repo_packages())
 
@@ -149,15 +154,20 @@ def process(args):
 
     aurman_status("fetching ignored packages...")
     ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup,
-                                                                installed_system)
+                                                                upstream_system)
     # explicitly typed in names will not be ignored
     ignored_packages_names -= set(for_us)
     for ignored_packages_name in ignored_packages_names:
         if ignored_packages_name in upstream_system.all_packages_dict:
             if ignored_packages_name in installed_system.all_packages_dict:
-                aurman_note("Ignoring package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+                aurman_note(
+                    "Ignoring installed package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
                 upstream_system.all_packages_dict[ignored_packages_name] = installed_system.all_packages_dict[
                     ignored_packages_name]
+            else:
+                aurman_note(
+                    "Ignoring upstream package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+                del upstream_system.all_packages_dict[ignored_packages_name]
 
     if ignored_packages_names:
         aurman_status("recreating upstream system...")
