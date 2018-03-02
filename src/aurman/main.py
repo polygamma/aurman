@@ -2,6 +2,7 @@ import logging
 from copy import deepcopy
 from sys import argv, stdout
 
+from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
 from aurman.help_printing import aurman_help
@@ -267,6 +268,12 @@ def process(args):
 
 def main():
     try:
+        # auto completion
+        if argv[1] == "--auto_complete":
+            possible_completions()
+            return
+
+        # normal call
         process(argv[1:])
     except (SystemExit, KeyboardInterrupt):
         pass
