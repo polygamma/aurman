@@ -203,6 +203,43 @@ class Package:
         return return_list
 
     @staticmethod
+    def get_ignored_packages_names(ign_packages_names: Sequence[str], ign_groups_names: Sequence[str]) -> Set[str]:
+        """
+        Returns the names of the ignored packages from the pacman.conf + the names from the command line
+
+        :param ign_packages_names:  Names of packages to ignore
+        :param ign_groups_names:    Names of groups to ignore
+        :return:                    a set containing the names of the ignored packages
+        """
+        handler = PacmanConfig(conf="/etc/pacman.conf").initialize_alpm()
+
+        # ignored packages names
+        return_set = set(handler.ignorepkgs)
+        for ign_packages_name in ign_packages_names:
+            for name in ign_packages_name.split(","):
+                return_set.add(name)
+
+        # ignored groups names
+        ignored_groups_names = set(handler.ignoregrps)
+        for ign_groups_name in ign_groups_names:
+            for name in ign_groups_name.split(","):
+                ignored_groups_names.add(name)
+
+        if not ignored_groups_names:
+            return return_set
+
+        # fetch packages names of groups to ignore
+        for db in handler.get_syncdbs():
+            for grp_name in ignored_groups_names:
+                grp_packages = db.read_grp(grp_name)
+                if grp_packages is None:
+                    continue
+                for pkg in grp_packages[1]:
+                    return_set.add(pkg.name)
+
+        return return_set
+
+    @staticmethod
     def get_known_repos() -> List[str]:
         """
         Returns the known repos from the pacman.conf

@@ -31,6 +31,8 @@ All pacman operations are supported, but calling aurman with an operation beside
 - `--asdeps`
 - `--asexplicit`
 - `--needed`
+- `--ignore`
+- `--ignoregroup`
 - `-s`, `--search`
 - `-u`, `--sysupgrade`
 - `-y`, `--refresh`
@@ -39,6 +41,7 @@ All pacman operations are supported, but calling aurman with an operation beside
 
 - `--noconfirm`
 - `--needed`
+- `--ignore`
 - `-s`, `--search`
 - `-u`, `--sysupgrade`
 

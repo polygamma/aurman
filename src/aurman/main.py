@@ -147,6 +147,21 @@ def process(args):
         for package in upstream_system.devel_packages_list:
             package.get_devel_version()
 
+    aurman_status("fetching ignored packages...")
+    ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup)
+    # explicitly typed in names will not be ignored
+    ignored_packages_names -= set(for_us)
+    for ignored_packages_name in ignored_packages_names:
+        if ignored_packages_name in upstream_system.all_packages_dict:
+            if ignored_packages_name in installed_system.all_packages_dict:
+                aurman_note("Ignoring package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+                upstream_system.all_packages_dict[ignored_packages_name] = installed_system.all_packages_dict[
+                    ignored_packages_name]
+
+    if ignored_packages_names:
+        aurman_status("recreating upstream system...")
+        upstream_system = System(list(upstream_system.all_packages_dict.values()))
+
     # checking which packages need to be installed
     if not needed:
         concrete_packages_to_install = [upstream_system.all_packages_dict[name] for name in for_us]
