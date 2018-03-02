@@ -160,13 +160,15 @@ def process(args):
     for ignored_packages_name in ignored_packages_names:
         if ignored_packages_name in upstream_system.all_packages_dict:
             if ignored_packages_name in installed_system.all_packages_dict:
-                aurman_note(
-                    "Ignoring installed package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+                aurman_note("{} installed package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
+                                                             Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+
                 upstream_system.all_packages_dict[ignored_packages_name] = installed_system.all_packages_dict[
                     ignored_packages_name]
             else:
-                aurman_note(
-                    "Ignoring upstream package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+                aurman_note("{} upstream package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
+                                                            Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+
                 del upstream_system.all_packages_dict[ignored_packages_name]
 
     if ignored_packages_names:
