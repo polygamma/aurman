@@ -32,6 +32,7 @@ class DepAlgoSolution:
         self.packages_in_solution: List['Package'] = packages_in_solution  # containing the packages of the solution
         self.visited_packages: List['Package'] = visited_packages  # needed for tracking dep cycles
         self.visited_names: Set[str] = visited_names  # needed for tracking provided deps
+        self.not_to_delete_deps: Set[str] = set()  # tracking deps which must not be deleted
         self.is_valid: bool = True  # may be set to False by the algorithm in case of conflicts, dep-cycles, ...
         self.dict_to_way: Dict[str, List['Package']] = {}  # needed for tracking the way the packages have been called
         self.dict_to_deps: Dict[str, Set[str]] = {}  # needed for tracking which deps are being provided by the packages
@@ -41,6 +42,7 @@ class DepAlgoSolution:
     def solution_copy(self):
         to_return = DepAlgoSolution(self.packages_in_solution[:], self.visited_packages[:], set(self.visited_names))
         to_return.is_valid = self.is_valid
+        to_return.not_to_delete_deps = set(self.not_to_delete_deps)
         for key, value in self.dict_to_way.items():
             to_return.dict_to_way[key] = value[:]
         for key, value in self.dict_to_deps.items():
@@ -410,14 +412,37 @@ class Package:
             return [solution.solution_copy()]
 
         # copy solution and add self to visited packages
-        solution = solution.solution_copy()
-        is_build_available = self in solution.packages_in_solution
-        own_way = solution.dict_to_way.get(self.name, [])
+        solution: 'DepAlgoSolution' = solution.solution_copy()
+        is_build_available: bool = self in solution.packages_in_solution
+        own_way: List['Package'] = solution.dict_to_way.get(self.name, [])
+        own_not_to_delete_deps: Set[str] = set()
         solution.visited_packages.append(self)
-        current_solutions = [solution]
+        current_solutions: List['DepAlgoSolution'] = [solution]
+
+        # filter not fulfillable deps
+        relevant_deps = self.relevant_deps()
+        for dep in relevant_deps[:]:
+            if installed_system.provided_by(dep):
+                continue
+
+            if is_build_available and dep not in self.relevant_deps(only_depends=True):
+                continue
+
+            # dep not fulfillable, solutions not valid
+            if not upstream_system.provided_by(dep):
+                for solution in current_solutions:
+                    solution.is_valid = False
+
+                # create problem
+                dep_problem = DepAlgoNotProvided(dep, self)
+                dep_problem.relevant_packages.add(self)
+                dep_problem.relevant_packages |= set(own_way)
+                found_problems.add(dep_problem)
+
+                relevant_deps.remove(dep)
 
         # AND - every dep has to be fulfilled
-        for dep in self.relevant_deps():
+        for dep in relevant_deps:
             if installed_system.provided_by(dep):
                 continue
 
@@ -427,18 +452,6 @@ class Package:
             dep_providers = upstream_system.provided_by(dep)
             dep_providers_names = [package.name for package in dep_providers]
             dep_stripped_name = strip_versioning_from_name(dep)
-            # dep not fulfillable, solutions not valid
-            if not dep_providers:
-                for solution in current_solutions:
-                    if dep not in solution.visited_names:
-                        solution.is_valid = False
-                        solution.visited_names.add(dep)
-
-                # create problem
-                dep_problem = DepAlgoNotProvided(dep, self)
-                dep_problem.relevant_packages.add(self)
-                dep_problem.relevant_packages |= set(own_way)
-                found_problems.add(dep_problem)
 
             # we only need relevant dep providers
             if dep_stripped_name in dep_providers_names and dep not in deps_to_deep_check:
@@ -451,16 +464,28 @@ class Package:
             # check if dep provided by one of the packages already in a solution
             new_not_finished_solutions = []
             for solution in not_finished_solutions:
-                solution.visited_names.add(dep)
-                if System(tuple(solution.installed_solution_packages)).provided_by(dep):
+                if System(list(solution.installed_solution_packages)).provided_by(dep):
                     finished_solutions.append(solution)
                 else:
                     new_not_finished_solutions.append(solution)
             not_finished_solutions = new_not_finished_solutions
 
+            # track deps which may not be deleted
+            for solution in current_solutions:
+                if dep not in solution.not_to_delete_deps:
+                    solution.not_to_delete_deps.add(dep)
+                    own_not_to_delete_deps.add(dep)
+
+            # add dep to visited names
+            for solution in not_finished_solutions:
+                solution.visited_names.add(dep)
+
             # calc and append new solutions
             current_solutions = finished_solutions
+            new_problems_master: List[Set['DepAlgoFoundProblems']] = []
+            found_problems_copy: Set['DepAlgoFoundProblems'] = set(found_problems)
             for solution in not_finished_solutions:
+                new_problems: List[Set['DepAlgoFoundProblems']] = []
                 for dep_provider in dep_providers:
                     # way to the package being called in the current solution
                     if dep_provider.name not in solution.dict_to_way:
@@ -474,13 +499,38 @@ class Package:
                         solution.dict_to_deps[dep_provider.name] = set()
                     solution.dict_to_deps[dep_provider.name].add(dep)
                     # call this function recursively on the dep provider
+                    found_problems.clear()
                     current_solutions.extend(
                         dep_provider.solutions_for_dep_problem(solution, found_problems, installed_system,
                                                                upstream_system, deps_to_deep_check))
+                    new_problems.append(set(found_problems))
                     # remove added things
                     solution.dict_to_deps[dep_provider.name].remove(dep)
                     if way_added:
                         del solution.dict_to_way[dep_provider.name]
+
+                found_problems.clear()
+                for problem in found_problems_copy:
+                    found_problems.add(problem)
+
+                for problems in new_problems:
+                    if not problems:
+                        new_problems_master.append(set())
+                        break
+                else:
+                    prob_in_all_ret = set.intersection(*new_problems)
+                    if prob_in_all_ret:
+                        new_problems_master.append(prob_in_all_ret)
+                    else:
+                        new_problems_master.append(set.union(*new_problems))
+
+            if not_finished_solutions:
+                for problems in new_problems_master:
+                    if not problems:
+                        break
+                else:
+                    for problem in set.union(*new_problems_master):
+                        found_problems.add(problem)
 
         # conflict checking
         for solution in current_solutions:
@@ -490,7 +540,7 @@ class Package:
             installed_packages = list(solution.installed_solution_packages)
             conf_system = System(installed_packages).conflicting_with(self)
             # if there are no conflicts, nothing will get deleted, so we may
-            # safely assume that no conflicts lead to an invalid solution
+            # safely assume that we do not get an invalid solution
             if not conf_system:
                 continue
 
@@ -498,16 +548,21 @@ class Package:
             packages_to_append.append(self)
             new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
             if self.name not in new_system.all_packages_dict:
-                self_not_added = True
+                is_possible = False
             else:
-                self_not_added = False
+                is_possible = True
+
+            for dep in solution.not_to_delete_deps:
+                if not is_possible or not new_system.provided_by(dep):
+                    is_possible = False
+                    break
 
             for package in installed_packages:
-                if self_not_added or \
+                if not is_possible or \
                         solution.dict_call_as_needed.get(package.name, False) \
                         and package.name not in new_system.all_packages_dict:
                     break
-            # solution possible at this point
+            # solution possible at this point if there are no installed packages
             else:
                 for package in installed_packages:
                     if package.name not in new_system.all_packages_dict:
@@ -518,7 +573,9 @@ class Package:
                             del solution.dict_to_deps[package.name]
                         if package.name in solution.dict_to_way:
                             del solution.dict_to_way[package.name]
-                if not self_not_added:
+
+                # for the case that there are no installed packages
+                if is_possible:
                     continue
 
             # solution not possible!
@@ -544,6 +601,7 @@ class Package:
 
         # add self to packages in solution, those are always topologically sorted
         for solution in current_solutions:
+            solution.not_to_delete_deps -= own_not_to_delete_deps
             solution.installed_solution_packages.add(self)
             solution.packages_in_solution.append(self)
             solution.visited_packages.remove(self)
