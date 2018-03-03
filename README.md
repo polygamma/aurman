@@ -76,3 +76,11 @@ but be warned, it could take a few minutes to find solutions.
   - let the user see and edit all needed PKGBUILDs before any of the building of AUR packages starts
   - fetching of needed pgp keys for package building
   - pacman --search for repo and aur packages (aur results sorted by popularity)
+
+## Screenshots
+
+![](https://user-images.githubusercontent.com/20651500/36938266-93984a2a-1f1f-11e8-8609-ff2f0a842eb2.gif)
+![](https://user-images.githubusercontent.com/20651500/36938243-48d48cec-1f1f-11e8-8f53-d89c44a1d16c.gif)
+![](https://user-images.githubusercontent.com/20651500/36938240-4621e454-1f1f-11e8-8345-eb0f2315e34b.png)
+![](https://user-images.githubusercontent.com/20651500/36938241-463805ea-1f1f-11e8-9151-af5dd6d07bb6.png)
+![](https://user-images.githubusercontent.com/20651500/36938242-464e5d54-1f1f-11e8-906a-50007e22d24c.png)
