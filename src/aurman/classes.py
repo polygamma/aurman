@@ -1406,19 +1406,41 @@ class System:
             else:
                 print(choice_not_valid)
 
-    def show_solution_differences_to_user(self, solution: List['Package'], noconfirm: bool = False):
+    def show_solution_differences_to_user(self, solution: List['Package'], upstream_system: 'System',
+                                          noconfirm: bool = False):
         """
         Shows the chosen solution to the user with package upgrades etc.
 
-        :param solution:    The chosen solution
-        :param noconfirm:   True if the user does not need to confirm the solution, False otherwise
+        :param solution:            The chosen solution
+        :param upstream_system:     System containing the known upstream packages
+        :param noconfirm:           True if the user does not need to confirm the solution, False otherwise
         """
 
+        def repo_of_package(package_name: str) -> str:
+            if package_name not in upstream_system.all_packages_dict:
+                return Colors.BOLD(Colors.LIGHT_MAGENTA("local/") + package_name)
+            package = upstream_system.all_packages_dict[package_name]
+            if package.type_of is PossibleTypes.AUR_PACKAGE or package.type_of is PossibleTypes.DEVEL_PACKAGE:
+                return Colors.BOLD(Colors.LIGHT_MAGENTA("aur/") + package_name)
+            if package.repo is None:
+                return Colors.BOLD(Colors.LIGHT_MAGENTA("local/") + package_name)
+            else:
+                return Colors.BOLD(Colors.LIGHT_MAGENTA("{}/".format(package.repo)) + package_name)
+
         # needed strings
-        package_to_install = aurman_note("The following {} package(s) are getting installed:", True, False)
-        packages_to_uninstall = aurman_note("The following {} package(s) are getting removed:", True, False)
-        packages_to_upgrade = aurman_note("The following {} package(s) are getting updated:", True, False)
-        packages_to_reinstall = aurman_note("The following {} package(s) are getting reinstalled:", True, False)
+        package_to_install = aurman_note("The following {} package(s) "
+                                         "are getting "
+                                         "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("installed"))), True, False)
+        packages_to_uninstall = aurman_note("The following {} package(s) "
+                                            "are getting "
+                                            "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("removed"))), True, False)
+        packages_to_upgrade = aurman_note("The following {} package(s) "
+                                          "are getting "
+                                          "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("updated"))), True, False)
+        packages_to_reinstall = aurman_note("The following {} package(s) "
+                                            "are getting "
+                                            "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("reinstalled"))), True,
+                                            False)
         user_question = "Do you want to continue?"
 
         new_system = self.hypothetical_append_packages_to_system(solution)
@@ -1433,28 +1455,61 @@ class System:
             [package.name for package in solution if package.name in new_system.all_packages_dict]) - set.union(
             *[to_upgrade_names, to_install_names, to_uninstall_names])
 
+        # colored names + repos
+        print_to_install_names = set([repo_of_package(name) for name in to_install_names])
+        print_to_uninstall_names = set([repo_of_package(name) for name in to_uninstall_names])
+        print_to_upgrade_names = set([repo_of_package(name) for name in to_upgrade_names])
+        print_just_reinstall_names = set([repo_of_package(name) for name in just_reinstall_names])
+
+        # calculate some needed values
+        max_package_name_length = max([len(name) for name in set(
+            print_to_install_names | print_to_uninstall_names | print_to_upgrade_names | print_just_reinstall_names)],
+                                      default=0)
+
+        max_left_side_version_length = max([len(self.all_packages_dict[package_name].version) for package_name in
+                                            set(to_uninstall_names | to_upgrade_names | just_reinstall_names)],
+                                           default=1)
+
         if to_install_names:
             print(package_to_install.format(len(to_install_names)))
-            print(", ".join(
-                [Colors.BOLD(Colors.LIGHT_GREEN(new_system.all_packages_dict[package_name])) for package_name in
-                 to_install_names]))
+            for package_name in sorted(list(to_install_names)):
+                string_to_print = "   {}  {}  ->  {}".format(
+                    repo_of_package(package_name).ljust(max_package_name_length),
+                    Colors.RED("/").ljust(max_left_side_version_length + 10),
+                    Colors.GREEN(new_system.all_packages_dict[package_name].version))
+
+                print(string_to_print)
 
         if to_uninstall_names:
             print(packages_to_uninstall.format(len(to_uninstall_names)))
-            print(", ".join(
-                [Colors.BOLD(Colors.RED(self.all_packages_dict[package_name])) for package_name in to_uninstall_names]))
+            for package_name in sorted(list(to_uninstall_names)):
+                string_to_print = "   {}  {}  ->  {}".format(
+                    repo_of_package(package_name).ljust(max_package_name_length),
+                    Colors.GREEN(self.all_packages_dict[package_name].version).ljust(max_left_side_version_length + 10),
+                    Colors.RED("/"))
+
+                print(string_to_print)
 
         if to_upgrade_names:
             print(packages_to_upgrade.format(len(to_upgrade_names)))
-            print(''.join(["{} -> {}\n".format(Colors.BOLD(Colors.RED(self.all_packages_dict[package_name])),
-                                               Colors.BOLD(
-                                                   Colors.LIGHT_GREEN(new_system.all_packages_dict[package_name]))) for
-                           package_name in to_upgrade_names]))
+            for package_name in sorted(list(to_upgrade_names)):
+                string_to_print = "   {}  {}  ->  {}".format(
+                    repo_of_package(package_name).ljust(max_package_name_length),
+                    Colors.RED(self.all_packages_dict[package_name].version).ljust(max_left_side_version_length + 10),
+                    Colors.GREEN(new_system.all_packages_dict[package_name].version))
+
+                print(string_to_print)
 
         if just_reinstall_names:
             print(packages_to_reinstall.format(len(just_reinstall_names)))
-            print(", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(self.all_packages_dict[package_name])) for package_name in
-                             just_reinstall_names]))
+            for package_name in sorted(list(just_reinstall_names)):
+                string_to_print = "   {}  {}  ->  {}".format(
+                    repo_of_package(package_name).ljust(max_package_name_length),
+                    Colors.LIGHT_MAGENTA(self.all_packages_dict[package_name].version).ljust(
+                        max_left_side_version_length + 10),
+                    Colors.LIGHT_MAGENTA(new_system.all_packages_dict[package_name].version))
+
+                print(string_to_print)
 
         if not noconfirm and not ask_user(user_question, True):
             raise InvalidInput()
