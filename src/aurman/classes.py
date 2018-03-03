@@ -384,6 +384,32 @@ class Package:
         :param deps_to_deep_check:      Set containing deps to check all possible dep providers of
         :return:                        The found solutions
         """
+
+        def filter_solutions(solutions: Sequence['DepAlgoSolution']) -> List['DepAlgoSolution']:
+            """
+            Filter given solutions so that only valid solutions are left
+            or in case of no valid solutions only one invalid solution
+
+            :param solutions:   The solutions to filter
+            :return:            The filtered solutions
+            """
+            return_solutions: List['DepAlgoSolution'] = []
+
+            for solution in solutions:
+                if not return_solutions:
+                    return_solutions.append(solution)
+                    continue
+
+                first_solution = return_solutions[0]
+                if first_solution.is_valid and solution.is_valid:
+                    return_solutions.append(solution)
+                elif first_solution.is_valid:
+                    continue
+                elif solution.is_valid:
+                    return_solutions = [solution]
+
+            return return_solutions
+
         if self in solution.installed_solution_packages:
             return [solution.solution_copy()]
 
@@ -532,6 +558,8 @@ class Package:
                     for problem in set.union(*new_problems_master):
                         found_problems.add(problem)
 
+            current_solutions = filter_solutions(current_solutions)
+
         # conflict checking
         for solution in current_solutions:
             if not solution.is_valid:
@@ -607,7 +635,7 @@ class Package:
             solution.visited_packages.remove(self)
 
         # may contain invalid solutions !!!
-        return current_solutions
+        return filter_solutions(current_solutions)
 
     @staticmethod
     def dep_solving(packages: Sequence['Package'], installed_system: 'System', upstream_system: 'System') -> List[
