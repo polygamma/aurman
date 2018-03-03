@@ -232,7 +232,7 @@ def process(args):
         return
 
     try:
-        installed_system.show_solution_differences_to_user(chosen_solution, noconfirm)
+        installed_system.show_solution_differences_to_user(chosen_solution, upstream_system, noconfirm)
     except InvalidInput:
         return
 
