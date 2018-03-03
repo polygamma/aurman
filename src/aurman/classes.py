@@ -435,7 +435,7 @@ class Package:
             invalid_sol.is_valid = False
             return [invalid_sol]
 
-        # pacman has to handle deps between repo packages
+        # pacman has to handle dep cycles between repo packages
         elif self in solution.visited_packages:
             return [solution.solution_copy()]
 
@@ -475,7 +475,7 @@ class Package:
 
         # AND - every dep has to be fulfilled
         # we filtered the unfulfillable deps,
-        # hence at least one dep providers is available
+        # hence at least one dep provider is available
         for dep in relevant_deps:
 
             # skip since already provided
