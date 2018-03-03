@@ -1407,13 +1407,14 @@ class System:
                 print(choice_not_valid)
 
     def show_solution_differences_to_user(self, solution: List['Package'], upstream_system: 'System',
-                                          noconfirm: bool = False):
+                                          noconfirm: bool, deep_search: bool):
         """
         Shows the chosen solution to the user with package upgrades etc.
 
         :param solution:            The chosen solution
         :param upstream_system:     System containing the known upstream packages
         :param noconfirm:           True if the user does not need to confirm the solution, False otherwise
+        :param deep_search:         If deep_search is active
         """
 
         def repo_of_package(package_name: str) -> str:
@@ -1510,6 +1511,10 @@ class System:
                     Colors.LIGHT_MAGENTA(new_system.all_packages_dict[package_name].version))
 
                 print(string_to_print)
+            if deep_search:
+                aurman_note("You are using {}, hence {} "
+                            "is active.".format(Colors.BOLD("--deep_search"), Colors.BOLD("--needed")))
+                aurman_note("These packages will not actually be reinstalled.")
 
         if not noconfirm and not ask_user(user_question, True):
             raise InvalidInput()

@@ -220,11 +220,7 @@ def process(args):
 
     # needed because deep_search ignores installed packages
     if not only_unfulfilled_deps:
-        for package in chosen_solution[:]:
-            if (package.name not in for_us) and (package.name in installed_system.all_packages_dict) and (
-                    version_comparison(installed_system.all_packages_dict[package.name].version, ">=",
-                                       package.version)):
-                chosen_solution.remove(package)
+        pacman_args.needed = True
 
     # solution contains no packages
     if not chosen_solution:
@@ -232,7 +228,8 @@ def process(args):
         return
 
     try:
-        installed_system.show_solution_differences_to_user(chosen_solution, upstream_system, noconfirm)
+        installed_system.show_solution_differences_to_user(chosen_solution, upstream_system, noconfirm,
+                                                           not only_unfulfilled_deps)
     except InvalidInput:
         return
 
