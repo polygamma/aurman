@@ -143,3 +143,5 @@ only_aurman_points.append(HelpOption(["--repo"],
                                      "do things only for regular repos"))
 only_aurman_points.append(HelpOption(["--domain name"],
                                      "change the base url for aur requests (https://aur.archlinux.org is the default)"))
+only_aurman_points.append(HelpOption(["--solution_way"],
+                                     "print the way of installing/removing packages"))

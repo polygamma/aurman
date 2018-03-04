@@ -57,7 +57,8 @@ pacman_options = {
     "keyserver": ("keyserver", 1, (PacmanOperations.AURMAN,)),
     "aur": ("aur", 0, (PacmanOperations.AURMAN,)),
     "repo": ("repo", 0, (PacmanOperations.AURMAN,)),
-    "domain": ("domain", 1, (PacmanOperations.AURMAN,))
+    "domain": ("domain", 1, (PacmanOperations.AURMAN,)),
+    "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,))
 }
 
 pacman_operations = {

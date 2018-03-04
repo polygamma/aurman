@@ -65,6 +65,7 @@ def process(args):
     pgp_fetch = pacman_args.pgp_fetch
     noconfirm = pacman_args.noconfirm
     search = pacman_args.search
+    solution_way = pacman_args.solution_way
 
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
@@ -264,8 +265,9 @@ def process(args):
         return
 
     # print what the solution does
-    aurman_status("The following will be done:")
-    installed_system.hypothetical_append_packages_to_system(chosen_solution, print_way=True)
+    if solution_way:
+        aurman_status("The following will be done:")
+        installed_system.hypothetical_append_packages_to_system(chosen_solution, print_way=True)
 
     if not repo:
         aurman_status("looking for new pkgbuilds and fetch them...")

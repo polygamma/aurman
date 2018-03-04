@@ -65,6 +65,8 @@ but be warned, it could take a few minutes to find solutions.
 
 - `--domain name`: change the base url for aur requests *(https://aur.archlinux.org is the default)*
 
+- `--solution_way`: print what exactly will be done, order of installing/removing packages
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
@@ -84,3 +86,4 @@ but be warned, it could take a few minutes to find solutions.
 ![](https://user-images.githubusercontent.com/20651500/36938240-4621e454-1f1f-11e8-8345-eb0f2315e34b.png)
 ![](https://user-images.githubusercontent.com/20651500/36938241-463805ea-1f1f-11e8-9151-af5dd6d07bb6.png)
 ![](https://user-images.githubusercontent.com/20651500/36938242-464e5d54-1f1f-11e8-906a-50007e22d24c.png)
+![](https://user-images.githubusercontent.com/20651500/36948913-b9292d1e-1fe1-11e8-9894-27ef1b8a2f54.png)
