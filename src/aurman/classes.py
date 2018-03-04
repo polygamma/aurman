@@ -1646,6 +1646,9 @@ class System:
             # print why those packages have to be uninstalled
             aurman_status("Printing {} for packages being {}".format(Colors.BOLD(Colors.LIGHT_CYAN("reasons")),
                                                                      Colors.BOLD(Colors.LIGHT_CYAN("removed"))))
+            aurman_status("If you want one of those packages not to be removed,\n"
+                          "   try to explicitly specify this package on the command line\n"
+                          "   as package which you want to install")
             self.hypothetical_append_packages_to_system(solution, to_uninstall_names)
 
         if to_upgrade_names:
