@@ -302,7 +302,7 @@ def main():
 
         # normal call
         process(argv[1:])
-    except (SystemExit, KeyboardInterrupt):
+    except (SystemExit, KeyboardInterrupt, PermissionError):
         pass
     except:
         logging.error("", exc_info=True)
