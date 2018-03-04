@@ -2,7 +2,7 @@ import logging
 import os
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
-from typing import Sequence, List, Tuple, Set, Union, Dict
+from typing import Sequence, List, Tuple, Set, Union, Dict, Iterable
 
 from pycman.config import PacmanConfig
 
@@ -1306,17 +1306,23 @@ class System:
             packages_names_to_fetch = [dep for dep in relevant_deps if dep not in self.all_packages_dict]
 
     def are_all_deps_fulfilled(self, package: 'Package', only_make_check: bool = False,
-                               only_depends: bool = False) -> bool:
+                               only_depends: bool = False, print_reason: bool = False) -> bool:
         """
         if all deps of the package are fulfilled on the system
         :param package:             the package to check the deps of
         :param only_make_check:     True if one only wants make and check depends
         :param only_depends:        True if one only wants depends
+        :param print_reason:        If the the reason for failing should be printed
         :return:                    True if the deps are fulfilled, False otherwise
         """
 
         for dep in package.relevant_deps(only_make_check=only_make_check, only_depends=only_depends):
             if not self.provided_by(dep):
+                if print_reason:
+                    aurman_note(
+                        "Dependency {} of package {} is not fulfilled".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dep)),
+                                                                              Colors.BOLD(
+                                                                                  Colors.LIGHT_MAGENTA(package))))
                 return False
         else:
             return True
@@ -1345,13 +1351,16 @@ class System:
 
         return return_list
 
-    def hypothetical_append_packages_to_system(self, packages: List['Package']) -> 'System':
+    def hypothetical_append_packages_to_system(self, packages: List['Package'],
+                                               packages_names_print_reason: Iterable[str] = None) -> 'System':
         """
         hypothetically appends packages to this system (only makes sense for the installed system)
         and removes all conflicting packages and packages whose deps are not fulfilled anymore.
 
-        :param packages:    the packages to append
-        :return:            the new system
+        :param packages:                    the packages to append
+        :param packages_names_print_reason: print the uninstall reasons for packages
+                                            with names in this iterable
+        :return:                            the new system
         """
 
         new_system = System(list(self.all_packages_dict.values()))
@@ -1370,6 +1379,16 @@ class System:
                 # calculate conflicting packages
                 conflicting_new_system_packages = []
                 for package in package_chunk:
+                    # print why packages will be removed
+                    if packages_names_print_reason is not None:
+                        will_be_deleted = new_system.conflicting_with(package)
+                        for package_to_be_removed in will_be_deleted:
+                            if package_to_be_removed.name in packages_names_print_reason:
+                                aurman_note(
+                                    "Package {} will be removed due to a conflict with {}".format(
+                                        Colors.BOLD(Colors.LIGHT_MAGENTA(package_to_be_removed)),
+                                        Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
+
                     conflicting_new_system_packages.extend(new_system.conflicting_with(package))
                 conflicting_new_system_packages = set(conflicting_new_system_packages)
 
@@ -1391,8 +1410,12 @@ class System:
                 while True:
                     to_delete_packages = []
                     for package in new_system.all_packages_dict.values():
-                        if not new_system.are_all_deps_fulfilled(package, only_depends=True):
-                            to_delete_packages.append(package)
+                        if packages_names_print_reason is not None and package.name in packages_names_print_reason:
+                            if not new_system.are_all_deps_fulfilled(package, only_depends=True, print_reason=True):
+                                to_delete_packages.append(package)
+                        else:
+                            if not new_system.are_all_deps_fulfilled(package, only_depends=True):
+                                to_delete_packages.append(package)
 
                     if not to_delete_packages:
                         break
@@ -1499,7 +1522,6 @@ class System:
 
         # no valid solutions
         if not valid_systems:
-            logging.error("No valid solutions found")
             raise InvalidInput("No valid solutions found")
 
         # only one valid solution - just return
@@ -1638,6 +1660,10 @@ class System:
                     Colors.RED("/"))
 
                 print(string_to_print)
+            # print why those packages have to be uninstalled
+            aurman_status("Printing {} for packages being {}".format(Colors.BOLD(Colors.LIGHT_CYAN("reasons")),
+                                                                     Colors.BOLD(Colors.LIGHT_CYAN("removed"))))
+            self.hypothetical_append_packages_to_system(solution, to_uninstall_names)
 
         if to_upgrade_names:
             print(packages_to_upgrade.format(len(to_upgrade_names)))
@@ -1649,7 +1675,7 @@ class System:
 
                 print(string_to_print)
 
-        if just_reinstall_names:
+        if just_reinstall_names and not deep_search:
             print(packages_to_reinstall.format(len(just_reinstall_names)))
             for package_name in sorted(list(just_reinstall_names)):
                 string_to_print = "   {}  {}  ->  {}".format(
@@ -1659,10 +1685,6 @@ class System:
                     Colors.LIGHT_MAGENTA(new_system.all_packages_dict[package_name].version))
 
                 print(string_to_print)
-            if deep_search:
-                aurman_note("You are using {}, hence {} "
-                            "is active.".format(Colors.BOLD("--deep_search"), Colors.BOLD("--needed")))
-                aurman_note("These packages will not actually be reinstalled.")
 
         if not noconfirm and not ask_user(user_question, True):
             raise InvalidInput()
