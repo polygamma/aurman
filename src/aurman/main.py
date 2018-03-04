@@ -263,21 +263,22 @@ def process(args):
     except InvalidInput:
         return
 
-    aurman_status("looking for new pkgbuilds and fetch them...")
-    for package in chosen_solution:
-        if package.type_of is PossibleTypes.REPO_PACKAGE \
-                or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
-            continue
-        package.fetch_pkgbuild()
-    try:
+    if not repo:
+        aurman_status("looking for new pkgbuilds and fetch them...")
         for package in chosen_solution:
             if package.type_of is PossibleTypes.REPO_PACKAGE \
                     or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                 continue
-            package.show_pkgbuild(noedit)
-            package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
-    except InvalidInput:
-        return
+            package.fetch_pkgbuild()
+        try:
+            for package in chosen_solution:
+                if package.type_of is PossibleTypes.REPO_PACKAGE \
+                        or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
+                    continue
+                package.show_pkgbuild(noedit)
+                package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
+        except InvalidInput:
+            return
 
     # install packages
     if not sudo_acquired:
