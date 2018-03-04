@@ -196,8 +196,8 @@ def process(args):
         aurman_status("recreating upstream system...")
         upstream_system = System(list(upstream_system.all_packages_dict.values()))
 
-    # if user entered --devel, fetch all needed pkgbuilds etc. for the devel packages
-    if devel:
+    # if user entered --devel and not --repo, fetch all needed pkgbuilds etc. for the devel packages
+    if devel and not repo:
         aurman_status("looking for new pkgbuilds of devel packages and fetch them...")
         for package in upstream_system.devel_packages_list:
             package.fetch_pkgbuild()
