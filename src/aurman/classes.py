@@ -1375,7 +1375,7 @@ class System:
                 if conflicting_new_system_packages:
                     deleted_packages = True
                     if print_way:
-                        print("   {}: {}"
+                        print("   {} : {}"
                               "".format(Colors.BOLD(Colors.LIGHT_RED("Delete"))
                                         , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
                                                      for package in conflicting_new_system_packages])))
@@ -1410,7 +1410,7 @@ class System:
                         break
 
                     if print_way:
-                        print("   {}: {}"
+                        print("   {} : {}"
                               "".format(Colors.BOLD(Colors.LIGHT_RED("Delete"))
                                         , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
                                                      for package in to_delete_packages])))
