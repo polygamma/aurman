@@ -263,6 +263,10 @@ def process(args):
     except InvalidInput:
         return
 
+    # print what the solution does
+    aurman_status("It will be done the following:")
+    installed_system.hypothetical_append_packages_to_system(chosen_solution, print_way=True)
+
     if not repo:
         aurman_status("looking for new pkgbuilds and fetch them...")
         for package in chosen_solution:

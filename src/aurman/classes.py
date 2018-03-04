@@ -1329,7 +1329,8 @@ class System:
         return return_list
 
     def hypothetical_append_packages_to_system(self, packages: List['Package'],
-                                               packages_names_print_reason: Iterable[str] = None) -> 'System':
+                                               packages_names_print_reason: Iterable[str] = None,
+                                               print_way: bool = False) -> 'System':
         """
         hypothetically appends packages to this system (only makes sense for the installed system)
         and removes all conflicting packages and packages whose deps are not fulfilled anymore.
@@ -1337,6 +1338,7 @@ class System:
         :param packages:                    the packages to append
         :param packages_names_print_reason: print the uninstall reasons for packages
                                             with names in this iterable
+        :param print_way:                   Prints the way of appending packages
         :return:                            the new system
         """
 
@@ -1372,6 +1374,11 @@ class System:
                 # remove conflicting packages
                 if conflicting_new_system_packages:
                     deleted_packages = True
+                    if print_way:
+                        print("   {}: {}"
+                              "".format(Colors.BOLD(Colors.LIGHT_RED("Delete"))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
+                                                     for package in conflicting_new_system_packages])))
                     for package in conflicting_new_system_packages:
                         del new_system.all_packages_dict[package.name]
                     new_system = System(list(new_system.all_packages_dict.values()))
@@ -1379,6 +1386,11 @@ class System:
                     deleted_packages = False
 
                 # append packages
+                if print_way:
+                    print("   {}: {}"
+                          "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
+                                    , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
+                                                 for package in package_chunk])))
                 new_system.append_packages(package_chunk)
                 if not deleted_packages:
                     continue
@@ -1397,6 +1409,11 @@ class System:
                     if not to_delete_packages:
                         break
 
+                    if print_way:
+                        print("   {}: {}"
+                              "".format(Colors.BOLD(Colors.LIGHT_RED("Delete"))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
+                                                     for package in to_delete_packages])))
                     for package in to_delete_packages:
                         del new_system.all_packages_dict[package.name]
                     new_system = System(list(new_system.all_packages_dict.values()))
@@ -1649,7 +1666,7 @@ class System:
             aurman_status("If you want one of those packages not to be removed,\n"
                           "   try to explicitly specify this package on the command line\n"
                           "   as package which you want to install")
-            self.hypothetical_append_packages_to_system(solution, to_uninstall_names)
+            self.hypothetical_append_packages_to_system(solution, packages_names_print_reason=to_uninstall_names)
 
         if to_upgrade_names:
             print(packages_to_upgrade.format(len(to_upgrade_names)))
