@@ -264,7 +264,7 @@ def process(args):
         return
 
     # print what the solution does
-    aurman_status("It will be done the following:")
+    aurman_status("The following will be done:")
     installed_system.hypothetical_append_packages_to_system(chosen_solution, print_way=True)
 
     if not repo:
