@@ -1346,7 +1346,10 @@ class System:
         if not packages:
             return new_system
 
-        for package_chunk in System.calc_install_chunks(packages):
+        chunked_packages = System.calc_install_chunks(packages)
+        last_index = len(chunked_packages) - 1
+
+        for i, package_chunk in enumerate(chunked_packages):
             # check if packages in chunk conflict each other
             package_chunk_system = System(())
             for package in package_chunk:
@@ -1392,7 +1395,11 @@ class System:
                                     , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
                                                  for package in package_chunk])))
                 new_system.append_packages(package_chunk)
-                if not deleted_packages:
+
+                # last exit brooklyn
+                # final check for sanity of the whole solution
+                # we do not accept mistakes!
+                if not deleted_packages and not (i == last_index):
                     continue
 
                 # delete packages whose deps are not fulfilled anymore
