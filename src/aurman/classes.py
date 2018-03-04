@@ -91,10 +91,14 @@ class DepAlgoConflict(DepAlgoFoundProblems):
         super().__init__()
         self.conflicting_packages: Set['Package'] = conflicting_packages
         self.ways_to_conflict: List[List['Package']] = ways_to_conflict
+        self.additional_message: str = ""
 
     def __repr__(self):
         return_string = "Conflicts between: {}".format(
             ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package)) for package in self.conflicting_packages]))
+
+        if self.additional_message:
+            return_string += "\n" + self.additional_message
 
         for way_to_conflict in self.ways_to_conflict:
             return_string += "\nWay to package {}: {}".format(way_to_conflict[len(way_to_conflict) - 1], " -> ".join(
@@ -598,9 +602,15 @@ class Package:
             packages_to_append.append(self)
             new_system = installed_system.hypothetical_append_packages_to_system(packages_to_append)
 
+            # prepare message for conflict
+            additional_message = ""
+
             # if self cannot be added, this solution
             # is clearly not valid
             if self.name not in new_system.all_packages_dict:
+                additional_message = "Tried to install {}, " \
+                                     "but it was not possible." \
+                                     "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name)))
                 is_possible = False
             else:
                 is_possible = True
@@ -612,15 +622,28 @@ class Package:
             # but C not, hence B must remain provided
             # otherwise A cannot be installed
             for dep in solution.not_to_delete_deps:
-                if not is_possible or not new_system.provided_by(dep):
+                if not is_possible:
+                    break
+                if not new_system.provided_by(dep):
+                    additional_message = "While trying to install {}, " \
+                                         "the needed dependency {} has been removed." \
+                                         "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))
+                                                   , Colors.BOLD(Colors.LIGHT_MAGENTA(dep)))
                     is_possible = False
                     break
 
             # same for packages which have to remain installed
             for package in installed_packages:
-                if not is_possible or \
-                        solution.dict_call_as_needed.get(package.name, False) \
+                if not is_possible:
+                    break
+                if solution.dict_call_as_needed.get(package.name, False) \
                         and package.name not in new_system.all_packages_dict:
+                    additional_message = "The package {} had to remain installed, " \
+                                         "but has been removed.\n" \
+                                         "The package which lead to the removal is {}" \
+                                         "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))
+                                                   , Colors.BOLD(Colors.LIGHT_MAGENTA(self.name)))
+
                     break
 
             # solution possible at this point if there are no installed packages
@@ -656,6 +679,7 @@ class Package:
 
             # create the problem
             conflict_problem = DepAlgoConflict(conflicting_packages, ways_to_conflict)
+            conflict_problem.additional_message = additional_message
             for way_to_conflict in ways_to_conflict:
                 for package in way_to_conflict:
                     conflict_problem.relevant_packages.add(package)
