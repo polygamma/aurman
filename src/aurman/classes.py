@@ -1322,7 +1322,7 @@ class System:
                     aurman_note(
                         "Dependency {} of package {} is not fulfilled".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dep)),
                                                                               Colors.BOLD(
-                                                                                  Colors.LIGHT_MAGENTA(package))))
+                                                                                  Colors.LIGHT_MAGENTA(package.name))))
                 return False
         else:
             return True
@@ -1386,8 +1386,8 @@ class System:
                             if package_to_be_removed.name in packages_names_print_reason:
                                 aurman_note(
                                     "Package {} will be removed due to a conflict with {}".format(
-                                        Colors.BOLD(Colors.LIGHT_MAGENTA(package_to_be_removed)),
-                                        Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
+                                        Colors.BOLD(Colors.LIGHT_MAGENTA(package_to_be_removed.name)),
+                                        Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))))
 
                     conflicting_new_system_packages.extend(new_system.conflicting_with(package))
                 conflicting_new_system_packages = set(conflicting_new_system_packages)
