@@ -128,8 +128,11 @@ def process(args):
         for package in installed_system.not_repo_not_aur_packages_list:
             aurman_note("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
 
-    aurman_status("fetching upstream repo packages...")
-    upstream_system = System(System.get_repo_packages())
+    if not aur:
+        aurman_status("fetching upstream repo packages...")
+        upstream_system = System(System.get_repo_packages())
+    else:
+        upstream_system = System(())
 
     if not repo:
         aurman_status("fetching needed aur packages...")
