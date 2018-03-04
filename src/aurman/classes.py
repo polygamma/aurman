@@ -143,29 +143,6 @@ class Package:
                              "aurman")
 
     @staticmethod
-    def user_input_to_categories(user_input: Sequence[str]) -> Tuple[Sequence[str], Sequence[str]]:
-        """
-        Categorizes user input in: For our AUR helper and for pacman
-
-        :param user_input:  A sequence containing the user input as str
-        :return:            Tuple containing two elements
-                            First item: List containing the user input for our AUR helper
-                            Second item: List containing the user input for pacman
-        """
-        for_us = []
-        for_pacman = []
-        user_input = list(set(user_input))
-
-        found_in_aur_names = set([package.name for package in Package.get_packages_from_aur(user_input)])
-        for _user_input in user_input:
-            if _user_input in found_in_aur_names:
-                for_us.append(_user_input)
-            else:
-                for_pacman.append(_user_input)
-
-        return for_us, for_pacman
-
-    @staticmethod
     def get_packages_from_aur(packages_names: Sequence[str]) -> List['Package']:
         """
         Generates and returns packages from the aur.
@@ -1576,6 +1553,23 @@ class System:
             else:
                 print(choice_not_valid)
 
+    def repo_of_package(self, package_name: str) -> str:
+        """
+        Visual representation of package with repo
+
+        :param package_name:    The name of the package
+        :return:                The visual representation
+        """
+        if package_name not in self.all_packages_dict:
+            return Colors.BOLD(Colors.LIGHT_MAGENTA("local/") + package_name)
+        package = self.all_packages_dict[package_name]
+        if package.type_of is PossibleTypes.AUR_PACKAGE or package.type_of is PossibleTypes.DEVEL_PACKAGE:
+            return Colors.BOLD(Colors.LIGHT_MAGENTA("aur/") + package_name)
+        if package.repo is None:
+            return Colors.BOLD(Colors.LIGHT_MAGENTA("local/") + package_name)
+        else:
+            return Colors.BOLD(Colors.LIGHT_MAGENTA("{}/".format(package.repo)) + package_name)
+
     def show_solution_differences_to_user(self, solution: List['Package'], upstream_system: 'System',
                                           noconfirm: bool, deep_search: bool):
         """
@@ -1586,17 +1580,6 @@ class System:
         :param noconfirm:           True if the user does not need to confirm the solution, False otherwise
         :param deep_search:         If deep_search is active
         """
-
-        def repo_of_package(package_name: str) -> str:
-            if package_name not in upstream_system.all_packages_dict:
-                return Colors.BOLD(Colors.LIGHT_MAGENTA("local/") + package_name)
-            package = upstream_system.all_packages_dict[package_name]
-            if package.type_of is PossibleTypes.AUR_PACKAGE or package.type_of is PossibleTypes.DEVEL_PACKAGE:
-                return Colors.BOLD(Colors.LIGHT_MAGENTA("aur/") + package_name)
-            if package.repo is None:
-                return Colors.BOLD(Colors.LIGHT_MAGENTA("local/") + package_name)
-            else:
-                return Colors.BOLD(Colors.LIGHT_MAGENTA("{}/".format(package.repo)) + package_name)
 
         # needed strings
         package_to_install = aurman_note("The following {} package(s) "
@@ -1627,10 +1610,10 @@ class System:
             *[to_upgrade_names, to_install_names, to_uninstall_names])
 
         # colored names + repos
-        print_to_install_names = set([repo_of_package(name) for name in to_install_names])
-        print_to_uninstall_names = set([repo_of_package(name) for name in to_uninstall_names])
-        print_to_upgrade_names = set([repo_of_package(name) for name in to_upgrade_names])
-        print_just_reinstall_names = set([repo_of_package(name) for name in just_reinstall_names])
+        print_to_install_names = set([upstream_system.repo_of_package(name) for name in to_install_names])
+        print_to_uninstall_names = set([upstream_system.repo_of_package(name) for name in to_uninstall_names])
+        print_to_upgrade_names = set([upstream_system.repo_of_package(name) for name in to_upgrade_names])
+        print_just_reinstall_names = set([upstream_system.repo_of_package(name) for name in just_reinstall_names])
 
         # calculate some needed values
         max_package_name_length = max([len(name) for name in set(
@@ -1645,7 +1628,7 @@ class System:
             print(package_to_install.format(len(to_install_names)))
             for package_name in sorted(list(to_install_names)):
                 string_to_print = "   {}  {}  ->  {}".format(
-                    repo_of_package(package_name).ljust(max_package_name_length),
+                    upstream_system.repo_of_package(package_name).ljust(max_package_name_length),
                     Colors.RED("/").ljust(max_left_side_version_length + 10),
                     Colors.GREEN(new_system.all_packages_dict[package_name].version))
 
@@ -1655,7 +1638,7 @@ class System:
             print(packages_to_uninstall.format(len(to_uninstall_names)))
             for package_name in sorted(list(to_uninstall_names)):
                 string_to_print = "   {}  {}  ->  {}".format(
-                    repo_of_package(package_name).ljust(max_package_name_length),
+                    upstream_system.repo_of_package(package_name).ljust(max_package_name_length),
                     Colors.GREEN(self.all_packages_dict[package_name].version).ljust(max_left_side_version_length + 10),
                     Colors.RED("/"))
 
@@ -1669,7 +1652,7 @@ class System:
             print(packages_to_upgrade.format(len(to_upgrade_names)))
             for package_name in sorted(list(to_upgrade_names)):
                 string_to_print = "   {}  {}  ->  {}".format(
-                    repo_of_package(package_name).ljust(max_package_name_length),
+                    upstream_system.repo_of_package(package_name).ljust(max_package_name_length),
                     Colors.RED(self.all_packages_dict[package_name].version).ljust(max_left_side_version_length + 10),
                     Colors.GREEN(new_system.all_packages_dict[package_name].version))
 
@@ -1679,7 +1662,7 @@ class System:
             print(packages_to_reinstall.format(len(just_reinstall_names)))
             for package_name in sorted(list(just_reinstall_names)):
                 string_to_print = "   {}  {}  ->  {}".format(
-                    repo_of_package(package_name).ljust(max_package_name_length),
+                    upstream_system.repo_of_package(package_name).ljust(max_package_name_length),
                     Colors.LIGHT_MAGENTA(self.all_packages_dict[package_name].version).ljust(
                         max_left_side_version_length + 10),
                     Colors.LIGHT_MAGENTA(new_system.all_packages_dict[package_name].version))

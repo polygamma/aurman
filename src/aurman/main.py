@@ -4,7 +4,7 @@ from sys import argv, stdout
 
 from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
-from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
+from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors, aurman_question
 from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
@@ -99,23 +99,20 @@ def process(args):
         search_and_print(search, installed_system, str(pacman_args), repo, aur)
         return
 
-    # categorize user input
-    for_us, for_pacman = Package.user_input_to_categories(packages_of_user_names)
-
-    # in case of sysupgrade or packages relevant for pacman, call pacman
-    if (sysupgrade or for_pacman) and not aur:
+    # in case of sysupgrade and not --aur, call pacman
+    if sysupgrade and not aur:
         if not sudo_acquired:
             acquire_sudo()
             sudo_acquired = True
         pacman_args_copy = deepcopy(pacman_args)
-        pacman_args_copy.targets = for_pacman
+        pacman_args_copy.targets = []
         try:
             pacman(str(pacman_args_copy), False)
         except InvalidInput:
             return
 
     # nothing to do for us
-    if (not sysupgrade and not for_us) or repo:
+    if not sysupgrade and not packages_of_user_names:
         return
 
     # delete -u --sysupgrade -y --refresh from parsed args
@@ -134,32 +131,48 @@ def process(args):
     aurman_status("fetching upstream repo packages...")
     upstream_system = System(System.get_repo_packages())
 
-    aurman_status("fetching needed aur packages...")
-    upstream_system.append_packages_by_name(for_us)
-    # fetch info for all installed aur packages, too
-    names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
-    names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
-    upstream_system.append_packages_by_name(names_of_installed_aur_packages)
+    if not repo:
+        aurman_status("fetching needed aur packages...")
+        upstream_system.append_packages_by_name(packages_of_user_names)
+        # fetch info for all installed aur packages, too
+        names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
+        names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
+        upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
-    # if user entered --devel, fetch all needed pkgbuilds etc. for the devel packages
-    if devel:
-        aurman_status("looking for new pkgbuilds of devel packages and fetch them...")
-        for package in upstream_system.devel_packages_list:
-            package.fetch_pkgbuild()
-        try:
-            for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild(noedit)
-                package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
-        except InvalidInput:
+    # sanitize user input
+    sanitized_names = set()
+    for name in packages_of_user_names:
+        providers_for_name = upstream_system.provided_by(name)
+        if not providers_for_name:
+            aurman_error("No providers for {} found.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
             return
-        for package in upstream_system.devel_packages_list:
-            package.get_devel_version()
+        elif len(providers_for_name) == 1:
+            sanitized_names.add(providers_for_name[0].name)
+        # more than one provider
+        else:
+            aurman_note("We found multiple providers for {}"
+                        "\nChoose one by entering the corresponding number.\n"
+                        "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+
+            while True:
+                for i in range(0, len(providers_for_name)):
+                    print("Number {}: {}".format(i + 1, upstream_system.repo_of_package(providers_for_name[i].name)))
+
+                try:
+                    user_input = int(input(aurman_question("Enter the number: ", False, False)))
+                    if 1 <= user_input <= len(providers_for_name):
+                        sanitized_names.add(providers_for_name[user_input - 1].name)
+                        break
+                except ValueError:
+                    print(aurman_error("That was not a valid choice!", False, False))
+                else:
+                    print(aurman_error("That was not a valid choice!", False, False))
 
     aurman_status("fetching ignored packages...")
     ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup,
                                                                 upstream_system)
     # explicitly typed in names will not be ignored
-    ignored_packages_names -= set(for_us)
+    ignored_packages_names -= sanitized_names
     for ignored_packages_name in ignored_packages_names:
         if ignored_packages_name in upstream_system.all_packages_dict:
             if ignored_packages_name in installed_system.all_packages_dict:
@@ -180,11 +193,25 @@ def process(args):
         aurman_status("recreating upstream system...")
         upstream_system = System(list(upstream_system.all_packages_dict.values()))
 
+    # if user entered --devel, fetch all needed pkgbuilds etc. for the devel packages
+    if devel:
+        aurman_status("looking for new pkgbuilds of devel packages and fetch them...")
+        for package in upstream_system.devel_packages_list:
+            package.fetch_pkgbuild()
+        try:
+            for package in upstream_system.devel_packages_list:
+                package.show_pkgbuild(noedit)
+                package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
+        except InvalidInput:
+            return
+        for package in upstream_system.devel_packages_list:
+            package.get_devel_version()
+
     # checking which packages need to be installed
     if not needed:
-        concrete_packages_to_install = [upstream_system.all_packages_dict[name] for name in for_us]
+        concrete_packages_to_install = [upstream_system.all_packages_dict[name] for name in sanitized_names]
     else:
-        possible_packages = [upstream_system.all_packages_dict[name] for name in for_us]
+        possible_packages = [upstream_system.all_packages_dict[name] for name in sanitized_names]
         concrete_packages_to_install = []
         for package in possible_packages:
             if package.name in installed_system.all_packages_dict:
@@ -194,8 +221,8 @@ def process(args):
             else:
                 concrete_packages_to_install.append(package)
 
-    # in case of sysupgrade fetch all installed aur packages, of which newer versions are available
-    if sysupgrade:
+    # in case of sysupgrade and not --repo fetch all installed aur packages, of which newer versions are available
+    if sysupgrade and not repo:
         installed_aur_packages = [package for package in installed_system.aur_packages_list]
         installed_aur_packages.extend([package for package in installed_system.devel_packages_list])
         for package in installed_aur_packages:
@@ -270,6 +297,14 @@ def process(args):
     for package_chunk in solution_packages_chunks:
         # repo chunk
         if package_chunk[0].type_of is PossibleTypes.REPO_PACKAGE:
+            # container for explicit repo deps
+            as_explicit_container = set()
+            for package in package_chunk:
+                if package.name in sanitized_names \
+                        or ((package.name in installed_system.all_packages_dict)
+                            and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
+                    as_explicit_container.add(package.name)
+
             pacman_args_copy = deepcopy(pacman_args)
             pacman_args_copy.targets = [package.name for package in package_chunk]
             pacman_args_copy.asdeps = True
@@ -278,12 +313,14 @@ def process(args):
                 pacman(str(pacman_args_copy), False)
             except InvalidInput:
                 return
+
+            pacman("-D --asexplicit {}".format(" ".join(as_explicit_container)), True, sudo=True)
         # aur chunks always consist of one package
         else:
             package = package_chunk[0]
             package.build()
             try:
-                if package.name in for_us \
+                if package.name in sanitized_names \
                         or ((package.name in installed_system.all_packages_dict)
                             and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
                     package.install(args_for_explicit)
