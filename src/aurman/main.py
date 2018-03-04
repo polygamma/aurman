@@ -260,14 +260,9 @@ def process(args):
 
     try:
         installed_system.show_solution_differences_to_user(chosen_solution, upstream_system, noconfirm,
-                                                           not only_unfulfilled_deps)
+                                                           not only_unfulfilled_deps, solution_way)
     except InvalidInput:
         return
-
-    # print what the solution does
-    if solution_way:
-        aurman_status("The following will be done:")
-        installed_system.hypothetical_append_packages_to_system(chosen_solution, print_way=True)
 
     if not repo:
         aurman_status("looking for new pkgbuilds and fetch them...")

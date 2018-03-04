@@ -1588,7 +1588,7 @@ class System:
             return Colors.BOLD(Colors.LIGHT_MAGENTA("{}/".format(package.repo)) + package_name)
 
     def show_solution_differences_to_user(self, solution: List['Package'], upstream_system: 'System',
-                                          noconfirm: bool, deep_search: bool):
+                                          noconfirm: bool, deep_search: bool, solution_way: bool):
         """
         Shows the chosen solution to the user with package upgrades etc.
 
@@ -1596,6 +1596,7 @@ class System:
         :param upstream_system:     System containing the known upstream packages
         :param noconfirm:           True if the user does not need to confirm the solution, False otherwise
         :param deep_search:         If deep_search is active
+        :param solution_way:        If the way of the solution should be shown
         """
 
         # needed strings
@@ -1688,6 +1689,10 @@ class System:
                     Colors.LIGHT_MAGENTA(new_system.all_packages_dict[package_name].version))
 
                 print(string_to_print)
+
+        if solution_way:
+            aurman_status("The following will be done:", new_line=True)
+            self.hypothetical_append_packages_to_system(solution, print_way=True)
 
         if not noconfirm and not ask_user(user_question, True):
             raise InvalidInput()
