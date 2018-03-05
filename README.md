@@ -42,6 +42,7 @@ All pacman operations are supported, but calling aurman with an operation beside
 - `--noconfirm`
 - `--needed`
 - `--ignore`
+- `--ignoregroup`
 - `-s`, `--search`
 - `-u`, `--sysupgrade`
 

@@ -115,6 +115,9 @@ native_aurman_points.append(HelpOption(["--needed"],
                                        "Do not reinstall the targets that are already up-to-date"))
 native_aurman_points.append(HelpOption(["--ignore"],
                                        "Directs aurman to ignore upgrades of package even if there is one available"))
+native_aurman_points.append(HelpOption(["--ignoregroup"],
+                                       "Directs aurman to ignore upgrades of all packages in group, "
+                                       "even if there is one available."))
 native_aurman_points.append(HelpOption(["-s", "--search"],
                                        "This will search each package in the sync databases and aur "
                                        "for names or descriptions"))
