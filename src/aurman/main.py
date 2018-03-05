@@ -157,7 +157,7 @@ def process(args):
         # more than one provider
         else:
             aurman_note("We found multiple providers for {}"
-                        "\nChoose one by entering the corresponding number.\n"
+                        "\nChoose one by entering the corresponding number."
                         "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
 
             while True:
