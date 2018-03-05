@@ -1441,8 +1441,8 @@ class System:
                         to_install_packages_names = packages_chunk_names - set.union(
                             *[to_upgrade_packages_names, to_reinstall_packages_names])
 
+                        installed_printed = True
                         if to_install_packages_names:
-                            installed_printed = True
                             print("   {}   : {}"
                                   "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
                                             , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
