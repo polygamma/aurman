@@ -1402,10 +1402,50 @@ class System:
                 if conflicting_new_system_packages:
                     deleted_packages = True
                     if print_way:
-                        print("   {} : {}"
-                              "".format(Colors.BOLD(Colors.LIGHT_RED("Delete"))
-                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
-                                                     for package in conflicting_new_system_packages])))
+                        to_delete_packages_names = set()
+                        to_upgrade_packages_names = set()
+                        to_reinstall_packages_names = set()
+                        packages_chunk_names = set([package.name for package in package_chunk])
+
+                        for package in conflicting_new_system_packages:
+                            if package.name not in packages_chunk_names:
+                                to_delete_packages_names.add(package.name)
+                            else:
+                                old_package = new_system.all_packages_dict[package.name]
+                                new_package = [chunk_pack for chunk_pack in
+                                               package_chunk if package.name == chunk_pack.name][0]
+                                if old_package.version == new_package.version:
+                                    to_reinstall_packages_names.add(package.name)
+                                else:
+                                    to_upgrade_packages_names.add(package.name)
+
+                        if to_upgrade_packages_names:
+                            print("   {}   : {}"
+                                  "".format(Colors.BOLD(Colors.LIGHT_CYAN("Upgrade"))
+                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                         for name in to_upgrade_packages_names])))
+
+                        if to_reinstall_packages_names:
+                            print("   {} : {}"
+                                  "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Reinstall"))
+                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                         for name in to_reinstall_packages_names])))
+
+                        if to_delete_packages_names:
+                            print("   {}    : {}"
+                                  "".format(Colors.BOLD(Colors.LIGHT_RED("Remove"))
+                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                         for name in to_delete_packages_names])))
+
+                        to_install_packages_names = packages_chunk_names - set.union(
+                            *[to_upgrade_packages_names, to_reinstall_packages_names])
+
+                        if to_install_packages_names:
+                            print("   {}   : {}"
+                                  "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
+                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                         for name in to_install_packages_names])))
+
                     for package in conflicting_new_system_packages:
                         del new_system.all_packages_dict[package.name]
                     new_system = System(list(new_system.all_packages_dict.values()))
@@ -1413,11 +1453,6 @@ class System:
                     deleted_packages = False
 
                 # append packages
-                if print_way:
-                    print("   {}: {}"
-                          "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
-                                    , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
-                                                 for package in package_chunk])))
                 new_system.append_packages(package_chunk)
 
                 # last exit brooklyn
@@ -1441,9 +1476,9 @@ class System:
                         break
 
                     if print_way:
-                        print("   {} : {}"
-                              "".format(Colors.BOLD(Colors.LIGHT_RED("Delete"))
-                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package))
+                        print("   {}    : {}"
+                              "".format(Colors.BOLD(Colors.LIGHT_RED("Remove"))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))
                                                      for package in to_delete_packages])))
                     for package in to_delete_packages:
                         del new_system.all_packages_dict[package.name]
@@ -1726,8 +1761,8 @@ class System:
             if deep_search:
                 aurman_note("You are using {}, hence {} is active.".format(Colors.BOLD("--deep_search"),
                                                                            Colors.BOLD("--needed")))
-                aurman_note("That means packages to be removed and installed with the same version"
-                            " will not actually be removed and installed again.")
+                aurman_note("That means packages to be reinstalled"
+                            " will not actually be reinstalled.")
             self.hypothetical_append_packages_to_system(solution, print_way=True)
 
         if not noconfirm and not ask_user(user_question, True):
