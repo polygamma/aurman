@@ -84,11 +84,10 @@ you may specify more than one package, space separated
   - fetching of needed pgp keys for package building
   - pacman --search for repo and aur packages (aur results sorted by popularity)
 
+## Dependency solving description including benchmarks
+https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-solving
+
 ## Screenshots
 
-![](https://user-images.githubusercontent.com/20651500/36938266-93984a2a-1f1f-11e8-8609-ff2f0a842eb2.gif)
-![](https://user-images.githubusercontent.com/20651500/36938243-48d48cec-1f1f-11e8-8f53-d89c44a1d16c.gif)
-![](https://user-images.githubusercontent.com/20651500/36938240-4621e454-1f1f-11e8-8345-eb0f2315e34b.png)
-![](https://user-images.githubusercontent.com/20651500/36938241-463805ea-1f1f-11e8-9151-af5dd6d07bb6.png)
-![](https://user-images.githubusercontent.com/20651500/36938242-464e5d54-1f1f-11e8-906a-50007e22d24c.png)
-![](https://user-images.githubusercontent.com/20651500/36948913-b9292d1e-1fe1-11e8-9894-27ef1b8a2f54.png)
+![](https://i.imgur.com/VipYpfj.png)
+![](https://i.imgur.com/uZYbNrS.gif)
