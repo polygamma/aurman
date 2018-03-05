@@ -54,7 +54,7 @@ All pacman operations are supported, but calling aurman with an operation beside
 
 - `--deep_search`: dependency solving will ignore currently fulfilled dependencies of your system and try to solve the problem for a system with zero packages installed.
 should almost never be needed, but if aurman is not able to find a solution to install packages, try rerunning aurman with this flag.
-but be warned, it could take a few minutes to find solutions.
+but be warned, it could take a few seconds to find solutions.
 
 - `--pgp_fetch`: fetches needed pgp keys without asking the user
 
