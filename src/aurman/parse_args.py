@@ -58,7 +58,8 @@ pacman_options = {
     "aur": ("aur", 0, (PacmanOperations.AURMAN,)),
     "repo": ("repo", 0, (PacmanOperations.AURMAN,)),
     "domain": ("domain", 1, (PacmanOperations.AURMAN,)),
-    "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,))
+    "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,)),
+    "not_remove": ("not_remove", 2, (PacmanOperations.AURMAN,))
 }
 
 pacman_operations = {

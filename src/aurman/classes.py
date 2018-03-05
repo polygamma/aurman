@@ -1352,6 +1352,46 @@ class System:
 
         return return_list
 
+    def sanitize_user_input(self, user_input: Sequence[str]) -> Set[str]:
+        """
+        Finds the names of the packages for the user_input
+        Needed since user may also specify the version of a package,
+        hence package1>1.0 may yield package1 since package1 has version 2.0
+
+        :param user_input:      The user input in a sequence
+        :return:                A set containing the packages names
+        """
+        sanitized_names = set()
+        for name in user_input:
+            providers_for_name = self.provided_by(name)
+            if not providers_for_name:
+                aurman_error("No providers for {} found.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+                raise InvalidInput("No providers for {} found.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+            elif len(providers_for_name) == 1:
+                sanitized_names.add(providers_for_name[0].name)
+            # more than one provider
+            else:
+                aurman_note("We found multiple providers for {}"
+                            "\nChoose one by entering the corresponding number."
+                            "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+
+                while True:
+                    for i in range(0, len(providers_for_name)):
+                        print(
+                            "Number {}: {}".format(i + 1, self.repo_of_package(providers_for_name[i].name)))
+
+                    try:
+                        user_input = int(input(aurman_question("Enter the number: ", False, False)))
+                        if 1 <= user_input <= len(providers_for_name):
+                            sanitized_names.add(providers_for_name[user_input - 1].name)
+                            break
+                    except ValueError:
+                        print(aurman_error("That was not a valid choice!", False, False))
+                    else:
+                        print(aurman_error("That was not a valid choice!", False, False))
+
+        return sanitized_names
+
     def hypothetical_append_packages_to_system(self, packages: List['Package'],
                                                packages_names_print_reason: Iterable[str] = None,
                                                print_way: bool = False) -> 'System':
@@ -1758,12 +1798,8 @@ class System:
                     Colors.RED("/"))
 
                 print(string_to_print)
+
             # print why those packages have to be uninstalled
-            aurman_status("Printing {} for packages being {}".format(Colors.BOLD(Colors.LIGHT_CYAN("reasons")),
-                                                                     Colors.BOLD(Colors.LIGHT_CYAN("removed"))))
-            aurman_status("If you want one of those packages not to be removed,\n"
-                          "   try to explicitly specify this package on the command line\n"
-                          "   as package which you want to install")
             self.hypothetical_append_packages_to_system(solution, packages_names_print_reason=to_uninstall_names)
 
         if solution_way:

@@ -4,7 +4,7 @@ from sys import argv, stdout
 
 from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
-from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors, aurman_question
+from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
 from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
@@ -57,16 +57,17 @@ def process(args):
             return
 
     # -S or --sync
-    packages_of_user_names = pacman_args.targets
-    sysupgrade = pacman_args.sysupgrade
-    needed = pacman_args.needed
-    noedit = pacman_args.noedit
-    devel = pacman_args.devel
-    only_unfulfilled_deps = not pacman_args.deep_search
-    pgp_fetch = pacman_args.pgp_fetch
-    noconfirm = pacman_args.noconfirm
-    search = pacman_args.search
-    solution_way = pacman_args.solution_way
+    packages_of_user_names = pacman_args.targets  # targets of the aurman command
+    sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
+    needed = pacman_args.needed  # if --needed
+    noedit = pacman_args.noedit  # if --noedit
+    devel = pacman_args.devel  # if --devel
+    only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
+    pgp_fetch = pacman_args.pgp_fetch  # if --pgp_fetch
+    noconfirm = pacman_args.noconfirm  # if --noconfirm
+    search = pacman_args.search  # list containing the specified strings for -s and --search
+    solution_way = pacman_args.solution_way  # if --solution_way
+    not_remove = pacman_args.not_remove  # list containing the specified packages for --not_remove
 
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
@@ -123,7 +124,10 @@ def process(args):
     pacman_args.sysupgrade = False
     pacman_args.refresh = False
 
-    aurman_status("analyzing installed packages...", True)
+    # one status message
+    aurman_status("initializing {}...".format(Colors.BOLD("aurman")), True)
+
+    # analyzing installed packages
     installed_system = System(System.get_installed_packages())
 
     if installed_system.not_repo_not_aur_packages_list:
@@ -131,14 +135,14 @@ def process(args):
         for package in installed_system.not_repo_not_aur_packages_list:
             aurman_note("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
 
+    # fetching upstream repo packages...
     if not aur:
-        aurman_status("fetching upstream repo packages...")
         upstream_system = System(System.get_repo_packages())
     else:
         upstream_system = System(())
 
+    # fetching needed aur packages
     if not repo:
-        aurman_status("fetching needed aur packages...")
         upstream_system.append_packages_by_name(packages_of_user_names)
         # fetch info for all installed aur packages, too
         names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
@@ -146,35 +150,24 @@ def process(args):
         upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
     # sanitize user input
-    sanitized_names = set()
-    for name in packages_of_user_names:
-        providers_for_name = upstream_system.provided_by(name)
-        if not providers_for_name:
-            aurman_error("No providers for {} found.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+    try:
+        sanitized_names = upstream_system.sanitize_user_input(packages_of_user_names)
+        sanitized_not_to_be_removed = installed_system.sanitize_user_input(not_remove)
+    except InvalidInput:
+        return
+
+    # names to not be removed must be also known on the upstream system,
+    # otherwise aurman solving cannot handle this case.
+    for name in sanitized_not_to_be_removed:
+        if name not in upstream_system.all_packages_dict:
+            aurman_error("Packages you want to be not removed must be aur or repo packages.\n"
+                         "   {} is not known.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
             return
-        elif len(providers_for_name) == 1:
-            sanitized_names.add(providers_for_name[0].name)
-        # more than one provider
-        else:
-            aurman_note("We found multiple providers for {}"
-                        "\nChoose one by entering the corresponding number."
-                        "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
 
-            while True:
-                for i in range(0, len(providers_for_name)):
-                    print("Number {}: {}".format(i + 1, upstream_system.repo_of_package(providers_for_name[i].name)))
+    # for dep solving not to be removed has to be treated as wanted to install
+    sanitized_names |= sanitized_not_to_be_removed
 
-                try:
-                    user_input = int(input(aurman_question("Enter the number: ", False, False)))
-                    if 1 <= user_input <= len(providers_for_name):
-                        sanitized_names.add(providers_for_name[user_input - 1].name)
-                        break
-                except ValueError:
-                    print(aurman_error("That was not a valid choice!", False, False))
-                else:
-                    print(aurman_error("That was not a valid choice!", False, False))
-
-    aurman_status("fetching ignored packages...")
+    # fetching ignored packages
     ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup,
                                                                 upstream_system)
     # explicitly typed in names will not be ignored
@@ -195,8 +188,8 @@ def process(args):
 
                 del upstream_system.all_packages_dict[ignored_packages_name]
 
+    # recreating upstream system
     if ignored_packages_names:
-        aurman_status("recreating upstream system...")
         upstream_system = System(list(upstream_system.all_packages_dict.values()))
 
     # if user entered --devel and not --repo, fetch all needed pkgbuilds etc. for the devel packages
@@ -309,7 +302,7 @@ def process(args):
             # container for explicit repo deps
             as_explicit_container = set()
             for package in package_chunk:
-                if package.name in sanitized_names \
+                if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
                         or ((package.name in installed_system.all_packages_dict)
                             and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
                     as_explicit_container.add(package.name)
@@ -330,7 +323,7 @@ def process(args):
             package = package_chunk[0]
             package.build()
             try:
-                if package.name in sanitized_names \
+                if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
                         or ((package.name in installed_system.all_packages_dict)
                             and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
                     package.install(args_for_explicit)

@@ -67,6 +67,9 @@ but be warned, it could take a few minutes to find solutions.
 
 - `--solution_way`: print what exactly will be done, order of installing/removing packages
 
+- `--not_remove name`: specify packages which are installed on your system but must not be removed.
+you may specify more than one package, space separated
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
