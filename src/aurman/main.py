@@ -23,6 +23,7 @@ def process(args):
     try:
         pacman_args = parse_pacman_args(args)
     except InvalidInput:
+        aurman_note("aurman --help or aurman -h")
         return
 
     # show help
@@ -70,7 +71,7 @@ def process(args):
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
     if repo and aur:
-        logging.error("--repo and --aur is not what you want")
+        aurman_error("--repo and --aur is not what you want")
         return
 
     if pacman_args.keyserver:
@@ -83,12 +84,13 @@ def process(args):
 
     # do not allow -y without -u
     if pacman_args.refresh and not sysupgrade:
-        logging.info("-y without -u is not allowed!")
+        aurman_error("-y without -u is not allowed!")
         return
 
     # unrecognized parameters
     if pacman_args.invalid_args:
-        logging.info("The following parameters are not recognized yet: {}".format(pacman_args.invalid_args))
+        aurman_error("The following parameters are not recognized yet: {}".format(pacman_args.invalid_args))
+        aurman_note("aurman --help or aurman -h")
         return
 
     # if user just wants to search
@@ -230,6 +232,8 @@ def process(args):
         installed_aur_packages = [package for package in installed_system.aur_packages_list]
         installed_aur_packages.extend([package for package in installed_system.devel_packages_list])
         for package in installed_aur_packages:
+            # must not be that we have not received the upstream information
+            assert package.name in upstream_system.all_packages_dict
             upstream_package = upstream_system.all_packages_dict[package.name]
             if version_comparison(upstream_package.version, ">", package.version):
                 if upstream_package not in concrete_packages_to_install:
@@ -245,7 +249,7 @@ def process(args):
     try:
         chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
     except InvalidInput:
-        aurman_error("we could not find a solution.")
+        aurman_error("we could not find a solution")
         aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
         return
 
