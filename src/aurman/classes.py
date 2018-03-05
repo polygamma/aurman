@@ -1600,6 +1600,50 @@ class System:
 
         return first_return_tuple, return_list
 
+    def validate_solutions(self, solutions: List[List['Package']], needed_packages: Sequence['Package']) -> List[
+        Tuple['System', List['Package']]]:
+        """
+        Filters invalid solutions and also filters duplicate resulting systems
+
+        :param solutions:           The solutions to filter
+        :param needed_packages:     Packages which need to be on the system after appending the solution
+        :return:                    List containing tuples.
+                                        First element:
+                                            The resulting system
+                                        Second element:
+                                            The solution
+        """
+
+        # calculate new systems
+        new_systems = [self.hypothetical_append_packages_to_system(solution) for solution in solutions]
+        valid_systems_tuples = []
+        # find valid systems
+        for i, new_system in enumerate(new_systems):
+            for package in needed_packages:
+                if package.name not in new_system.all_packages_dict:
+                    break
+            else:
+                valid_systems_tuples.append((new_system, solutions[i]))
+
+        # no valid solutions
+        if not valid_systems_tuples:
+            return []
+
+        # calculate the differences between the resulting systems for the valid solutions
+        systems_differences = self.differences_between_systems(
+            [valid_systems_tuple[0] for valid_systems_tuple in valid_systems_tuples])
+
+        # delete duplicate resulting systems
+        return_list = []
+        already_seen_differences = set()
+        for i, valid_systems_tuple in enumerate(valid_systems_tuples):
+            difference_set = frozenset(set.union(systems_differences[1][i][0], systems_differences[1][i][1]))
+            if difference_set not in already_seen_differences:
+                already_seen_differences.add(difference_set)
+                return_list.append(valid_systems_tuple)
+
+        return return_list
+
     def validate_and_choose_solution(self, solutions: List[List['Package']],
                                      needed_packages: Sequence['Package']) -> List['Package']:
         """
@@ -1618,55 +1662,24 @@ class System:
         solution_print = aurman_note("Number {}:\nGetting installed: {}\nGetting removed: {}\n", True, False)
         choice_not_valid = aurman_error("That was not a valid choice!", False, False)
 
-        # calculating new systems and finding valid systems
-        new_systems = [self.hypothetical_append_packages_to_system(solution) for solution in solutions]
-        valid_systems = []
-        valid_solutions_indices = []
-        for i, new_system in enumerate(new_systems):
-            for package in needed_packages:
-                if package.name not in new_system.all_packages_dict:
-                    break
-            else:
-                valid_systems.append(new_system)
-                valid_solutions_indices.append(i)
-
+        # calc valid solutions
+        valid_systems_tuples = self.validate_solutions(solutions, needed_packages)
         # no valid solutions
-        if not valid_systems:
+        if not valid_systems_tuples:
             raise InvalidInput("No valid solutions found")
+        # one valid solution
+        elif len(valid_systems_tuples) == 1:
+            return valid_systems_tuples[0][1]
 
-        # only one valid solution - just return
-        if len(valid_systems) == 1:
-            return solutions[valid_solutions_indices[0]]
-
-        # calculate the differences between the resulting systems for the valid solutions
-        systems_differences = self.differences_between_systems(valid_systems)
-
-        # if the solutions are different but the resulting systems are not
-        single_differences_count = sum(
-            [len(diff_tuple[0]) + len(diff_tuple[1]) for diff_tuple in systems_differences[1]])
-        if single_differences_count == 0:
-            return solutions[valid_solutions_indices[0]]
-
-        # delete duplicate resulting systems
-        new_valid_systems = []
-        new_valid_solutions_indices = []
-        diff_set = set()
-        for i, valid_system in enumerate(valid_systems):
-            cont_set = frozenset(set.union(systems_differences[1][i][0], systems_differences[1][i][1]))
-            if cont_set not in diff_set:
-                new_valid_systems.append(valid_system)
-                diff_set.add(cont_set)
-                new_valid_solutions_indices.append(valid_solutions_indices[i])
-        valid_systems = new_valid_systems
-        valid_solutions_indices = new_valid_solutions_indices
-        systems_differences = self.differences_between_systems(valid_systems)
+        systems_differences = self.differences_between_systems(
+            [valid_systems_tuple[0] for valid_systems_tuple in valid_systems_tuples])
 
         # print for the user
-        print(different_solutions_found.format(len(valid_systems)))
+        print(different_solutions_found.format(len(valid_systems_tuples)))
 
         while True:
             # print solutions
-            for i in range(0, len(valid_systems)):
+            for i in range(0, len(valid_systems_tuples)):
                 installed_names = [package.name for package in systems_differences[1][i][0]]
                 removed_names = [package.name for package in systems_differences[1][i][1]]
                 installed_names.sort()
@@ -1679,8 +1692,8 @@ class System:
 
             try:
                 user_input = int(input(aurman_question("Enter the number: ", False, False)))
-                if 1 <= user_input <= len(valid_systems):
-                    return solutions[valid_solutions_indices[user_input - 1]]
+                if 1 <= user_input <= len(valid_systems_tuples):
+                    return valid_systems_tuples[user_input - 1][1]
             except ValueError:
                 print(choice_not_valid)
             else:
