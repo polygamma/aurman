@@ -34,6 +34,7 @@ setup(
     entry_points={
         'console_scripts': [
             'aurman=aurman.main:main',
+            'aurmansolver=aurman.main_solver:main'
         ]
     },
 
