@@ -88,6 +88,9 @@ you may specify more than one package, space separated
 ## Dependency solving description including benchmarks
 https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-solving
 
+## Using aurman just as dependency solver
+https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
+
 ## Screenshots
 
 ![](https://i.imgur.com/VipYpfj.png)
