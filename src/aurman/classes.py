@@ -1423,19 +1423,19 @@ class System:
                             print("   {}   : {}"
                                   "".format(Colors.BOLD(Colors.LIGHT_CYAN("Upgrade"))
                                             , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in to_upgrade_packages_names])))
+                                                         for name in sorted(to_upgrade_packages_names)])))
 
                         if to_reinstall_packages_names:
                             print("   {} : {}"
                                   "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Reinstall"))
                                             , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in to_reinstall_packages_names])))
+                                                         for name in sorted(to_reinstall_packages_names)])))
 
                         if to_delete_packages_names:
                             print("   {}    : {}"
                                   "".format(Colors.BOLD(Colors.LIGHT_RED("Remove"))
                                             , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in to_delete_packages_names])))
+                                                         for name in sorted(to_delete_packages_names)])))
 
                         to_install_packages_names = packages_chunk_names - set.union(
                             *[to_upgrade_packages_names, to_reinstall_packages_names])
@@ -1444,7 +1444,7 @@ class System:
                             print("   {}   : {}"
                                   "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
                                             , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in to_install_packages_names])))
+                                                         for name in sorted(to_install_packages_names)])))
 
                     for package in conflicting_new_system_packages:
                         del new_system.all_packages_dict[package.name]
@@ -1476,10 +1476,12 @@ class System:
                         break
 
                     if print_way:
+                        packages_names_to_del = set([package.name for package in to_delete_packages])
+
                         print("   {}    : {}"
                               "".format(Colors.BOLD(Colors.LIGHT_RED("Remove"))
-                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))
-                                                     for package in to_delete_packages])))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                     for name in sorted(packages_names_to_del)])))
                     for package in to_delete_packages:
                         del new_system.all_packages_dict[package.name]
                     new_system = System(list(new_system.all_packages_dict.values()))
