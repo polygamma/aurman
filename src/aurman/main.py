@@ -319,7 +319,8 @@ def process(args):
             except InvalidInput:
                 return
 
-            pacman("-D --asexplicit {}".format(" ".join(as_explicit_container)), True, sudo=True)
+            if as_explicit_container:
+                pacman("-D --asexplicit {}".format(" ".join(as_explicit_container)), True, sudo=True)
         # aur chunks always consist of one package
         else:
             package = package_chunk[0]
