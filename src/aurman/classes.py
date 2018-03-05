@@ -1399,6 +1399,7 @@ class System:
                 conflicting_new_system_packages = set(conflicting_new_system_packages)
 
                 # remove conflicting packages
+                installed_printed = False
                 if conflicting_new_system_packages:
                     deleted_packages = True
                     if print_way:
@@ -1441,6 +1442,7 @@ class System:
                             *[to_upgrade_packages_names, to_reinstall_packages_names])
 
                         if to_install_packages_names:
+                            installed_printed = True
                             print("   {}   : {}"
                                   "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
                                             , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
@@ -1453,6 +1455,12 @@ class System:
                     deleted_packages = False
 
                 # append packages
+                if not installed_printed and print_way:
+                    names_to_print = set([package.name for package in package_chunk])
+                    print("   {}   : {}"
+                          "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
+                                    , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                 for name in sorted(names_to_print)])))
                 new_system.append_packages(package_chunk)
 
                 # last exit brooklyn
