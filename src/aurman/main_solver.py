@@ -1,10 +1,11 @@
+import json
 import logging
 import sys
 from typing import Sequence, Set
 
 from pycman.config import PacmanConfig
 
-from aurman.classes import System, Package
+from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, Colors
 from aurman.parse_args import parse_pacman_args, PacmanOperations
 from aurman.utilities import version_comparison, strip_versioning_from_name
@@ -46,6 +47,15 @@ def sanitize_user_input(user_input: Sequence[str], system: 'System') -> Set[str]
                 sys.exit(1)
 
     return sanitized_names
+
+
+class SolutionEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, PossibleTypes):
+            return obj.name
+        if isinstance(obj, Package):
+            return obj.__dict__
+        return json.JSONEncoder.default(self, obj)
 
 
 def process(args):
@@ -186,7 +196,7 @@ def process(args):
         aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
         sys.exit(1)
 
-    print(valid_solutions)
+    print(json.dumps(valid_solutions, cls=SolutionEncoder, indent=2))
 
 
 def main():
