@@ -145,6 +145,9 @@ only_aurman_points.append(HelpOption(["--domain name"],
                                      "change the base url for aur requests (https://aur.archlinux.org is the default)"))
 only_aurman_points.append(HelpOption(["--solution_way"],
                                      "print the way of installing/removing packages"))
-only_aurman_points.append(HelpOption(["--not_remove"],
+only_aurman_points.append(HelpOption(["--holdpkg name"],
                                      "specify packages which must not be removed - "
                                      "multiple packages are space separated"))
+only_aurman_points.append(HelpOption(["--holdpkg_conf"],
+                                     "append packages from the pacman.conf to"
+                                     " {}".format(Colors.LIGHT_GREEN("--holdpkg"))))

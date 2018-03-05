@@ -2,6 +2,8 @@ import logging
 from copy import deepcopy
 from sys import argv, stdout
 
+from pycman.config import PacmanConfig
+
 from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
@@ -57,7 +59,7 @@ def process(args):
             return
 
     # -S or --sync
-    packages_of_user_names = pacman_args.targets  # targets of the aurman command
+    packages_of_user_names = list(set(pacman_args.targets))  # targets of the aurman command without duplicates
     sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
     needed = pacman_args.needed  # if --needed
     noedit = pacman_args.noedit  # if --noedit
@@ -67,7 +69,13 @@ def process(args):
     noconfirm = pacman_args.noconfirm  # if --noconfirm
     search = pacman_args.search  # list containing the specified strings for -s and --search
     solution_way = pacman_args.solution_way  # if --solution_way
-    not_remove = pacman_args.not_remove  # list containing the specified packages for --not_remove
+
+    not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
+    # if --holdpkg_conf append holdpkg from pacman.conf
+    if pacman_args.holdpkg_conf:
+        not_remove.extend(PacmanConfig(conf="/etc/pacman.conf").options['HoldPkg'])
+    # remove duplicates
+    not_remove = list(set(not_remove))
 
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
