@@ -1395,58 +1395,61 @@ class System:
                                         Colors.BOLD(Colors.LIGHT_MAGENTA(package_to_be_removed.name)),
                                         Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))))
 
+                    # save the found packages for later deletion
                     conflicting_new_system_packages.extend(new_system.conflicting_with(package))
+
+                # remove duplicates
                 conflicting_new_system_packages = set(conflicting_new_system_packages)
 
+                # print what will be done
+                if print_way:
+                    to_delete_packages_names = set()
+                    to_upgrade_packages_names = set()
+                    to_reinstall_packages_names = set()
+                    packages_chunk_names = set([package.name for package in package_chunk])
+
+                    for package in conflicting_new_system_packages:
+                        if package.name not in packages_chunk_names:
+                            to_delete_packages_names.add(package.name)
+                        else:
+                            old_package = new_system.all_packages_dict[package.name]
+                            new_package = [chunk_pack for chunk_pack in
+                                           package_chunk if package.name == chunk_pack.name][0]
+                            if old_package.version == new_package.version:
+                                to_reinstall_packages_names.add(package.name)
+                            else:
+                                to_upgrade_packages_names.add(package.name)
+
+                    if to_upgrade_packages_names:
+                        print("   {}   : {}"
+                              "".format(Colors.BOLD(Colors.LIGHT_CYAN("Upgrade"))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                     for name in sorted(to_upgrade_packages_names)])))
+
+                    if to_reinstall_packages_names:
+                        print("   {} : {}"
+                              "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Reinstall"))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                     for name in sorted(to_reinstall_packages_names)])))
+
+                    if to_delete_packages_names:
+                        print("   {}    : {}"
+                              "".format(Colors.BOLD(Colors.LIGHT_RED("Remove"))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                     for name in sorted(to_delete_packages_names)])))
+
+                    to_install_packages_names = packages_chunk_names - set.union(
+                        *[to_upgrade_packages_names, to_reinstall_packages_names])
+
+                    if to_install_packages_names:
+                        print("   {}   : {}"
+                              "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
+                                        , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                                                     for name in sorted(to_install_packages_names)])))
+
                 # remove conflicting packages
-                installed_printed = False
                 if conflicting_new_system_packages:
                     deleted_packages = True
-                    if print_way:
-                        to_delete_packages_names = set()
-                        to_upgrade_packages_names = set()
-                        to_reinstall_packages_names = set()
-                        packages_chunk_names = set([package.name for package in package_chunk])
-
-                        for package in conflicting_new_system_packages:
-                            if package.name not in packages_chunk_names:
-                                to_delete_packages_names.add(package.name)
-                            else:
-                                old_package = new_system.all_packages_dict[package.name]
-                                new_package = [chunk_pack for chunk_pack in
-                                               package_chunk if package.name == chunk_pack.name][0]
-                                if old_package.version == new_package.version:
-                                    to_reinstall_packages_names.add(package.name)
-                                else:
-                                    to_upgrade_packages_names.add(package.name)
-
-                        if to_upgrade_packages_names:
-                            print("   {}   : {}"
-                                  "".format(Colors.BOLD(Colors.LIGHT_CYAN("Upgrade"))
-                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in sorted(to_upgrade_packages_names)])))
-
-                        if to_reinstall_packages_names:
-                            print("   {} : {}"
-                                  "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Reinstall"))
-                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in sorted(to_reinstall_packages_names)])))
-
-                        if to_delete_packages_names:
-                            print("   {}    : {}"
-                                  "".format(Colors.BOLD(Colors.LIGHT_RED("Remove"))
-                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in sorted(to_delete_packages_names)])))
-
-                        to_install_packages_names = packages_chunk_names - set.union(
-                            *[to_upgrade_packages_names, to_reinstall_packages_names])
-
-                        installed_printed = True
-                        if to_install_packages_names:
-                            print("   {}   : {}"
-                                  "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
-                                            , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                         for name in sorted(to_install_packages_names)])))
 
                     for package in conflicting_new_system_packages:
                         del new_system.all_packages_dict[package.name]
@@ -1455,12 +1458,6 @@ class System:
                     deleted_packages = False
 
                 # append packages
-                if not installed_printed and print_way:
-                    names_to_print = set([package.name for package in package_chunk])
-                    print("   {}   : {}"
-                          "".format(Colors.BOLD(Colors.LIGHT_GREEN("Install"))
-                                    , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                                                 for name in sorted(names_to_print)])))
                 new_system.append_packages(package_chunk)
 
                 # last exit brooklyn
@@ -1483,6 +1480,7 @@ class System:
                     if not to_delete_packages:
                         break
 
+                    # print what will be done
                     if print_way:
                         packages_names_to_del = set([package.name for package in to_delete_packages])
 
@@ -1490,6 +1488,8 @@ class System:
                               "".format(Colors.BOLD(Colors.LIGHT_RED("Remove"))
                                         , ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                                                      for name in sorted(packages_names_to_del)])))
+
+                    # actually delete the packages
                     for package in to_delete_packages:
                         del new_system.all_packages_dict[package.name]
                     new_system = System(list(new_system.all_packages_dict.values()))
