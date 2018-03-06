@@ -26,6 +26,8 @@ def sanitize_user_input(user_input: Sequence[str], system: 'System') -> Set[str]
     """
     sanitized_names = set()
     for name in user_input:
+        if "/" in name:
+            name = name.split("/")[1]
         providers_for_name = system.provided_by(name)
         if not providers_for_name:
             aurman_error("No providers for {} found.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
@@ -114,8 +116,9 @@ def process(args):
     if not repo:
         upstream_system.append_packages_by_name(packages_of_user_names)
         # fetch info for all installed aur packages, too
-        names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
-        names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
+        names_of_installed_aur_packages = ["aur/" + package.name for package in installed_system.aur_packages_list]
+        names_of_installed_aur_packages.extend(
+            ["aur/" + package.name for package in installed_system.devel_packages_list])
         upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
     # sanitize user input
