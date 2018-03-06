@@ -111,13 +111,21 @@ def process(args):
         search_and_print(search, installed_system, str(pacman_args), repo, aur)
         return
 
-    # in case of sysupgrade and not --aur, call pacman
-    if sysupgrade and not aur:
+    # groups are for pacman
+    groups = pacman("-Sg", True, sudo=False)
+    groups_chosen = []
+    for name in packages_of_user_names[:]:
+        if name in groups:
+            groups_chosen.append(name)
+            packages_of_user_names.remove(name)
+
+    # in case of sysupgrade or groups to install and not --aur, call pacman
+    if (sysupgrade or groups_chosen) and not aur:
         if not sudo_acquired:
             acquire_sudo()
             sudo_acquired = True
         pacman_args_copy = deepcopy(pacman_args)
-        pacman_args_copy.targets = []
+        pacman_args_copy.targets = groups_chosen
         try:
             pacman(str(pacman_args_copy), False)
         except InvalidInput:
