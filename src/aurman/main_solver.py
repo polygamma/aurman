@@ -53,6 +53,8 @@ class SolutionEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, PossibleTypes):
             return obj.name
+        if isinstance(obj, set):
+            return list(obj)
         if isinstance(obj, Package):
             return obj.__dict__
         return json.JSONEncoder.default(self, obj)
@@ -189,20 +191,23 @@ def process(args):
         solutions = Package.dep_solving(concrete_packages_to_install, System(()), upstream_system)
 
     # fetch valid solutions
-    valid_solutions = [sol_tuple[1] for sol_tuple in
-                       installed_system.validate_solutions(solutions, concrete_packages_to_install)]
+    sol_tuples = installed_system.validate_solutions(solutions, concrete_packages_to_install)
+    valid_solutions = [sol_tuple[1] for sol_tuple in sol_tuples]
     if not valid_solutions:
         aurman_error("we could not find a solution")
         aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
         sys.exit(1)
 
-    print(json.dumps(valid_solutions, cls=SolutionEncoder, indent=2))
+    print(json.dumps(
+        [valid_solutions, installed_system.differences_between_systems([sol_tuple[0] for sol_tuple in sol_tuples])],
+        cls=SolutionEncoder, indent=4))
 
 
 def main():
     try:
         process(sys.argv[1:])
     except:
+        logging.error("", exc_info=True)
         sys.exit(1)
 
 
