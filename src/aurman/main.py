@@ -161,9 +161,8 @@ def process(args):
     if not repo:
         upstream_system.append_packages_by_name(packages_of_user_names)
         # fetch info for all installed aur packages, too
-        names_of_installed_aur_packages = ["aur/" + package.name for package in installed_system.aur_packages_list]
-        names_of_installed_aur_packages.extend(
-            ["aur/" + package.name for package in installed_system.devel_packages_list])
+        names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
+        names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
         upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
     # sanitize user input

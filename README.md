@@ -11,26 +11,6 @@
 ##### Usage
 aurman < operation > [ options ] [ targets ] - see also https://www.archlinux.org/pacman/pacman.8.html
 
-**Notice**: `aurman` prioritizes known repository packages over aur packages by default, if `aurman` encounters packages with the same names.
-
-However: there are two exceptions.
-- you have the package already installed from the aur
-- you put `aur/` in front of the name of the package when calling `aurman`
-
-Hence the following three special cases should be handled as follows:
-
-- the package is **already installed from a known repo** and you want to **install (upgrade) it from the aur**.
-
-put `aur/` in front of the name of the package
-- the package is **already installed from the aur** and you want to **install (upgrade) it from a known repo**.
-
-remove the package and install it again, without putting anything in front of the name of the package
-- the package is **not installed** and you want to **install it from the aur**.
-
-put `aur/` in front of the name of the package
-
-- **in every other case, there is nothing special to do**
-
 ##### Description
 aurman is meant as a **pacman wrapper**.
 All pacman operations are supported, but calling aurman with an operation besides `--sync` or `-S` will **just pass the arguments to pacman**.

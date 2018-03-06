@@ -1153,9 +1153,6 @@ class System:
 
         self.append_packages(packages)
 
-    def recreate_dicts(self):
-        self.__init__(list(self.all_packages_dict.values()))
-
     def append_packages(self, packages: Sequence['Package']):
         """
         Appends packages to this system.
@@ -1295,41 +1292,19 @@ class System:
         """
 
         packages_names = set([strip_versioning_from_name(name) for name in packages_names])
-        packages_names_to_fetch = []
-        deleted_while_appending = False
-
-        for name in packages_names:
-            if "/" not in name:
-                if name not in self.all_packages_dict and name not in packages_names_to_fetch:
-                    packages_names_to_fetch.append(name)
-            else:
-                name = name.split("/")[1]
-                if name in packages_names_to_fetch:
-                    continue
-
-                if name not in self.all_packages_dict \
-                        or self.all_packages_dict[name].type_of is not PossibleTypes.AUR_PACKAGE \
-                        and self.all_packages_dict[name].type_of is not PossibleTypes.DEVEL_PACKAGE:
-                    packages_names_to_fetch.append(name)
+        packages_names_to_fetch = [name for name in packages_names if name not in self.all_packages_dict]
 
         while packages_names_to_fetch:
             fetched_packages = Package.get_packages_from_aur(packages_names_to_fetch)
+            self.append_packages(fetched_packages)
 
             deps_of_the_fetched_packages = []
             for package in fetched_packages:
                 deps_of_the_fetched_packages.extend(package.relevant_deps())
-                if package.name in self.all_packages_dict:
-                    del self.all_packages_dict[package.name]
-                    deleted_while_appending = True
-
-            self.append_packages(fetched_packages)
 
             relevant_deps = list(set([strip_versioning_from_name(dep) for dep in deps_of_the_fetched_packages]))
 
             packages_names_to_fetch = [dep for dep in relevant_deps if dep not in self.all_packages_dict]
-
-        if deleted_while_appending:
-            self.recreate_dicts()
 
     def are_all_deps_fulfilled(self, package: 'Package', only_make_check: bool = False,
                                only_depends: bool = False, print_reason: bool = False) -> bool:
@@ -1388,8 +1363,6 @@ class System:
         """
         sanitized_names = set()
         for name in user_input:
-            if "/" in name:
-                name = name.split("/")[1]
             providers_for_name = self.provided_by(name)
             if not providers_for_name:
                 aurman_error("No providers for {} found.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
