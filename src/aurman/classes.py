@@ -290,7 +290,7 @@ class Package:
                 assert "S" in expac_operation
                 to_expand['repo'] = splitted_line[9]
 
-                if to_expand['name'] in return_dict and repos.index(return_dict[to_expand['name']].repo) > repos.index(
+                if to_expand['name'] in return_dict and repos.index(return_dict[to_expand['name']].repo) < repos.index(
                         to_expand['repo']):
                     continue
 
