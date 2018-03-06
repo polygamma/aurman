@@ -1539,31 +1539,59 @@ class System:
     def differences_between_systems(self, other_systems: Sequence['System']) -> Tuple[
         Tuple[Set['Package'], Set['Package']], List[Tuple[Set['Package'], Set['Package']]]]:
         """
-        Evaluates differences between this system and other systems.
+        Evaluates differences between this (.self) system and other systems.
 
         :param other_systems:   The other systems.
-        :return:                A tuple containing two items:
+        :return:
 
-                                First item:
-                                    Tuple containing two items:
+                                NOTICE: NONE of the following items
+                                contains packages, which
+                                are ALREADY INSTALLED on this
+                                system AND will NOT be REMOVED!
+                                In short: Do not show,
+                                what does not change!
+
+                                NOTICE FOR NOTICE:  Packages with another
+                                                    version are OTHER packages
+                                                    hence UPDATES will be listed as
+                                                    old package removed,
+                                                    new package installed
+
+                                LAST NOTICE: tl;dr read the sourcecode!
+
+                                A tuple containing two items:
 
                                     First item:
-                                        installed packages in respect to this system,
-                                        which are in all other systems
+                                        Tuple containing two items:
+                                            First item:
+                                                installed packages in comparison to this system,
+                                                which are installed in ALL other systems
+                                            Second item:
+                                                uninstalled packages in comparison to this system,
+                                                which are in ALL other systems NOT installed and HENCE
+                                                uninstalled in comparison to this system
+
                                     Second item:
-                                        uninstalled packages in respect to this system,
-                                        which are in all other systems
+                                        List containing tuples with two items each:
+                                            For the i-th tuple (all in all as many tuples as other systems):
+                                                First item:
+                                                    installed packages in comparison to this system,
+                                                    which are installed in the i-th other system
+                                                    but NOT in ALL other systems
+                                                Second item:
+                                                    uninstalled packages in comparison to this system,
+                                                    which are in the i-th other system NOT installed
+                                                    and HENCE uninstalled in comparison to this system
+                                                    but NOT in ALL other systems not installed
 
-                                Second item:
-                                    List containing tuples with two items each:
+                                REALLY LAST NOTICE (promised):
+                                                                To get all packages which will be installed
+                                                                with the i-th solution,
+                                                                union of the installed packages in ALL other systems
+                                                                and the installed packages of the i-th other system is
+                                                                the answer
 
-                                    For the i-th tuple (all in all as many tuples as other systems):
-                                        First item:
-                                            installed packages in respect to this system,
-                                            which are in the i-th system but not in all systems
-                                        Second item:
-                                            uninstalled packages in respect to this system,
-                                            which are in the i-th system but not in all systems
+                                                                same for the uninstalled packages
         """
 
         differences_tuples = []
