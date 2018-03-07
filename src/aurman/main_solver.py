@@ -226,6 +226,8 @@ def process(args):
 def main():
     try:
         process(sys.argv[1:])
+    except SystemExit:
+        sys.exit(1)
     except:
         logging.error("", exc_info=True)
         sys.exit(1)

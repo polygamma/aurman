@@ -142,7 +142,10 @@ def process(args):
         if do_everything:
             pacman_args_copy.sysupgrade = False
         # ignore packages from other sources for sysupgrade
-        packages_from_other_sources_ret = packages_from_other_sources()
+        try:
+            packages_from_other_sources_ret = packages_from_other_sources()
+        except InvalidInput:
+            return
         names_to_ignore = packages_from_other_sources_ret[0]
         for name_to_ignore in packages_from_other_sources_ret[1]:
             names_to_ignore.add(name_to_ignore)
