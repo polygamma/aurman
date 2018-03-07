@@ -60,7 +60,8 @@ pacman_options = {
     "domain": ("domain", 1, (PacmanOperations.AURMAN,)),
     "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,)),
     "holdpkg": ("holdpkg", 2, (PacmanOperations.AURMAN,)),
-    "holdpkg_conf": ("holdpkg_conf", 0, (PacmanOperations.AURMAN,))
+    "holdpkg_conf": ("holdpkg_conf", 0, (PacmanOperations.AURMAN,)),
+    "do_everything": ("do_everything", 0, (PacmanOperations.AURMAN,))
 }
 
 pacman_operations = {

@@ -10,6 +10,7 @@ from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
 from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
+from aurman.parsing_config import read_config, packages_from_other_sources
 from aurman.utilities import acquire_sudo, version_comparison, search_and_print
 from aurman.wrappers import pacman, expac
 
@@ -69,6 +70,12 @@ def process(args):
     noconfirm = pacman_args.noconfirm  # if --noconfirm
     search = pacman_args.search  # list containing the specified strings for -s and --search
     solution_way = pacman_args.solution_way  # if --solution_way
+    do_everything = pacman_args.do_everything  # if --do_everything
+
+    try:
+        read_config()  # read config - available via AurmanConfig.aurman_config
+    except InvalidInput:
+        return
 
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
@@ -105,27 +112,44 @@ def process(args):
     # if user just wants to search
     if search:
         if not repo:
-            installed_system = System(System.get_installed_packages())
+            try:
+                installed_system = System(System.get_installed_packages())
+            except InvalidInput:
+                return
         else:
             installed_system = None
         search_and_print(search, installed_system, str(pacman_args), repo, aur)
         return
 
     # groups are for pacman
-    groups = pacman("-Sg", True, sudo=False)
     groups_chosen = []
-    for name in packages_of_user_names[:]:
-        if name in groups:
-            groups_chosen.append(name)
-            packages_of_user_names.remove(name)
+    if not aur:
+        groups = pacman("-Sg", True, sudo=False)
+        for name in packages_of_user_names[:]:
+            if name in groups:
+                groups_chosen.append(name)
+                packages_of_user_names.remove(name)
 
-    # in case of sysupgrade or groups to install and not --aur, call pacman
-    if (sysupgrade or groups_chosen) and not aur:
+    # pacman call in the beginning of the routine
+    if not aur \
+            and (sysupgrade and (not do_everything or pacman_args.refresh) or groups_chosen):
         if not sudo_acquired:
             acquire_sudo()
             sudo_acquired = True
         pacman_args_copy = deepcopy(pacman_args)
         pacman_args_copy.targets = groups_chosen
+        # aurman handles the update
+        if do_everything:
+            pacman_args_copy.sysupgrade = False
+        # ignore packages from other sources for sysupgrade
+        packages_from_other_sources_ret = packages_from_other_sources()
+        names_to_ignore = packages_from_other_sources_ret[0]
+        for name_to_ignore in packages_from_other_sources_ret[1]:
+            names_to_ignore.add(name_to_ignore)
+        for already_ignored in pacman_args_copy.ignore:
+            names_to_ignore |= set(already_ignored.split(","))
+        if names_to_ignore:
+            pacman_args_copy.ignore = [",".join(names_to_ignore)]
         try:
             pacman(str(pacman_args_copy), False)
         except InvalidInput:
@@ -144,7 +168,10 @@ def process(args):
     aurman_status("initializing {}...".format(Colors.BOLD("aurman")), True)
 
     # analyzing installed packages
-    installed_system = System(System.get_installed_packages())
+    try:
+        installed_system = System(System.get_installed_packages())
+    except InvalidInput:
+        return
 
     if installed_system.not_repo_not_aur_packages_list:
         aurman_status("the following packages are neither in known repos nor in the aur")
@@ -152,10 +179,10 @@ def process(args):
             aurman_note("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
 
     # fetching upstream repo packages...
-    if not aur:
+    try:
         upstream_system = System(System.get_repo_packages())
-    else:
-        upstream_system = System(())
+    except InvalidInput:
+        return
 
     # fetching needed aur packages
     if not repo:
@@ -164,6 +191,12 @@ def process(args):
         names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
         names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
         upstream_system.append_packages_by_name(names_of_installed_aur_packages)
+
+    # remove known repo packages in case of --aur
+    if aur:
+        for package in upstream_system.repo_packages_list:
+            del upstream_system.all_packages_dict[package.name]
+        upstream_system = System(list(upstream_system.all_packages_dict.values()))
 
     # sanitize user input
     try:
@@ -236,11 +269,15 @@ def process(args):
             else:
                 concrete_packages_to_install.append(package)
 
-    # in case of sysupgrade and not --repo fetch all installed aur packages, of which newer versions are available
-    if sysupgrade and not repo:
-        installed_aur_packages = [package for package in installed_system.aur_packages_list]
-        installed_aur_packages.extend([package for package in installed_system.devel_packages_list])
-        for package in installed_aur_packages:
+    # in case of sysupgrade fetch all installed packages, of which newer versions are available
+    if sysupgrade:
+        installed_packages = []
+        if not repo:
+            installed_packages.extend([package for package in installed_system.aur_packages_list])
+            installed_packages.extend([package for package in installed_system.devel_packages_list])
+        if not aur:
+            installed_packages.extend([package for package in installed_system.repo_packages_list])
+        for package in installed_packages:
             # must not be that we have not received the upstream information
             assert package.name in upstream_system.all_packages_dict
             upstream_package = upstream_system.all_packages_dict[package.name]
@@ -298,6 +335,9 @@ def process(args):
     if not sudo_acquired:
         acquire_sudo()
 
+    # repo packages to install from other sources
+    repo_packages_dict = packages_from_other_sources()[1]
+
     # generate pacman args for the aur packages
     pacman_args_copy = deepcopy(pacman_args)
     pacman_args_copy.operation = PacmanOperations.UPGRADE
@@ -324,7 +364,11 @@ def process(args):
                     as_explicit_container.add(package.name)
 
             pacman_args_copy = deepcopy(pacman_args)
-            pacman_args_copy.targets = [package.name for package in package_chunk]
+            pacman_args_copy.targets = [package.name for package in package_chunk if
+                                        package.name not in repo_packages_dict]
+
+            pacman_args_copy.targets.extend(["{}/".format(repo_packages_dict[package.name]) + package.name
+                                             for package in package_chunk if package.name in repo_packages_dict])
             pacman_args_copy.asdeps = True
             pacman_args_copy.asexplicit = False
             try:
@@ -352,7 +396,7 @@ def process(args):
 def main():
     try:
         # auto completion
-        if argv[1] == "--auto_complete":
+        if len(argv) >= 2 and argv[1] == "--auto_complete":
             possible_completions()
             return
 

@@ -73,6 +73,38 @@ you may specify more than one package, space separated
 
 - `--holdpkg_conf`: append packages from the pacman.conf to `--holdpkg`
 
+- `--do_everything`: `-u` for repo packages will also be handled by `aurman`, not by `pacman`.
+may be useful if you are using the `aurman` config to fetch repo packages from other repos than they would normally be installed from.
+this is in general **not** recommended!
+
+## Config
+You may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback to `~/.config/aurman` in case of no `$XDG_CONFIG_HOME`) as config for aurman.
+
+### config options
+#### choose between multiple package sources
+By default `aurman` assumes the following priorities in case of multiple available packages with the same names (high to low):
+- repository package as listed in the pacman.conf - see https://www.archlinux.org/pacman/pacman.conf.5.html#_repository_sections
+> The order of repositories in the configuration files matters; repositories listed first will take precedence over those listed later in the file when packages in two repositories have identical names, regardless of version number.
+- aur packages
+
+If one wants to override this priority, it has to be done via the aurman config.
+
+For aur packages create a section  `[aur_packages]` and list the names of the aur packages.
+
+For repo packages create a section `[repo_packages]` and list the names of the repo packages followed by `=` and the name of the repo.
+
+Example:
+```ini
+[aur_packages]
+aur_package_name
+other_aur_package_name
+
+[repo_packages]
+repo_package_name=repo_one
+other_repo_package_name=repo_two
+```
+
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
@@ -84,6 +116,7 @@ you may specify more than one package, space separated
   - let the user see and edit all needed PKGBUILDs before any of the building of AUR packages starts
   - fetching of needed pgp keys for package building
   - pacman --search for repo and aur packages (aur results sorted by popularity)
+  - differentiate between the possible sources to install packages from in case of same names in different known repos and/or the aur
 
 ## Dependency solving description including benchmarks
 https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-solving

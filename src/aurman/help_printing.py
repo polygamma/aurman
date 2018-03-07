@@ -154,3 +154,6 @@ only_aurman_points.append(HelpOption(["--holdpkg name"],
 only_aurman_points.append(HelpOption(["--holdpkg_conf"],
                                      "append packages from the pacman.conf to"
                                      " {}".format(Colors.LIGHT_GREEN("--holdpkg"))))
+only_aurman_points.append(HelpOption(["--do_everything"],
+                                     "{} will be handled by aurman for repo packages, too"
+                                     "".format(Colors.LIGHT_GREEN("-u"))))

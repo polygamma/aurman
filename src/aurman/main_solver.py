@@ -7,7 +7,9 @@ from pycman.config import PacmanConfig
 
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, Colors
+from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import parse_pacman_args, PacmanOperations
+from aurman.parsing_config import read_config
 from aurman.utilities import version_comparison, strip_versioning_from_name
 
 # you may want to switch to logging.DEBUG
@@ -80,6 +82,11 @@ def process(args):
     needed = pacman_args.needed  # if --needed
     only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
 
+    try:
+        read_config()  # read config - available via AurmanConfig.aurman_config
+    except InvalidInput:
+        sys.exit(1)
+
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
     if pacman_args.holdpkg_conf:
@@ -97,7 +104,10 @@ def process(args):
         aurman.aur_utilities.aur_domain = pacman_args.domain[0]
 
     # analyzing installed packages
-    installed_system = System(System.get_installed_packages())
+    try:
+        installed_system = System(System.get_installed_packages())
+    except InvalidInput:
+        sys.exit(1)
 
     if installed_system.not_repo_not_aur_packages_list:
         logging.debug("the following packages are neither in known repos nor in the aur")
@@ -105,10 +115,10 @@ def process(args):
             logging.debug("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
 
     # fetching upstream repo packages...
-    if not aur:
+    try:
         upstream_system = System(System.get_repo_packages())
-    else:
-        upstream_system = System(())
+    except InvalidInput:
+        sys.exit(1)
 
     # fetching needed aur packages
     if not repo:
@@ -117,6 +127,12 @@ def process(args):
         names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
         names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
         upstream_system.append_packages_by_name(names_of_installed_aur_packages)
+
+    # remove known repo packages in case of --aur
+    if aur:
+        for package in upstream_system.repo_packages_list:
+            del upstream_system.all_packages_dict[package.name]
+        upstream_system = System(list(upstream_system.all_packages_dict.values()))
 
     # sanitize user input
     sanitized_names = sanitize_user_input(packages_of_user_names, upstream_system)
@@ -172,11 +188,15 @@ def process(args):
             else:
                 concrete_packages_to_install.append(package)
 
-    # in case of sysupgrade and not --repo fetch all installed aur packages, of which newer versions are available
-    if sysupgrade and not repo:
-        installed_aur_packages = [package for package in installed_system.aur_packages_list]
-        installed_aur_packages.extend([package for package in installed_system.devel_packages_list])
-        for package in installed_aur_packages:
+    # in case of sysupgrade fetch all installed packages, of which newer versions are available
+    if sysupgrade:
+        installed_packages = []
+        if not repo:
+            installed_packages.extend([package for package in installed_system.aur_packages_list])
+            installed_packages.extend([package for package in installed_system.devel_packages_list])
+        if not aur:
+            installed_packages.extend([package for package in installed_system.repo_packages_list])
+        for package in installed_packages:
             # must not be that we have not received the upstream information
             assert package.name in upstream_system.all_packages_dict
             upstream_package = upstream_system.all_packages_dict[package.name]

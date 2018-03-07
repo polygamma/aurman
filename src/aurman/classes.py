@@ -9,6 +9,7 @@ from pycman.config import PacmanConfig
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.coloring import aurman_status, aurman_note, aurman_error, aurman_question, Colors
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
+from aurman.parsing_config import packages_from_other_sources
 from aurman.utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
 from aurman.wrappers import expac, makepkg, pacman
 
@@ -248,10 +249,13 @@ class Package:
         if "Q" in expac_operation:
             formatting = list("nvDHoPReGw")
             repos = []
+            repo_dict = {}
         else:
             assert "S" in expac_operation
             formatting = list("nvDHoPReGr")
             repos = Package.get_known_repos()
+            # packages the user wants to install from another repo
+            repo_dict = packages_from_other_sources()[1]
 
         expac_return = expac(expac_operation, formatting, packages_names)
         return_dict = {}
@@ -290,14 +294,41 @@ class Package:
                 assert "S" in expac_operation
                 to_expand['repo'] = splitted_line[9]
 
-                if to_expand['name'] in return_dict and repos.index(return_dict[to_expand['name']].repo) < repos.index(
-                        to_expand['repo']):
-                    continue
+                # continue if we explicitly want a package from a specific repo
+                # and the package is not from that repo
+                # or if the order of the repos in pacman.conf tells us to
+                if to_expand['name'] in return_dict:
+                    if to_expand['name'] in repo_dict:
+                        if to_expand['repo'] == repo_dict[to_expand['name']]:
+                            pass
+                        elif return_dict[to_expand['name']].repo != repo_dict[to_expand['name']]:
+                            if repos.index(return_dict[to_expand['name']].repo) < repos.index(to_expand['repo']):
+                                continue
+
+                    elif repos.index(return_dict[to_expand['name']].repo) < repos.index(to_expand['repo']):
+                        continue
 
             if to_expand['name'] in to_expand['conflicts']:
                 to_expand['conflicts'].remove(to_expand['name'])
 
             return_dict[to_expand['name']] = Package(**to_expand)
+
+        # check if all repos the user gave us are actually known
+        for repo_package_name in repo_dict:
+            if repo_package_name not in return_dict:
+                aurman_error("Package {} "
+                             "not known in any repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(repo_package_name))))
+                raise InvalidInput("Package {} "
+                                   "not known in any repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(repo_package_name))))
+
+            package_repo = return_dict[repo_package_name].repo
+            if package_repo != repo_dict[repo_package_name]:
+                aurman_error("Package {} not found in repo {}"
+                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(repo_package_name)),
+                                       Colors.BOLD(Colors.LIGHT_MAGENTA(repo_dict[repo_package_name]))))
+                raise InvalidInput("Package {} not found in repo {}"
+                                   "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(repo_package_name)),
+                                             Colors.BOLD(Colors.LIGHT_MAGENTA(repo_dict[repo_package_name]))))
 
         return list(return_dict.values())
 
@@ -1102,6 +1133,11 @@ class System:
         :return:    A list containing the installed packages
         """
         repo_packages_names = set(expac("-S", ('n',), ()))
+
+        # packages the user wants to install from aur
+        aur_names = packages_from_other_sources()[0]
+        repo_packages_names -= aur_names
+
         installed_packages_names = set(expac("-Q", ('n',), ()))
         installed_repo_packages_names = installed_packages_names & repo_packages_names
         unclassified_installed_names = installed_packages_names - installed_repo_packages_names
@@ -1116,6 +1152,10 @@ class System:
         # installed aur packages
         installed_aur_packages_names = set(
             [package.name for package in Package.get_packages_from_aur(list(unclassified_installed_names))])
+        for name in aur_names:
+            if name not in installed_aur_packages_names:
+                aurman_error("Package {} not found in AUR!".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+                raise InvalidInput("Package {} not found in AUR!".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
 
         if installed_aur_packages_names:
             return_list.extend(
@@ -1152,6 +1192,9 @@ class System:
         self.conflicts_dict = {}
 
         self.append_packages(packages)
+
+    def recreate_dicts(self):
+        self.__init__(list(self.all_packages_dict.values()))
 
     def append_packages(self, packages: Sequence['Package']):
         """
@@ -1293,18 +1336,37 @@ class System:
 
         packages_names = set([strip_versioning_from_name(name) for name in packages_names])
         packages_names_to_fetch = [name for name in packages_names if name not in self.all_packages_dict]
+        aur_names = packages_from_other_sources()[0]
+        for name in packages_names:
+            if name in packages_names_to_fetch:
+                continue
 
+            if name not in aur_names:
+                continue
+
+            package = self.all_packages_dict[name]
+            if package.type_of is not PossibleTypes.AUR_PACKAGE and package.type_of is not PossibleTypes.DEVEL_PACKAGE:
+                packages_names_to_fetch.append(name)
+
+        deleted_while_appending = False
         while packages_names_to_fetch:
             fetched_packages = Package.get_packages_from_aur(packages_names_to_fetch)
-            self.append_packages(fetched_packages)
 
             deps_of_the_fetched_packages = []
             for package in fetched_packages:
                 deps_of_the_fetched_packages.extend(package.relevant_deps())
+                if package.name in self.all_packages_dict:
+                    del self.all_packages_dict[package.name]
+                    deleted_while_appending = True
+
+            self.append_packages(fetched_packages)
 
             relevant_deps = list(set([strip_versioning_from_name(dep) for dep in deps_of_the_fetched_packages]))
 
             packages_names_to_fetch = [dep for dep in relevant_deps if dep not in self.all_packages_dict]
+
+        if deleted_while_appending:
+            self.recreate_dicts()
 
     def are_all_deps_fulfilled(self, package: 'Package', only_make_check: bool = False,
                                only_depends: bool = False, print_reason: bool = False) -> bool:
