@@ -37,7 +37,7 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
         # see: https://docs.python.org/3/howto/regex.html
         regex_chars = list("^.+*?$[](){}\|")
 
-        regex_patterns = [regex.compile(name) for name in names]
+        regex_patterns = [regex.compile(name, regex.IGNORECASE) for name in names]
         names_beginnings_without_regex = []
         for name in names:
             index_start = -1
