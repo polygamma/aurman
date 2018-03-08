@@ -33,6 +33,8 @@ def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bo
         query_prefix = "&arg="
     query_url_length = len(query_url.encode("utf8"))
     query_prefix_length = len(query_prefix.encode("utf8"))
+
+    # quote_plus needed for packages like libc++
     package_names = [quote_plus(package_name) for package_name in package_names]
 
     queries_parameters = split_query_helper(max_query_length, query_url_length, query_prefix_length, package_names)

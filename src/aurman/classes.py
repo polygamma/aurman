@@ -41,6 +41,12 @@ class DepAlgoSolution:
         self.installed_solution_packages: Set['Package'] = set()  # needed for tracking which packages are installed
 
     def solution_copy(self):
+        """
+        Copies a solution as deep as we need it while dep solving
+        Performance + !
+
+        :return:    A copy of the solution
+        """
         to_return = DepAlgoSolution(self.packages_in_solution[:], self.visited_packages[:], set(self.visited_names))
         to_return.is_valid = self.is_valid
         to_return.not_to_delete_deps = set(self.not_to_delete_deps)
@@ -1152,6 +1158,8 @@ class System:
         # installed aur packages
         installed_aur_packages_names = set(
             [package.name for package in Package.get_packages_from_aur(list(unclassified_installed_names))])
+
+        # package names the user gave us must be in the aur
         for name in aur_names:
             if name not in installed_aur_packages_names:
                 aurman_error("Package {} not found in AUR!".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
