@@ -101,6 +101,8 @@ native_points.append(HelpOption(["-u", "--sysupgrade"],
                                 "Upgrades all packages that are out-of-date"))
 native_points.append(HelpOption(["-y", "--refresh"],
                                 "Download a fresh copy of the master package database from the server"))
+native_points.append(HelpOption(["-c", "--clean"],
+                                "Remove packages that are no longer installed from the cache"))
 
 # native pacman options for aurman
 native_aurman = "the following native pacman options for " \
@@ -123,6 +125,8 @@ native_aurman_points.append(HelpOption(["-s", "--search"],
                                        "for names or descriptions"))
 native_aurman_points.append(HelpOption(["-u", "--sysupgrade"],
                                        "Upgrades all packages that are out-of-date"))
+native_aurman_points.append(HelpOption(["-c", "--clean"],
+                                       "Remove packages that are no longer installed from the cache"))
 
 # aurman exclusive options
 only_aurman = "aurman exclusive options for {} or {}".format(Colors.LIGHT_GREEN("--sync"), Colors.LIGHT_GREEN("-S"))

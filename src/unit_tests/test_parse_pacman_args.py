@@ -31,6 +31,23 @@ class TestParse_pacman_args(TestCase):
         self.assertIsInstance(ret_val.domain, list)
         self.assertIsInstance(ret_val.cachedir, list)
 
+        args = "-Syyu -c --clean".split()
+        ret_val = parse_pacman_args(args)
+        self.assertEqual(['something'], ret_val.refresh)
+        self.assertEqual(['something'], ret_val.clean)
+        self.assertEqual(True, ret_val.sysupgrade)
+
+        args = "-Syu -c --clean".split()
+        ret_val = parse_pacman_args(args)
+        self.assertEqual(True, ret_val.refresh)
+        self.assertNotEqual(['something'], ret_val.refresh)
+        self.assertEqual(['something'], ret_val.clean)
+        self.assertEqual(True, ret_val.sysupgrade)
+
+        self.assertEqual(2, str(ret_val).count("--clean"))
+        self.assertEqual(1, str(ret_val).count("--sysupgrade"))
+        self.assertEqual(1, str(ret_val).count("--refresh"))
+
 
 if __name__ == '__main__':
     main()

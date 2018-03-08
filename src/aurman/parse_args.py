@@ -49,6 +49,8 @@ pacman_options = {
     "sysupgrade": ("sysupgrade", 0, (PacmanOperations.SYNC,)),
     "y": ("refresh", 0, (PacmanOperations.SYNC,)),
     "refresh": ("refresh", 0, (PacmanOperations.SYNC,)),
+    "c": ("clean", 0, (PacmanOperations.SYNC,)),
+    "clean": ("clean", 0, (PacmanOperations.SYNC,)),
 
     "noedit": ("noedit", 0, (PacmanOperations.AURMAN,)),
     "devel": ("devel", 0, (PacmanOperations.AURMAN,)),
@@ -120,8 +122,14 @@ class PacmanArgs:
                     return_string += " " + "--{}".format(name)
                 else:
                     return_string += " " + "-{}".format(name)
-                if not isinstance(value, bool):
+                if not isinstance(value, bool) and not pacman_options[name][1] == 0:
                     return_string += " " + " ".join(value)
+                # dirty hack for things like -yy or -cc
+                elif not isinstance(value, bool):
+                    if len(name) >= 2:
+                        return_string += " " + "--{}".format(name)
+                    else:
+                        return_string += " " + "-{}".format(name)
 
         return return_string.strip()
 
@@ -144,7 +152,11 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
 
     def append_bool(param: str):
         new_current_field = pacman_options[param][0]
-        setattr(args_to_return, new_current_field, True)
+        # dirty hack for things like -yy or -cc
+        if hasattr(args_to_return, new_current_field):
+            setattr(args_to_return, new_current_field, ['something'])
+        else:
+            setattr(args_to_return, new_current_field, True)
         return new_current_field, 0
 
     args_to_return = PacmanArgs()

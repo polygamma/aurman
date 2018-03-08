@@ -1,5 +1,7 @@
 import logging
+import os
 from copy import deepcopy
+from subprocess import run, DEVNULL
 from sys import argv, stdout
 
 from pycman.config import PacmanConfig
@@ -11,7 +13,7 @@ from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
 from aurman.parsing_config import read_config, packages_from_other_sources
-from aurman.utilities import acquire_sudo, version_comparison, search_and_print
+from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user
 from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -71,6 +73,8 @@ def process(args):
     search = pacman_args.search  # list containing the specified strings for -s and --search
     solution_way = pacman_args.solution_way  # if --solution_way
     do_everything = pacman_args.do_everything  # if --do_everything
+    clean = pacman_args.clean  # if --clean
+    clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
 
     try:
         read_config()  # read config - available via AurmanConfig.aurman_config
@@ -107,6 +111,54 @@ def process(args):
     if pacman_args.invalid_args:
         aurman_error("The following parameters are not recognized yet: {}".format(pacman_args.invalid_args))
         aurman_note("aurman --help or aurman -h")
+        return
+
+    # if user wants to --clean
+    if clean:
+        if not aur:
+            pacman(str(pacman_args), False, sudo=True)
+
+        if not repo:
+            if not os.path.isdir(Package.cache_dir):
+                aurman_error("Cache directory {} not found."
+                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
+                return
+
+            aurman_note("Cache directory: {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
+
+            if clean_force:
+                if ask_user("Do you want to remove ALL files from cache?", False):
+                    aurman_status("Deleting cache dir...")
+                    if run("rm -rf {}".format(Package.cache_dir), shell=True, stdout=DEVNULL,
+                           stderr=DEVNULL).returncode != 0:
+                        aurman_error("Directory {} could not be deleted"
+                                     "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
+                        return
+            else:
+                if ask_user("Do you want to remove all uninstalled clones from cache?", False):
+                    aurman_status("Deleting uninstalled clones from cache...")
+                    dirs_to_not_delete = set(expac("-Q -1", ("e",), ()))
+                    for thing in os.listdir(Package.cache_dir):
+                        if os.path.isdir(os.path.join(Package.cache_dir, thing)):
+                            if thing not in dirs_to_not_delete:
+                                dir_to_delete = os.path.join(Package.cache_dir, thing)
+                                if run("rm -rf {}".format(dir_to_delete), shell=True, stdout=DEVNULL,
+                                       stderr=DEVNULL).returncode != 0:
+                                    aurman_error("Directory {} could not be deleted"
+                                                 "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))))
+                                    return
+
+                if ask_user("Do you want to remove all untracked git files from cache?", False):
+                    aurman_status("Deleting untracked git files from cache...")
+                    for thing in os.listdir(Package.cache_dir):
+                        if os.path.isdir(os.path.join(Package.cache_dir, thing)):
+                            dir_to_clean = os.path.join(Package.cache_dir, thing)
+                            if run("git clean -ffdx"
+                                   "", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=dir_to_clean).returncode != 0:
+                                aurman_error("Directory {} could not be cleaned"
+                                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_clean))))
+                                return
+
         return
 
     # if user just wants to search

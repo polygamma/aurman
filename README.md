@@ -36,6 +36,7 @@ All pacman operations are supported, but calling aurman with an operation beside
 - `-s`, `--search`
 - `-u`, `--sysupgrade`
 - `-y`, `--refresh`
+- `-c`, `--clean`
 
 ##### the following native pacman options for `--sync` or `-S` will also be used by aurman for aur packages
 
@@ -45,6 +46,7 @@ All pacman operations are supported, but calling aurman with an operation beside
 - `--ignoregroup`
 - `-s`, `--search`
 - `-u`, `--sysupgrade`
+- `-c`, `--clean`
 
 ##### aurman exclusive options for `--sync` or `-S`
 
