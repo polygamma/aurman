@@ -116,6 +116,8 @@ other_repo_package_name=repo_two
   - let the user see and edit all needed PKGBUILDs before any of the building of AUR packages starts
   - fetching of needed pgp keys for package building
   - pacman --search for repo and aur packages (aur results sorted by popularity)
+  - search function supports regex. for searching the aur the first span of at least two consecutive non-regex
+  characters is being used. these results are being filtered by the regex expression afterwards.
   - differentiate between the possible sources to install packages from in case of same names in different known repos and/or the aur
 
 ## Dependency solving description including benchmarks

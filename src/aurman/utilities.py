@@ -5,6 +5,8 @@ from pyalpm import vercmp
 from subprocess import run, DEVNULL
 from typing import Tuple, Sequence
 
+import regex
+
 from aurman.aur_utilities import get_aur_info
 from aurman.coloring import Colors, aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
@@ -27,9 +29,43 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
         run("pacman {}".format(pacman_params), shell=True)
 
     if not repo:
-        found_names = set(ret_dict['Name'] for ret_dict in get_aur_info([names[0]], True))
+        # see: https://docs.python.org/3/howto/regex.html
+        regex_chars = list("^.+*?$[](){}\|")
+
+        regex_patterns = [regex.compile(name) for name in names]
+        names_beginnings_without_regex = []
+        for name in names:
+            index_start = -1
+            index_end = len(name)
+            for i, char in enumerate(name):
+                if char not in regex_chars and index_start == -1:
+                    index_start = i
+                elif char in regex_chars and index_start != -1:
+                    # must be at least two consecutive non regex chars
+                    if i - index_start < 2:
+                        index_start = -1
+                        continue
+                    index_end = i
+                    break
+
+            if index_start == -1:
+                aurman_error("Your query {} "
+                             "contains not enough non regex chars!"
+                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+                raise InvalidInput("Your query {} "
+                                   "contains not enough non regex chars!"
+                                   "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+
+            names_beginnings_without_regex.append(name[index_start:index_end])
+
+        found_names = set(ret_dict['Name'] for ret_dict in get_aur_info([names_beginnings_without_regex[0]], True)
+                          if regex_patterns[0].findall(ret_dict['Name'])
+                          or regex_patterns[0].findall(ret_dict['Description']))
+
         for i in range(1, len(names)):
-            found_names &= set(ret_dict['Name'] for ret_dict in get_aur_info([names[i]], True))
+            found_names &= set(ret_dict['Name'] for ret_dict in get_aur_info([names_beginnings_without_regex[i]], True)
+                               if regex_patterns[i].findall(ret_dict['Name'])
+                               or regex_patterns[i].findall(ret_dict['Description']))
 
         search_return = get_aur_info(found_names)
 

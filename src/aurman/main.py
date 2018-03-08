@@ -111,6 +111,7 @@ def process(args):
 
     # if user just wants to search
     if search:
+        # we only need the installed system for aur queries
         if not repo:
             try:
                 installed_system = System(System.get_installed_packages())
@@ -118,8 +119,14 @@ def process(args):
                 return
         else:
             installed_system = None
-        search_and_print(search, installed_system, str(pacman_args), repo, aur)
-        return
+
+        # start search
+        try:
+            search_and_print(search, installed_system, str(pacman_args), repo, aur)
+        except InvalidInput:
+            return
+        finally:
+            return
 
     # groups are for pacman
     groups_chosen = []
