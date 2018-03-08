@@ -6,7 +6,7 @@ pkgdesc="aurman AUR helper"
 arch=('x86_64')
 url="https://github.com/polygamma/aurman"
 license=('MIT')
-depends=('python' 'expac' 'python-requests' 'pyalpm' 'pacman' 'sudo' 'git')
+depends=('python' 'expac' 'python-requests' 'pyalpm' 'pacman' 'sudo' 'git' 'binutils' 'fakeroot')
 source=('aurman_sources::git+https://github.com/polygamma/aurman.git#branch=master')
 md5sums=('SKIP')
 
