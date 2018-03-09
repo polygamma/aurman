@@ -139,7 +139,17 @@ def process(args):
                 if ask_user("Do you want to remove {} clones from cache?"
                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all uninstalled"))), False):
                     aurman_status("Deleting uninstalled clones from cache...")
-                    dirs_to_not_delete = set(expac("-Q -1", ("e",), ()))
+
+                    # if pkgbase not available, the name of the package is the base
+                    expac_returns = expac("-Q -1", ("e", "n"), ())
+                    dirs_to_not_delete = set()
+                    for expac_return in expac_returns:
+                        pkgbase = expac_return.split("?!")[0]
+                        if pkgbase == "(null)":
+                            dirs_to_not_delete.add(expac_return.split("?!")[1])
+                        else:
+                            dirs_to_not_delete.add(pkgbase)
+
                     for thing in os.listdir(Package.cache_dir):
                         if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                             if thing not in dirs_to_not_delete:
