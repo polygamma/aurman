@@ -52,6 +52,8 @@ All pacman operations are supported, but calling aurman with an operation beside
 
 - `--noedit`: will not show changes of PKGBUILDs and .install files. just assumes you are okay with the changes.
 
+- `--show_changes`: will show changes of PKGBUILDs and .install files without asking
+
 - `--devel`: will fetch current development packages versions to decide whether a new version is available or not.
 
 - `--deep_search`: dependency solving will ignore currently fulfilled dependencies of your system and try to solve the problem for a system with zero packages installed.

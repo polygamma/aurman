@@ -66,6 +66,7 @@ def process(args):
     sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
     needed = pacman_args.needed  # if --needed
     noedit = pacman_args.noedit  # if --noedit
+    show_changes = pacman_args.show_changes  # if --show_changes
     devel = pacman_args.devel  # if --devel
     only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
     pgp_fetch = pacman_args.pgp_fetch  # if --pgp_fetch
@@ -87,6 +88,10 @@ def process(args):
         not_remove.extend(PacmanConfig(conf="/etc/pacman.conf").options['HoldPkg'])
     # remove duplicates
     not_remove = list(set(not_remove))
+
+    if noedit and show_changes:
+        aurman_error("--noedit and --show_changes is not what you want")
+        return
 
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
@@ -324,7 +329,7 @@ def process(args):
             package.fetch_pkgbuild()
         try:
             for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild(noedit)
+                package.show_pkgbuild(noedit, show_changes)
                 package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
         except InvalidInput:
             return
@@ -402,7 +407,7 @@ def process(args):
                 if package.type_of is PossibleTypes.REPO_PACKAGE \
                         or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                     continue
-                package.show_pkgbuild(noedit)
+                package.show_pkgbuild(noedit, show_changes)
                 package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
         except InvalidInput:
             return

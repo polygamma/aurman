@@ -53,6 +53,7 @@ pacman_options = {
     "clean": ("clean", 0, (PacmanOperations.SYNC,)),
 
     "noedit": ("noedit", 0, (PacmanOperations.AURMAN,)),
+    "show_changes": ("show_changes", 0, (PacmanOperations.AURMAN,)),
     "devel": ("devel", 0, (PacmanOperations.AURMAN,)),
     "deep_search": ("deep_search", 0, (PacmanOperations.AURMAN,)),
     "pgp_fetch": ("pgp_fetch", 0, (PacmanOperations.AURMAN,)),

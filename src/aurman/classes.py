@@ -903,11 +903,12 @@ class Package:
                             logging.error("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
                             raise ConnectionProblem("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
 
-    def show_pkgbuild(self, noedit: bool = False):
+    def show_pkgbuild(self, noedit: bool = False, show_changes: bool = False):
         """
         Lets the user review and edit unreviewed PKGBUILD and install files of this package
 
-        :param noedit:     True if the user is just fine with the changes without showing them, False otherwise
+        :param noedit:          True if the user is just fine with the changes without showing them, False otherwise
+        :param show_changes:    True if the user wants to see the changes without being asked, False otherwise
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
@@ -955,7 +956,7 @@ class Package:
                     if run("git diff --no-index --quiet '" + "' '".join(
                             [os.path.join(git_aurman_dir, file), file]) + "'",
                            shell=True, cwd=package_dir).returncode == 1:
-                        if ask_user("Do you want to view the changes of {} of {}?".format(
+                        if show_changes or ask_user("Do you want to view the changes of {} of {}?".format(
                                 Colors.BOLD(Colors.LIGHT_MAGENTA(file)), Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
                                 False):
                             run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
@@ -967,7 +968,7 @@ class Package:
                     else:
                         changes_seen = False
                 else:
-                    if ask_user("Do you want to view the changes of {} of {}?".format(
+                    if show_changes or ask_user("Do you want to view the changes of {} of {}?".format(
                             Colors.BOLD(Colors.LIGHT_MAGENTA(file)), Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
                             False):
                         run("git diff --no-index '" + "' '".join([os.path.join("/dev", "null"), file]) + "'",
