@@ -53,7 +53,7 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
                     index_end = i
                     break
 
-            if index_start == -1:
+            if index_start == -1 or index_end - index_start < 2:
                 aurman_error("Your query {} "
                              "contains not enough non regex chars!"
                              "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
