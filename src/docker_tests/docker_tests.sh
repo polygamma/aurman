@@ -31,10 +31,7 @@ test_command aurman -S cower --noconfirm --noedit --pgp_fetch --keyserver hkp://
 # check if cower installed
 test_command pacman -Qi cower
 
-# install mingw-w64-gcc
-test_command yes | aurman -S mingw-w64-gcc --noconfirm --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371
-
-# check if mingw-w64-gcc installed
-test_command pacman -Qi mingw-w64-gcc
+# search solution to install mingw-w64-gcc
+test_command aurmansolver -S mingw-w64-gcc
 
 if ${ANY_FAILED}; then exit 1; else exit 0; fi
