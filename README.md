@@ -130,6 +130,28 @@ https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-so
 ## Using aurman just as dependency solver
 https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
 
+## FAQ
+- `aurman` wants to remove packages, which should not be removed, what's the matter?
+  **example**:
+![](https://i.imgur.com/Q2OKkKb.png)
+
+It may be, like in this case, that `aurman` assumes that three packages are going to be removed, which is in fact not going to happen (in this case).
+
+The problem is, that the package `ffmpeg-full` does not list the exact versions of the .so which are being provided.
+
+Hence `aurman` assumes, that the listed deps are going to be unfulfilled, and hence those packages are going to be removed.
+
+However: `aurman` does not delete packages by itself, so, if `ffmpeg-full` actually provides the correct versions of the files, nothing is going to be deleted.
+
+But the information about the exact versions are only available after building `ffmpeg-full`, hence it's nothing which may be determined that early.
+
+So: The problem really is the PKGBUILD of `ffmpeg-full`, not `aurman`.
+
+**tl;dr**: If you just install, and the versions are actually fine, nothing is going to be deleted.
+Otherwise it will be as predicted by `aurman`.
+
+What you should do: Contact the maintainer of the relevant packages and ask to append the explicit versions of the files being provided.
+
 ## Screenshots
 
 ![](https://i.imgur.com/VipYpfj.png)
