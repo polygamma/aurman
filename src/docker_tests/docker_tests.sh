@@ -45,6 +45,13 @@ test_command aurmansolver -S mingw-w64-gcc --deep_search
 test_command aurmansolver -S ros-indigo-desktop-full
 test_command aurmansolver -S ros-indigo-desktop-full --deep_search
 
+# install fprintd and libfprint-vfs0090-git
+yes | aurman -S fprintd libfprint-vfs0090-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371
+
+# check if fprintd and libfprint-vfs0090-git are installed
+test_command pacman -Qi fprintd
+test_command pacman -Qi libfprint-vfs0090-git
+
 # install pacman-git
 yes | aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371
 
