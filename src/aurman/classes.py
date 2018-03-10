@@ -931,7 +931,8 @@ class Package:
 
         # relevant files are all files besides .SRCINFO
         relevant_files = []
-        files_in_pack_dir = [f for f in os.listdir(package_dir) if os.path.isfile(os.path.join(package_dir, f))]
+        files_in_pack_dir = run("git ls-files", shell=True, stdout=PIPE, stderr=DEVNULL,
+                                universal_newlines=True, cwd=package_dir).stdout.strip().splitlines()
         for file in files_in_pack_dir:
             if file != ".SRCINFO":
                 relevant_files.append(file)
