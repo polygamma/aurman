@@ -1,10 +1,16 @@
+sudo: required
 language: python
 python:
   - "3.6"
+services:
+  - docker
+before_install:
+  - docker build -t aurman_docker src/unit_tests
 install:
   - python setup.py install
 script:
   - python src/unit_tests/test_split_query_helper.py
   - python src/unit_tests/test_parse_pacman_args.py
+  - docker run aurman_docker
 notifications:
   email: false
