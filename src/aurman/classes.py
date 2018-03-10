@@ -944,7 +944,7 @@ class Package:
         if not noedit:
             if show_changes or ask_user("Do you want to see the changes of {}?"
                                         "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), False):
-                run("git diff {} {}"
+                run("git diff {} {} -- . ':(exclude).SRCINFO'"
                     "".format(last_seen_hash, current_commit_hash), shell=True, cwd=package_dir)
                 any_changes_seen = True
 
