@@ -28,7 +28,7 @@ setup(
 
     author_email='jonny.westphalen@googlemail.com',
 
-    packages=find_packages('src', exclude=['unit_tests']),
+    packages=find_packages('src', exclude=['unit_tests', 'docker_tests']),
     package_dir={'': 'src'},
 
     entry_points={

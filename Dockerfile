@@ -16,12 +16,13 @@ RUN sudo sh -c "sed -i '/\[multilib\]/,/Include/s/^[ ]*#//' /etc/pacman.conf"
 RUN sudo sh -c "sed -i '/MAKEFLAGS=/s/^.*$/MAKEFLAGS=\"-j\$(nproc)\"/' /etc/makepkg.conf"
 RUN sudo sh -c "sed -i '/PKGEXT=/s/^.*$/PKGEXT=\".pkg.tar\"/' /etc/makepkg.conf"
 
-# aurman
+# aurman requirements and sysupgrade
 RUN sudo pacman --needed --noconfirm -Syu python expac python-requests pyalpm pacman sudo git python-regex
+
+# add files of the current branch
 ADD . /home/aurman/aurman-git
 
-# include tests
-COPY src/unit_tests/docker_tests.sh /home/aurman
-RUN sudo chown aurman docker_tests.sh
-RUN chmod +x docker_tests.sh
-ENTRYPOINT /home/aurman/docker_tests.sh
+# chown, chmod and set entrypoint
+RUN sudo chown -R aurman:aurman /home/aurman/aurman-git/src/docker_tests
+RUN chmod +x -R /home/aurman/aurman-git/src/docker_tests
+ENTRYPOINT for f in /home/aurman/aurman-git/src/docker_tests/*.sh; do /bin/bash $f; done

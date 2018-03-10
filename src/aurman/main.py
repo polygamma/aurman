@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 from copy import deepcopy
 from subprocess import run, DEVNULL
 from sys import argv, stdout
@@ -29,7 +30,7 @@ def process(args):
         pacman_args = parse_pacman_args(args)
     except InvalidInput:
         aurman_note("aurman --help or aurman -h")
-        return
+        sys.exit(1)
 
     # show help
     if pacman_args.operation is PacmanOperations.HELP:
@@ -38,7 +39,7 @@ def process(args):
             print(aurman_help)
         else:
             print(Colors.strip_colors(str(aurman_help)))
-        return
+        sys.exit(0)
 
     # show version
     if pacman_args.operation is PacmanOperations.VERSION:
@@ -47,7 +48,7 @@ def process(args):
             aurman_note(expac("-Q", ("v",), ("aurman-git",))[0])
         else:
             print(expac("-Q", ("v",), ("aurman-git",))[0])
-        return
+        sys.exit(0)
 
     # if not -S or --sync, just redirect to pacman
     if pacman_args.operation is not PacmanOperations.SYNC:
@@ -57,9 +58,9 @@ def process(args):
             else:
                 pacman(" ".join(args), False, sudo=False)
         except InvalidInput:
-            return
-        finally:
-            return
+            sys.exit(1)
+
+        sys.exit(0)
 
     # -S or --sync
     packages_of_user_names = list(set(pacman_args.targets))  # targets of the aurman command without duplicates
@@ -80,7 +81,7 @@ def process(args):
     try:
         read_config()  # read config - available via AurmanConfig.aurman_config
     except InvalidInput:
-        return
+        sys.exit(1)
 
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
@@ -91,13 +92,13 @@ def process(args):
 
     if noedit and show_changes:
         aurman_error("--noedit and --show_changes is not what you want")
-        return
+        sys.exit(1)
 
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
     if repo and aur:
         aurman_error("--repo and --aur is not what you want")
-        return
+        sys.exit(1)
 
     if pacman_args.keyserver:
         keyserver = pacman_args.keyserver[0]
@@ -110,13 +111,13 @@ def process(args):
     # do not allow -y without -u
     if pacman_args.refresh and not sysupgrade:
         aurman_error("-y without -u is not allowed!")
-        return
+        sys.exit(1)
 
     # unrecognized parameters
     if pacman_args.invalid_args:
         aurman_error("The following parameters are not recognized yet: {}".format(pacman_args.invalid_args))
         aurman_note("aurman --help or aurman -h")
-        return
+        sys.exit(1)
 
     # if user wants to --clean
     if clean:
@@ -127,7 +128,7 @@ def process(args):
             if not os.path.isdir(Package.cache_dir):
                 aurman_error("Cache directory {} not found."
                              "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
-                return
+                sys.exit(1)
 
             aurman_note("Cache directory: {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
 
@@ -139,7 +140,7 @@ def process(args):
                            stderr=DEVNULL).returncode != 0:
                         aurman_error("Directory {} could not be deleted"
                                      "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
-                        return
+                        sys.exit(1)
             else:
                 if ask_user("Do you want to remove {} clones from cache?"
                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all uninstalled"))), False):
@@ -163,7 +164,7 @@ def process(args):
                                        stderr=DEVNULL).returncode != 0:
                                     aurman_error("Directory {} could not be deleted"
                                                  "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))))
-                                    return
+                                    sys.exit(1)
 
                 if ask_user("Do you want to remove {} from cache? ({})"
                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all untracked git files")),
@@ -176,9 +177,9 @@ def process(args):
                                    "", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=dir_to_clean).returncode != 0:
                                 aurman_error("Directory {} could not be cleaned"
                                              "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_clean))))
-                                return
+                                sys.exit(1)
 
-        return
+        sys.exit(0)
 
     # if user just wants to search
     if search:
@@ -187,7 +188,7 @@ def process(args):
             try:
                 installed_system = System(System.get_installed_packages())
             except InvalidInput:
-                return
+                sys.exit(1)
         else:
             installed_system = None
 
@@ -195,9 +196,9 @@ def process(args):
         try:
             search_and_print(search, installed_system, str(pacman_args), repo, aur)
         except InvalidInput:
-            return
-        finally:
-            return
+            sys.exit(1)
+
+        sys.exit(0)
 
     # groups are for pacman
     groups_chosen = []
@@ -223,7 +224,7 @@ def process(args):
         try:
             packages_from_other_sources_ret = packages_from_other_sources()
         except InvalidInput:
-            return
+            sys.exit(1)
         names_to_ignore = packages_from_other_sources_ret[0]
         for name_to_ignore in packages_from_other_sources_ret[1]:
             names_to_ignore.add(name_to_ignore)
@@ -234,11 +235,11 @@ def process(args):
         try:
             pacman(str(pacman_args_copy), False)
         except InvalidInput:
-            return
+            sys.exit(1)
 
     # nothing to do for us
     if not sysupgrade and not packages_of_user_names:
-        return
+        sys.exit(0)
 
     # delete -u --sysupgrade -y --refresh from parsed args
     # not needed anymore
@@ -252,7 +253,7 @@ def process(args):
     try:
         installed_system = System(System.get_installed_packages())
     except InvalidInput:
-        return
+        sys.exit(1)
 
     if installed_system.not_repo_not_aur_packages_list:
         aurman_status("the following packages are neither in known repos nor in the aur")
@@ -263,7 +264,7 @@ def process(args):
     try:
         upstream_system = System(System.get_repo_packages())
     except InvalidInput:
-        return
+        sys.exit(1)
 
     # fetching needed aur packages
     if not repo:
@@ -284,7 +285,7 @@ def process(args):
         sanitized_names = upstream_system.sanitize_user_input(packages_of_user_names)
         sanitized_not_to_be_removed = installed_system.sanitize_user_input(not_remove)
     except InvalidInput:
-        return
+        sys.exit(1)
 
     # names to not be removed must be also known on the upstream system,
     # otherwise aurman solving cannot handle this case.
@@ -292,7 +293,7 @@ def process(args):
         if name not in upstream_system.all_packages_dict:
             aurman_error("Packages you want to be not removed must be aur or repo packages.\n"
                          "   {} is not known.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
-            return
+            sys.exit(1)
 
     # for dep solving not to be removed has to be treated as wanted to install
     sanitized_names |= sanitized_not_to_be_removed
@@ -331,7 +332,7 @@ def process(args):
             for package in upstream_system.devel_packages_list:
                 package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver)
         except InvalidInput:
-            return
+            sys.exit(1)
         for package in upstream_system.devel_packages_list:
             package.get_devel_version()
 
@@ -377,7 +378,7 @@ def process(args):
     except InvalidInput:
         aurman_error("we could not find a solution")
         aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
-        return
+        sys.exit(1)
 
     # needed because deep_search ignores installed packages
     if not only_unfulfilled_deps:
@@ -386,13 +387,13 @@ def process(args):
     # solution contains no packages
     if not chosen_solution:
         aurman_note("nothing to do... everything is up to date")
-        return
+        sys.exit(0)
 
     try:
         installed_system.show_solution_differences_to_user(chosen_solution, upstream_system, noconfirm,
                                                            not only_unfulfilled_deps, solution_way)
     except InvalidInput:
-        return
+        sys.exit(1)
 
     if not repo:
         aurman_status("looking for new pkgbuilds and fetch them...")
@@ -408,7 +409,7 @@ def process(args):
                     continue
                 package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver)
         except InvalidInput:
-            return
+            sys.exit(1)
 
     # install packages
     if not sudo_acquired:
@@ -453,7 +454,7 @@ def process(args):
             try:
                 pacman(str(pacman_args_copy), False)
             except InvalidInput:
-                return
+                sys.exit(1)
 
             if as_explicit_container:
                 pacman("-D --asexplicit {}".format(" ".join(as_explicit_container)), True, sudo=True)
@@ -469,7 +470,7 @@ def process(args):
                 else:
                     package.install(args_for_dependency)
             except InvalidInput:
-                return
+                sys.exit(1)
 
 
 def main():
@@ -477,14 +478,17 @@ def main():
         # auto completion
         if len(argv) >= 2 and argv[1] == "--auto_complete":
             possible_completions()
-            return
+            sys.exit(0)
 
         # normal call
         process(argv[1:])
-    except (SystemExit, KeyboardInterrupt, PermissionError):
-        pass
+    except (KeyboardInterrupt, PermissionError):
+        sys.exit(1)
+    except SystemExit as e:
+        sys.exit(e)
     except:
         logging.error("", exc_info=True)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
