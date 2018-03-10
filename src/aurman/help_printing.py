@@ -134,9 +134,9 @@ only_aurman_points = []
 aurman_help.points.append(HelpPoint(only_aurman, only_aurman_points))
 
 only_aurman_points.append(HelpOption(["--noedit"],
-                                     "will not show changes of PKGBUILDs and .install files"))
+                                     "will not show changes of PKGBUILDs, .install and other relevant files"))
 only_aurman_points.append(HelpOption(["--show_changes"],
-                                     "will show changes of PKGBUILDs and .install files without asking"))
+                                     "will show changes of PKGBUILDs, .install and other relevant files without asking"))
 only_aurman_points.append(HelpOption(["--devel"],
                                      "will fetch current development packages versions"))
 only_aurman_points.append(HelpOption(["--deep_search"],

@@ -814,14 +814,10 @@ class Package:
     def fetch_pkgbuild(self):
         """
         Fetches the current git aur repo changes for this package
-        In cache_dir/package_base_name/.git/aurman will be copies of the last reviewed PKGBUILD and .install files
-        In cache_dir/package_base_name/.git/aurman/.reviewed will be saved if the current PKGBUILD and .install files have been reviewed
         """
         import aurman.aur_utilities
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
-        git_aurman_dir = os.path.join(package_dir, ".git", "aurman")
-        new_loaded = True
 
         # check if repo has ever been fetched
         if os.path.isdir(package_dir):
@@ -840,8 +836,6 @@ class Package:
                        cwd=package_dir).returncode != 0:
                     logging.error("sources of {} could not be fetched".format(self.name))
                     raise ConnectionProblem("sources of {} could not be fetched".format(self.name))
-            else:
-                new_loaded = False
 
         # repo has never been fetched
         else:
@@ -855,18 +849,6 @@ class Package:
                    cwd=Package.cache_dir).returncode != 0:
                 logging.error("Cloning repo of {} failed".format(self.name))
                 raise ConnectionProblem("Cloning repo of {} failed".format(self.name))
-
-        # if aurman dir does not exist - create
-        if not os.path.isdir(git_aurman_dir):
-            if run("install -dm700 '" + git_aurman_dir + "'", shell=True, stdout=DEVNULL,
-                   stderr=DEVNULL).returncode != 0:
-                logging.error("Creating git_aurman_dir of {} failed".format(self.name))
-                raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
-
-        # files have not yet been reviewed
-        if new_loaded:
-            with open(os.path.join(git_aurman_dir, ".reviewed"), "w") as f:
-                f.write("0")
 
     def search_and_fetch_pgp_keys(self, fetch_always: bool = False, keyserver: str = None):
         """
@@ -913,7 +895,7 @@ class Package:
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         git_aurman_dir = os.path.join(package_dir, ".git", "aurman")
-        reviewed_file = os.path.join(git_aurman_dir, ".reviewed")
+        last_commit_hash_file = os.path.join(git_aurman_dir, ".last_commit")
 
         # if package dir does not exist - abort
         if not os.path.isdir(package_dir):
@@ -928,22 +910,29 @@ class Package:
                 raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
 
         # if reviewed file does not exist - create
-        if not os.path.isfile(reviewed_file):
-            with open(reviewed_file, "w") as f:
-                f.write("0")
+        if not os.path.isfile(last_commit_hash_file):
+            empty_tree_hash = run("git hash-object -t tree --stdin < /dev/null", shell=True,
+                                  stdout=PIPE, stderr=DEVNULL, universal_newlines=True).stdout.strip()
+
+            with open(last_commit_hash_file, "w") as f:
+                f.write(empty_tree_hash)
+
+        current_commit_hash = run("git rev-parse HEAD",
+                                  shell=True, stdout=PIPE, stderr=DEVNULL,
+                                  cwd=package_dir, universal_newlines=True).stdout.strip()
 
         # if files have been reviewed
-        with open(reviewed_file, "r") as f:
-            to_review = f.read().strip() == "0"
+        with open(last_commit_hash_file, "r") as f:
+            last_seen_hash = f.read().strip()
 
-        if not to_review:
+        if last_seen_hash == current_commit_hash:
             return
 
-        # relevant files are PKGBUILD + .install files
-        relevant_files = ["PKGBUILD"]
+        # relevant files are all files besides .SRCINFO
+        relevant_files = []
         files_in_pack_dir = [f for f in os.listdir(package_dir) if os.path.isfile(os.path.join(package_dir, f))]
         for file in files_in_pack_dir:
-            if file.endswith(".install"):
+            if file != ".SRCINFO":
                 relevant_files.append(file)
 
         # If the user saw any changes
@@ -951,54 +940,34 @@ class Package:
 
         # check if there are changes, if there are, ask the user if he wants to see them
         if not noedit:
-            for file in relevant_files:
-                if os.path.isfile(os.path.join(git_aurman_dir, file)):
-                    if run("git diff --no-index --quiet '" + "' '".join(
-                            [os.path.join(git_aurman_dir, file), file]) + "'",
-                           shell=True, cwd=package_dir).returncode == 1:
-                        if show_changes or ask_user("Do you want to view the changes of {} of {}?".format(
-                                Colors.BOLD(Colors.LIGHT_MAGENTA(file)), Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
-                                False):
-                            run("git diff --no-index '" + "' '".join([os.path.join(git_aurman_dir, file), file]) + "'",
-                                shell=True, cwd=package_dir)
-                            changes_seen = True
-                            any_changes_seen = True
-                        else:
-                            changes_seen = False
-                    else:
-                        changes_seen = False
-                else:
-                    if show_changes or ask_user("Do you want to view the changes of {} of {}?".format(
-                            Colors.BOLD(Colors.LIGHT_MAGENTA(file)), Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
-                            False):
-                        run("git diff --no-index '" + "' '".join([os.path.join("/dev", "null"), file]) + "'",
-                            shell=True,
-                            cwd=package_dir)
+            if show_changes or ask_user("Do you want to see the changes of {}?"
+                                        "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), False):
+                run("git diff {} {}"
+                    "".format(last_seen_hash, current_commit_hash), shell=True, cwd=package_dir)
+                any_changes_seen = True
 
-                        changes_seen = True
-                        any_changes_seen = True
-                    else:
-                        changes_seen = False
+                # if the user wanted to see changes, ask, if he wants to edit files
+                if ask_user("Do you want to edit {} of the files?"
+                            "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("any"))), False):
 
-                # if the user wanted to see changes, ask, if he wants to edit the file
-                if changes_seen:
-                    if ask_user("Do you want to edit {}?".format(Colors.BOLD(Colors.LIGHT_MAGENTA(file))), False):
-                        if run(Package.default_editor_path + " " + os.path.join(package_dir, file),
-                               shell=True).returncode != 0:
-                            logging.error("Editing {} failed".format(file))
-                            raise InvalidInput("Editing {} failed".format(file))
+                    for file in relevant_files:
+                        if ask_user("Do you want to edit {} of {}?"
+                                    "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(file)),
+                                              Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), False):
+
+                            if run("{} {}"
+                                   "".format(Package.default_editor_path,
+                                             os.path.join(package_dir, file)), shell=True).returncode != 0:
+                                logging.error("Editing {} failed".format(file))
+                                raise InvalidInput("Editing {} failed".format(file))
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
         if noedit or not any_changes_seen or ask_user(
                 "Are you {} with using the files of {}?".format(Colors.BOLD(Colors.LIGHT_MAGENTA("fine")),
                                                                 Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), True):
-            with open(reviewed_file, "w") as f:
-                f.write("1")
-
-            for file in relevant_files:
-                run("cp -f '" + "' '".join([file, os.path.join(git_aurman_dir, file)]) + "'", shell=True,
-                    stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir)
+            with open(last_commit_hash_file, "w") as f:
+                f.write(current_commit_hash)
 
         else:
             logging.error("Files of {} are not okay".format(self.name))

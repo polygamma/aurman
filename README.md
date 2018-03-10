@@ -50,9 +50,9 @@ All pacman operations are supported, but calling aurman with an operation beside
 
 ##### aurman exclusive options for `--sync` or `-S`
 
-- `--noedit`: will not show changes of PKGBUILDs and .install files. just assumes you are okay with the changes.
+- `--noedit`: will not show changes of PKGBUILDs, .install and other relevant files. just assumes you are okay with the changes.
 
-- `--show_changes`: will show changes of PKGBUILDs and .install files without asking
+- `--show_changes`: will show changes of PKGBUILDs, .install and other relevant files without asking
 
 - `--devel`: will fetch current development packages versions to decide whether a new version is available or not.
 
