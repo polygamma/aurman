@@ -25,7 +25,7 @@ RUN sudo sh -c "sed -i '/MAKEFLAGS=/s/^.*$/MAKEFLAGS=\"-j\$(nproc)\"/' /etc/make
 RUN sudo sh -c "sed -i '/PKGEXT=/s/^.*$/PKGEXT=\".pkg.tar\"/' /etc/makepkg.conf"
 
 # include tests
-COPY src/unit_tests/tests_to_execute.sh /home/aurman
-RUN sudo chown aurman tests_to_execute.sh
-RUN chmod +x tests_to_execute.sh
-ENTRYPOINT /home/aurman/tests_to_execute.sh
+COPY src/unit_tests/docker_tests.sh /home/aurman
+RUN sudo chown aurman docker_tests.sh
+RUN chmod +x docker_tests.sh
+ENTRYPOINT /home/aurman/docker_tests.sh
