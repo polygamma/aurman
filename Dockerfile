@@ -12,17 +12,13 @@ WORKDIR /home/aurman
 # multilib
 RUN sudo sh -c "sed -i '/\[multilib\]/,/Include/s/^[ ]*#//' /etc/pacman.conf"
 
-# aurman
-RUN sudo pacman --needed --noconfirm -Syu python expac python-requests pyalpm pacman sudo git python-regex
-ADD . /home/aurman/aurman-git
-WORKDIR /home/aurman/aurman-git
-RUN sudo python setup.py install --optimize=1
-WORKDIR /home/aurman
-RUN sudo rm -rf aurman-git/
-
 # makepkg
 RUN sudo sh -c "sed -i '/MAKEFLAGS=/s/^.*$/MAKEFLAGS=\"-j\$(nproc)\"/' /etc/makepkg.conf"
 RUN sudo sh -c "sed -i '/PKGEXT=/s/^.*$/PKGEXT=\".pkg.tar\"/' /etc/makepkg.conf"
+
+# aurman
+RUN sudo pacman --needed --noconfirm -Syu python expac python-requests pyalpm pacman sudo git python-regex
+ADD . /home/aurman/aurman-git
 
 # include tests
 COPY src/unit_tests/docker_tests.sh /home/aurman
