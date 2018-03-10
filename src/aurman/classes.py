@@ -840,12 +840,13 @@ class Package:
         # repo has never been fetched
         else:
             # create package dir
-            if run("install -dm700 '" + package_dir + "'", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
+            if run("install -dm700 '{}'".format(package_dir),
+                   shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
                 logging.error("Creating package dir of {} failed".format(self.name))
                 raise InvalidInput("Creating package dir of {} failed".format(self.name))
 
             # clone repo
-            if run("git clone {}/".format(aurman.aur_utilities.aur_domain) + self.pkgbase + ".git", shell=True,
+            if run("git clone {}/{}.git".format(aurman.aur_utilities.aur_domain, self.pkgbase), shell=True,
                    cwd=Package.cache_dir).returncode != 0:
                 logging.error("Cloning repo of {} failed".format(self.name))
                 raise ConnectionProblem("Cloning repo of {} failed".format(self.name))
@@ -904,7 +905,7 @@ class Package:
 
         # if aurman dir does not exist - create
         if not os.path.isdir(git_aurman_dir):
-            if run("install -dm700 '" + git_aurman_dir + "'", shell=True, stdout=DEVNULL,
+            if run("install -dm700 '{}'".format(git_aurman_dir), shell=True, stdout=DEVNULL,
                    stderr=DEVNULL).returncode != 0:
                 logging.error("Creating git_aurman_dir of {} failed".format(self.name))
                 raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
