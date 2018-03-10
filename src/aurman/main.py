@@ -329,8 +329,7 @@ def process(args):
             package.fetch_pkgbuild()
         try:
             for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild(noedit, show_changes)
-                package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
+                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver)
         except InvalidInput:
             return
         for package in upstream_system.devel_packages_list:
@@ -407,8 +406,7 @@ def process(args):
                 if package.type_of is PossibleTypes.REPO_PACKAGE \
                         or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                     continue
-                package.show_pkgbuild(noedit, show_changes)
-                package.search_and_fetch_pgp_keys(pgp_fetch, keyserver)
+                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver)
         except InvalidInput:
             return
 

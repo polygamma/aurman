@@ -886,12 +886,15 @@ class Package:
                             logging.error("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
                             raise ConnectionProblem("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
 
-    def show_pkgbuild(self, noedit: bool = False, show_changes: bool = False):
+    def show_pkgbuild(self, noedit: bool = False, show_changes: bool = False,
+                      fetch_always: bool = False, keyserver: str = None):
         """
         Lets the user review and edit unreviewed PKGBUILD and install files of this package
 
         :param noedit:          True if the user is just fine with the changes without showing them, False otherwise
         :param show_changes:    True if the user wants to see the changes without being asked, False otherwise
+        :param fetch_always:    True if the keys should be fetched without asking the user, False otherwise
+        :param keyserver:       keyserver to fetch the pgp keys from
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
@@ -910,7 +913,7 @@ class Package:
                 logging.error("Creating git_aurman_dir of {} failed".format(self.name))
                 raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
 
-        # if reviewed file does not exist - create
+        # if last commit seen hash file does not exist - create
         if not os.path.isfile(last_commit_hash_file):
             empty_tree_hash = run("git hash-object -t tree --stdin < /dev/null", shell=True,
                                   stdout=PIPE, stderr=DEVNULL, universal_newlines=True).stdout.strip()
@@ -968,6 +971,10 @@ class Package:
         if noedit or not any_changes_seen or ask_user(
                 "Are you {} with using the files of {}?".format(Colors.BOLD(Colors.LIGHT_MAGENTA("fine")),
                                                                 Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), True):
+
+            # fetch pgp keys
+            self.search_and_fetch_pgp_keys(fetch_always, keyserver)
+
             with open(last_commit_hash_file, "w") as f:
                 f.write(current_commit_hash)
 
