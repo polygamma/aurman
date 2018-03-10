@@ -32,7 +32,7 @@ test_command aurman -S cower --noconfirm --noedit --pgp_fetch --keyserver hkp://
 test_command pacman -Qi cower
 
 # install cower-git
-test_command yes | aurman -S cower-git --noconfirm --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371
+test_command yes | aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371
 
 # check if cower-git installed
 test_command pacman -Qi cower-git
@@ -46,7 +46,7 @@ test_command aurmansolver -S ros-indigo-desktop-full
 test_command aurmansolver -S ros-indigo-desktop-full --deep_search
 
 # install pacman-git
-test_command yes | aurman -S pacman-git --noconfirm --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371
+test_command yes | aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371
 
 # check if pacman-git installed
 test_command pacman -Qi pacman-git
