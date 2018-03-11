@@ -956,7 +956,7 @@ class Package:
                     aurman_note("Enter the corresponding number of the file of {} you want to edit.\n"
                                 "   {} if you want to finish editing."
                                 "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name)),
-                                          Colors.BOLD(Colors.LIGHT_GREEN("0"))), True)
+                                          Colors.BOLD(Colors.LIGHT_GREEN("just press enter"))), True)
 
                     for i in range(0, len(relevant_files)):
                         print("{}: {}"
@@ -964,12 +964,12 @@ class Package:
                                         Colors.BOLD(Colors.LIGHT_MAGENTA(relevant_files[i]))))
 
                     try:
-                        user_input = int(input(aurman_question("Enter the number: ", False, False)))
-                        if not 0 <= user_input <= len(relevant_files):
-                            raise ValueError
-
-                        if user_input == 0:
+                        user_input = input(aurman_question("Enter the number: ", False, False)).strip()
+                        if not user_input:
                             break
+                        user_input = int(user_input)
+                        if not 1 <= user_input <= len(relevant_files):
+                            raise ValueError
 
                     except ValueError:
                         aurman_error("That was not a valid choice!", False)
