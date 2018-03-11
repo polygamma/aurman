@@ -955,16 +955,35 @@ class Package:
                 if ask_user("Do you want to edit {} of the files?"
                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("any"))), False):
 
-                    for file in relevant_files:
-                        if ask_user("Do you want to edit {} of {}?"
-                                    "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(file)),
-                                              Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), False):
+                    while True:
+                        aurman_note("Enter the corresponding number of the file of {} you want to edit.\n"
+                                    "   {} if you want to finish editing."
+                                    "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name)),
+                                              Colors.BOLD(Colors.LIGHT_GREEN("0"))), True)
 
+                        for i in range(0, len(relevant_files)):
+                            print("{}: {}"
+                                  "".format(Colors.BOLD(Colors.LIGHT_GREEN(i + 1)),
+                                            Colors.BOLD(Colors.LIGHT_MAGENTA(relevant_files[i]))))
+
+                        try:
+                            user_input = int(input(aurman_question("Enter the number: ", False, False)))
+                            if not 0 <= user_input <= len(relevant_files):
+                                raise ValueError
+
+                            if user_input == 0:
+                                break
+
+                        except ValueError:
+                            aurman_error("That was not a valid choice!", False)
+
+                        else:
+                            file = relevant_files[user_input - 1]
                             if run("{} {}"
                                    "".format(Package.default_editor_path,
                                              os.path.join(package_dir, file)), shell=True).returncode != 0:
-                                logging.error("Editing {} failed".format(file))
-                                raise InvalidInput("Editing {} failed".format(file))
+                                logging.error("Editing {} of {} failed".format(file, self.name))
+                                raise InvalidInput("Editing {} of {} failed".format(file, self.name))
 
         # if the user wants to use all files as they are now
         # copy all reviewed files to another folder for comparison of future changes
