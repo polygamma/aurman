@@ -131,9 +131,12 @@ https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-so
 https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
 
 ## FAQ
-#### `aurman` wants to remove packages, which should not be removed, what's the matter? **example**:
+#### Question
+`aurman` wants to remove packages, which should not be removed, what's the matter?
+##### example
 ![](https://i.imgur.com/Q2OKkKb.png)
 
+#### Answer
 It may be, like in this case, that `aurman` assumes that three packages are going to be removed, which is in fact not going to happen (in this case).
 
 The problem is, that the package `ffmpeg-full` does not list the exact versions of the .so which are being provided.
