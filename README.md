@@ -97,6 +97,9 @@ For aur packages create a section  `[aur_packages]` and list the names of the au
 
 For repo packages create a section `[repo_packages]` and list the names of the repo packages followed by `=` and the name of the repo.
 
+> **Notice**: Those packages will be excluded from the `pacman --sysupgrade` by `--ignore`.
+> Otherwise `pacman` would replace those packages
+
 Example:
 ```ini
 [aur_packages]
