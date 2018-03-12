@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import sys
 from typing import Sequence, Set
 
@@ -11,6 +12,7 @@ from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import parse_pacman_args, PacmanOperations
 from aurman.parsing_config import read_config
 from aurman.utilities import version_comparison, strip_versioning_from_name
+from aurman.wrappers import makepkg
 
 # you may want to switch to logging.DEBUG
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -80,6 +82,7 @@ def process(args):
         sys.exit(1)
 
     needed = pacman_args.needed  # if --needed
+    devel = pacman_args.devel  # if --devel
     only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
 
     try:
@@ -173,6 +176,17 @@ def process(args):
     # recreating upstream system
     if ignored_packages_names:
         upstream_system = System(list(upstream_system.all_packages_dict.values()))
+
+    # if user entered --devel and not --repo, fetch all current versions of devel packages
+    if devel and not repo:
+        for package in upstream_system.devel_packages_list:
+            package_dir = os.path.join(Package.cache_dir, package.pkgbase)
+            if not os.path.isdir(package_dir):
+                aurman_error("Package dir of {} not found".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))))
+                sys.exit(1)
+            makepkg("-odc --noprepare --skipinteg", True, package_dir)
+
+            package.version = package.version_from_srcinfo()
 
     # checking which packages need to be installed
     if not needed:
