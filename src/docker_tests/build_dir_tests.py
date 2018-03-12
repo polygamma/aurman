@@ -47,6 +47,10 @@ if __name__ == '__main__':
     # check if pacman-git installed
     test_command("pacman -Qi pacman-git")
 
+    # change build dir again
+    test_command('sudo sh -c "{}"'
+                 ''.format("echo 'BUILDDIR=/home/aurman/build_dir' >> /etc/makepkg.conf"))
+
     # install cower-git
     test_command("yes | aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
     # check if cower-git installed
