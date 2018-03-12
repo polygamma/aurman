@@ -36,6 +36,7 @@ if __name__ == '__main__':
         print("Success: cower cache dir has not been deleted")
     else:
         print("Error: cower cache dir has been deleted")
+        CurrentTest.to_return = 1
 
     # install cower-git
     test_command("yes | aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
@@ -46,6 +47,7 @@ if __name__ == '__main__':
     test_command("yes | aurman -Sc --aur")
     if os.path.isdir("/home/aurman/.cache/aurman/cower"):
         print("Error: cower cache dir has not been deleted")
+        CurrentTest.to_return = 1
     else:
         print("Success: cower cache dir has been deleted")
 
@@ -53,6 +55,7 @@ if __name__ == '__main__':
     test_command("yes | aurman -Scc --aur")
     if os.path.isdir("/home/aurman/.cache/aurman/cower-git"):
         print("Error: cower-git cache dir has not been deleted")
+        CurrentTest.to_return = 1
     else:
         print("Success: cower-git cache dir has been deleted")
 

@@ -38,6 +38,7 @@ if __name__ == '__main__':
 
     if "cower" not in os.listdir("/home/aurman/build_dir"):
         print("Error: cower has not been built in build_dir")
+        CurrentTest.to_return = 1
     else:
         print("Success: cower has been built in build_dir")
 
@@ -58,6 +59,7 @@ if __name__ == '__main__':
 
     if "cower-git" not in os.listdir("/home/aurman/build_dir"):
         print("Error: cower-git has not been built in build_dir")
+        CurrentTest.to_return = 1
     else:
         print("Success: cower-git has been built in build_dir")
 
