@@ -25,4 +25,4 @@ ADD . /home/aurman/aurman-git
 # chown, chmod and set entrypoint
 RUN sudo chown -R aurman:aurman /home/aurman/aurman-git/src/docker_tests
 RUN chmod +x -R /home/aurman/aurman-git/src/docker_tests
-ENTRYPOINT for f in /home/aurman/aurman-git/src/docker_tests/*.sh; do /bin/bash $f; done
+ENTRYPOINT ["/home/aurman/aurman-git/src/docker_tests/execute_test.sh"]

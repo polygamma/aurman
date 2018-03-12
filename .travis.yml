@@ -11,6 +11,7 @@ install:
 script:
   - python src/unit_tests/test_split_query_helper.py
   - python src/unit_tests/test_parse_pacman_args.py
-  - docker run aurman_docker
+  - docker run aurman_docker src/docker_tests/install_tests.py
+  - docker run aurman_docker src/docker_tests/cache_tests.py
 notifications:
   email: false
