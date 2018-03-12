@@ -183,7 +183,7 @@ def process(args):
         for package in possible_packages:
             if package.name in installed_system.all_packages_dict:
                 installed_package = installed_system.all_packages_dict[package.name]
-                if version_comparison(installed_package.version, "<", package.version):
+                if not version_comparison(installed_package.version, "=", package.version):
                     concrete_packages_to_install.append(package)
             else:
                 concrete_packages_to_install.append(package)
