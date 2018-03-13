@@ -148,7 +148,7 @@ class Package:
     Class representing Arch Linux packages
     """
     # default editor path
-    default_editor_path = os.environ.get("EDITOR", os.path.join("usr", "bin", "nano"))
+    default_editor_path = os.environ.get("EDITOR", os.path.join("/", "usr", "bin", "nano"))
     # directory of the cache
     cache_dir = os.path.join(os.environ.get("XDG_CACHE_HOME", os.path.expanduser(os.path.join("~", ".cache"))),
                              "aurman")
