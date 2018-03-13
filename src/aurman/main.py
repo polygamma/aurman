@@ -13,7 +13,7 @@ from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
 from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
-from aurman.parsing_config import read_config, packages_from_other_sources
+from aurman.parsing_config import read_config, packages_from_other_sources, AurmanConfig
 from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user
 from aurman.wrappers import pacman, expac
 
@@ -104,6 +104,11 @@ def process(args):
         keyserver = pacman_args.keyserver[0]
     else:
         keyserver = None
+
+    if keyserver is None \
+            and 'miscellaneous' in AurmanConfig.aurman_config \
+            and 'keyserver' in AurmanConfig.aurman_config['miscellaneous']:
+        keyserver = AurmanConfig.aurman_config['miscellaneous']['keyserver']
 
     if pacman_args.domain:
         aurman.aur_utilities.aur_domain = pacman_args.domain[0]

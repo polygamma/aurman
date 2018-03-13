@@ -111,6 +111,18 @@ repo_package_name=repo_one
 other_repo_package_name=repo_two
 ```
 
+#### pgp fetching keyserver
+you may specify the keyserver for pgp fetching in the config instead of yielding it via command line.
+
+> **Notice**: command line overrides config
+
+create a key called `keyserver` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+keyserver=hkp://ipv4.pool.sks-keyservers.net:11371
+```
 
 ## Features
 
