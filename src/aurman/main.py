@@ -54,9 +54,9 @@ def process(args):
     if pacman_args.operation is not PacmanOperations.SYNC:
         try:
             if pacman_args.operation in [PacmanOperations.UPGRADE, PacmanOperations.REMOVE, PacmanOperations.DATABASE]:
-                pacman(" ".join(args), False, sudo=True)
+                run("sudo pacman {}".format(" ".join(args)), shell=True)
             else:
-                pacman(" ".join(args), False, sudo=False)
+                run("pacman {}".format(" ".join(args)), shell=True)
         except InvalidInput:
             sys.exit(1)
 
