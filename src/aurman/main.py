@@ -65,6 +65,7 @@ def process(args):
     # -S or --sync
     packages_of_user_names = list(set(pacman_args.targets))  # targets of the aurman command without duplicates
     sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
+    sysupgrade_force = sysupgrade and not isinstance(sysupgrade, bool)  # if -u -u or --sysupgrade --sysupgrade
     needed = pacman_args.needed  # if --needed
     noedit = pacman_args.noedit  # if --noedit
     show_changes = pacman_args.show_changes  # if --show_changes
@@ -367,9 +368,16 @@ def process(args):
             # must not be that we have not received the upstream information
             assert package.name in upstream_system.all_packages_dict
             upstream_package = upstream_system.all_packages_dict[package.name]
-            if version_comparison(upstream_package.version, ">", package.version):
-                if upstream_package not in concrete_packages_to_install:
-                    concrete_packages_to_install.append(upstream_package)
+            # normal sysupgrade
+            if not sysupgrade_force:
+                if version_comparison(upstream_package.version, ">", package.version):
+                    if upstream_package not in concrete_packages_to_install:
+                        concrete_packages_to_install.append(upstream_package)
+            # sysupgrade with downgrades
+            else:
+                if not version_comparison(upstream_package.version, "=", package.version):
+                    if upstream_package not in concrete_packages_to_install:
+                        concrete_packages_to_install.append(upstream_package)
 
     aurman_status("calculating solutions...")
     if only_unfulfilled_deps:
