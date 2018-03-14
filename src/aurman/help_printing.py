@@ -134,31 +134,31 @@ only_aurman_points = []
 aurman_help.points.append(HelpPoint(only_aurman, only_aurman_points))
 
 only_aurman_points.append(HelpOption(["--noedit"],
-                                     "will not show changes of PKGBUILDs, .install and other relevant files"))
+                                     "Will not show changes of PKGBUILDs, .install and other relevant files"))
 only_aurman_points.append(HelpOption(["--show_changes"],
-                                     "will show changes of PKGBUILDs, .install and other relevant files without asking"))
+                                     "Will show changes of PKGBUILDs, .install and other relevant files without asking"))
 only_aurman_points.append(HelpOption(["--devel"],
-                                     "will fetch current development packages versions"))
+                                     "Will fetch current development packages versions"))
 only_aurman_points.append(HelpOption(["--deep_search"],
-                                     "dependency solving will ignore currently "
+                                     "Dependency solving will ignore currently "
                                      "fulfilled dependencies of your system"))
 only_aurman_points.append(HelpOption(["--pgp_fetch"],
-                                     "fetches needed pgp keys without asking the user"))
-only_aurman_points.append(HelpOption(["--keyserver name"],
-                                     "you may specify a keyserver to fetch the pgp keys from"))
+                                     "Fetches needed pgp keys without asking the user"))
+only_aurman_points.append(HelpOption(["--keyserver"],
+                                     "You may specify a keyserver to fetch the pgp keys from"))
 only_aurman_points.append(HelpOption(["--aur"],
-                                     "do things only for aur"))
+                                     "Do things only for aur"))
 only_aurman_points.append(HelpOption(["--repo"],
-                                     "do things only for regular repos"))
-only_aurman_points.append(HelpOption(["--domain name"],
-                                     "change the base url for aur requests (https://aur.archlinux.org is the default)"))
+                                     "Do things only for regular repos"))
+only_aurman_points.append(HelpOption(["--domain"],
+                                     "Change the base url for aur requests (https://aur.archlinux.org is the default)"))
 only_aurman_points.append(HelpOption(["--solution_way"],
-                                     "print the way of installing/removing packages"))
-only_aurman_points.append(HelpOption(["--holdpkg name"],
-                                     "specify packages which must not be removed - "
+                                     "Print the way of installing/removing packages"))
+only_aurman_points.append(HelpOption(["--holdpkg"],
+                                     "Specify packages which must not be removed - "
                                      "multiple packages are space separated"))
 only_aurman_points.append(HelpOption(["--holdpkg_conf"],
-                                     "append packages from the pacman.conf to"
+                                     "Append packages from the pacman.conf to"
                                      " {}".format(Colors.LIGHT_GREEN("--holdpkg"))))
 only_aurman_points.append(HelpOption(["--do_everything"],
                                      "{} will be handled by aurman for repo packages, too"

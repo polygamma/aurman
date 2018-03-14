@@ -50,32 +50,32 @@ All pacman operations are supported, but calling aurman with an operation beside
 
 ##### aurman exclusive options for `--sync` or `-S`
 
-- `--noedit`: will not show changes of PKGBUILDs, .install and other relevant files. just assumes you are okay with the changes.
+- `--noedit`: Will not show changes of PKGBUILDs, .install and other relevant files. just assumes you are okay with the changes.
 
-- `--show_changes`: will show changes of PKGBUILDs, .install and other relevant files without asking
+- `--show_changes`: Will show changes of PKGBUILDs, .install and other relevant files without asking
 
-- `--devel`: will fetch current development packages versions to decide whether a new version is available or not.
+- `--devel`: Will fetch current development packages versions to decide whether a new version is available or not.
 
-- `--deep_search`: dependency solving will ignore currently fulfilled dependencies of your system and try to solve the problem for a system with zero packages installed.
+- `--deep_search`: Dependency solving will ignore currently fulfilled dependencies of your system and try to solve the problem for a system with zero packages installed.
 should almost never be needed, but if aurman is not able to find a solution to install packages, try rerunning aurman with this flag.
 but be warned, it could take a few seconds to find solutions.
 
-- `--pgp_fetch`: fetches needed pgp keys without asking the user
+- `--pgp_fetch`: Fetches needed pgp keys without asking the user
 
-- `--keyserver name`: you may specify a keyserver to fetch the pgp keys from
+- `--keyserver`: You may specify a keyserver to fetch the pgp keys from
 
-- `--aur`: do things only for aur
+- `--aur`: Do things only for aur
 
-- `--repo`: do things only for regular repos
+- `--repo`: Do things only for regular repos
 
-- `--domain name`: change the base url for aur requests *(https://aur.archlinux.org is the default)*
+- `--domain`: Change the base url for aur requests *(https://aur.archlinux.org is the default)*
 
-- `--solution_way`: print what exactly will be done, order of installing/removing packages
+- `--solution_way`: Print what exactly will be done, order of installing/removing packages
 
-- `--holdpkg name`: specify packages which are installed on your system but must not be removed.
+- `--holdpkg`: Specify packages which are installed on your system but must not be removed.
 you may specify more than one package, space separated
 
-- `--holdpkg_conf`: append packages from the pacman.conf to `--holdpkg`
+- `--holdpkg_conf`: Append packages from the pacman.conf to `--holdpkg`
 
 - `--do_everything`: `-u` for repo packages will also be handled by `aurman`, not by `pacman`.
 may be useful if you are using the `aurman` config to fetch repo packages from other repos than they would normally be installed from.
@@ -168,6 +168,14 @@ So: The problem really is the PKGBUILD of `ffmpeg-full`, not `aurman`.
 Otherwise it will be as predicted by `aurman`.
 
 What you should do: Contact the maintainer of the relevant packages and ask to append the explicit versions of the files being provided.
+
+#### Question
+How do I change the editor used by `aurman` for editing PKGBUILDs etc.?
+
+#### Answer
+`aurman` uses the environment variable `EDITOR`, hence you have to change that variable.
+
+In case of no set `EDITOR` environment variable, `aurman` uses `/usr/bin/nano`.
 
 ## Screenshots
 
