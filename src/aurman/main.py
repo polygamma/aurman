@@ -25,16 +25,16 @@ def process(args):
 
     sudo_acquired = False
 
+    try:
+        read_config()  # read config - available via AurmanConfig.aurman_config
+    except InvalidInput:
+        sys.exit(1)
+
     # parse parameters of user
     try:
         pacman_args = parse_pacman_args(args)
     except InvalidInput:
         aurman_note("aurman --help or aurman -h")
-        sys.exit(1)
-
-    try:
-        read_config()  # read config - available via AurmanConfig.aurman_config
-    except InvalidInput:
         sys.exit(1)
 
     # show help
