@@ -32,6 +32,11 @@ def process(args):
         aurman_note("aurman --help or aurman -h")
         sys.exit(1)
 
+    try:
+        read_config()  # read config - available via AurmanConfig.aurman_config
+    except InvalidInput:
+        sys.exit(1)
+
     # show help
     if pacman_args.operation is PacmanOperations.HELP:
         # remove colors in case of not terminal
@@ -78,11 +83,6 @@ def process(args):
     do_everything = pacman_args.do_everything  # if --do_everything
     clean = pacman_args.clean  # if --clean
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
-
-    try:
-        read_config()  # read config - available via AurmanConfig.aurman_config
-    except InvalidInput:
-        sys.exit(1)
 
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf

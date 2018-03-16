@@ -37,6 +37,10 @@ def read_config() -> 'configparser.ConfigParser':
     config = configparser.ConfigParser(allow_no_value=True)
     config.read(config_file)
     AurmanConfig.aurman_config = config
+
+    if 'miscellaneous' in config and 'alt_bold_ending' in config['miscellaneous']:
+        Colors.BOLD = lambda *x: Colors.concat_str("\033[1m", *x, "\033[0m")
+
     return config
 
 

@@ -4,7 +4,7 @@ class Colors:
     """
 
     @staticmethod
-    def __concat_str(*args):
+    def concat_str(*args):
         return ''.join([str(arg) for arg in args])
 
     @staticmethod
@@ -21,24 +21,23 @@ class Colors:
             string = string.replace(string[beginning_index:string.index("m", beginning_index) + 1], '')
         return string
 
-    BLACK = lambda *x: Colors.__concat_str("\033[30m", *x, "\033[39m")
-    RED = lambda *x: Colors.__concat_str("\033[31m", *x, "\033[39m")
-    GREEN = lambda *x: Colors.__concat_str("\033[32m", *x, "\033[39m")
-    YELLOW = lambda *x: Colors.__concat_str("\033[33m", *x, "\033[39m")
-    BLUE = lambda *x: Colors.__concat_str("\033[34m", *x, "\033[39m")
-    MAGENTA = lambda *x: Colors.__concat_str("\033[35m", *x, "\033[39m")
-    CYAN = lambda *x: Colors.__concat_str("\033[36m", *x, "\033[39m")
-    LIGHT_GRAY = lambda *x: Colors.__concat_str("\033[37m", *x, "\033[39m")
-    DARK_GRAY = lambda *x: Colors.__concat_str("\033[90m", *x, "\033[39m")
-    LIGHT_RED = lambda *x: Colors.__concat_str("\033[91m", *x, "\033[39m")
-    LIGHT_GREEN = lambda *x: Colors.__concat_str("\033[92m", *x, "\033[39m")
-    LIGHT_YELLOW = lambda *x: Colors.__concat_str("\033[93m", *x, "\033[39m")
-    LIGHT_BLUE = lambda *x: Colors.__concat_str("\033[94m", *x, "\033[39m")
-    LIGHT_MAGENTA = lambda *x: Colors.__concat_str("\033[95m", *x, "\033[39m")
-    LIGHT_CYAN = lambda *x: Colors.__concat_str("\033[96m", *x, "\033[39m")
-    WHITE = lambda *x: Colors.__concat_str("\033[97m", *x, "\033[39m")
-    BOLD = lambda *x: Colors.__concat_str("\033[1m", *x, "\033[21m")
-    DIM = lambda *x: Colors.__concat_str("\033[2m", *x, "\033[22m")
+    BLACK = lambda *x: Colors.concat_str("\033[30m", *x, "\033[39m")
+    RED = lambda *x: Colors.concat_str("\033[31m", *x, "\033[39m")
+    GREEN = lambda *x: Colors.concat_str("\033[32m", *x, "\033[39m")
+    YELLOW = lambda *x: Colors.concat_str("\033[33m", *x, "\033[39m")
+    BLUE = lambda *x: Colors.concat_str("\033[34m", *x, "\033[39m")
+    MAGENTA = lambda *x: Colors.concat_str("\033[35m", *x, "\033[39m")
+    CYAN = lambda *x: Colors.concat_str("\033[36m", *x, "\033[39m")
+    LIGHT_GRAY = lambda *x: Colors.concat_str("\033[37m", *x, "\033[39m")
+    DARK_GRAY = lambda *x: Colors.concat_str("\033[90m", *x, "\033[39m")
+    LIGHT_RED = lambda *x: Colors.concat_str("\033[91m", *x, "\033[39m")
+    LIGHT_GREEN = lambda *x: Colors.concat_str("\033[92m", *x, "\033[39m")
+    LIGHT_YELLOW = lambda *x: Colors.concat_str("\033[93m", *x, "\033[39m")
+    LIGHT_BLUE = lambda *x: Colors.concat_str("\033[94m", *x, "\033[39m")
+    LIGHT_MAGENTA = lambda *x: Colors.concat_str("\033[95m", *x, "\033[39m")
+    LIGHT_CYAN = lambda *x: Colors.concat_str("\033[96m", *x, "\033[39m")
+    WHITE = lambda *x: Colors.concat_str("\033[97m", *x, "\033[39m")
+    BOLD = lambda *x: Colors.concat_str("\033[1m", *x, "\033[21m")
 
 
 def aurman_status(string: str, new_line: bool = False, to_print: bool = True) -> str:

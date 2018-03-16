@@ -124,6 +124,15 @@ Example:
 keyserver=hkp://ipv4.pool.sks-keyservers.net:11371
 ```
 
+#### disable finishing **bold** in the terminal with `\033[21m` and use `\033[0m` instead.
+create a key called `alt_bold_ending` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+alt_bold_ending
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
