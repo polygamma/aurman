@@ -67,6 +67,15 @@ class SolutionEncoder(json.JSONEncoder):
 def process(args):
     import aurman.aur_utilities
 
+    try:
+        read_config()  # read config - available via AurmanConfig.aurman_config
+    except InvalidInput:
+        sys.exit(1)
+
+    if os.getuid() == 0:
+        aurman_error("Do not run aurman with sudo")
+        sys.exit(1)
+
     # parse parameters of user
     pacman_args = parse_pacman_args(args)
 
@@ -85,11 +94,6 @@ def process(args):
     needed = pacman_args.needed  # if --needed
     devel = pacman_args.devel  # if --devel
     only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
-
-    try:
-        read_config()  # read config - available via AurmanConfig.aurman_config
-    except InvalidInput:
-        sys.exit(1)
 
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf

@@ -30,6 +30,10 @@ def process(args):
     except InvalidInput:
         sys.exit(1)
 
+    if os.getuid() == 0:
+        aurman_error("Do not run aurman with sudo")
+        sys.exit(1)
+
     # parse parameters of user
     try:
         pacman_args = parse_pacman_args(args)
