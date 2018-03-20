@@ -3,16 +3,17 @@ import threading
 import time
 from pyalpm import vercmp
 from subprocess import run, DEVNULL
-from typing import Tuple, Sequence
+from typing import Tuple, Sequence, List
 
 import regex
 
 from aurman.aur_utilities import get_aur_info
 from aurman.coloring import Colors, aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
+from aurman.wrappers import pacman
 
 
-def search_and_print(names: Sequence[str], installed_system, pacman_params: str, repo: bool, aur: bool):
+def search_and_print(names: Sequence[str], installed_system, pacman_params: List[str], repo: bool, aur: bool):
     """
     Searches for something and prints the results
 
@@ -29,9 +30,9 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
         # escape for pacman
         to_escape = list("()+?|{}")
         for char in to_escape:
-            pacman_params = pacman_params.replace(char, "\{}".format(char))
-
-        run("pacman {}".format(pacman_params), shell=True)
+            pacman_params = [param.replace(char, "\{}".format(char)) for param in pacman_params]
+        
+        pacman(pacman_params, False, ignore_failure=True)
 
     if not repo:
         # see: https://docs.python.org/3/howto/regex.html
