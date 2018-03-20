@@ -1101,11 +1101,11 @@ class Package:
         if self.get_package_file_to_install(build_dir, build_version) is None:
             makepkg("-cf --noconfirm", False, package_dir)
 
-    def install(self, args_as_string: str):
+    def install(self, args_as_list: List[str]):
         """
         Install this package
 
-        :param args_as_string: Args for pacman
+        :param args_as_list: Args for pacman
         """
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
 
@@ -1118,7 +1118,7 @@ class Package:
             raise InvalidInput("package file of {} not available".format(self.name))
 
         # install
-        pacman("{} {}".format(args_as_string, package_install_file), False, dir_to_execute=build_dir)
+        pacman(args_as_list + [package_install_file], False, dir_to_execute=build_dir)
 
 
 class System:
