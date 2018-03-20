@@ -4,7 +4,9 @@
 
 ## aurman in the AUR
 
-**aurman-git** *(https://aur.archlinux.org/packages/aurman-git)*
+**aurman-git** *(https://aur.archlinux.org/packages/aurman-git)* - **development version**
+
+**aurman** *(https://aur.archlinux.org/packages/aurman)* - **release version**
 
 ## Syntax
 
