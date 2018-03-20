@@ -124,7 +124,13 @@ class PacmanArgs:
                 else:
                     return_string += " " + "-{}".format(name)
                 if not isinstance(value, bool) and not pacman_options[name][1] == 0:
-                    return_string += " " + " ".join(value)
+                    new_values = []
+                    for val in value:
+                        if " " in val:
+                            new_values.append("'{}'".format(val))
+                        else:
+                            new_values.append(val)
+                    return_string += " " + " ".join(new_values)
                 # dirty hack for things like -yy or -cc
                 elif not isinstance(value, bool):
                     if len(name) >= 2:
