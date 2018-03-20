@@ -264,7 +264,10 @@ def process(args):
     pacman_args.refresh = False
 
     # one status message
-    aurman_status("initializing {}...".format(Colors.BOLD("aurman")), True)
+    if sudo_acquired:
+        aurman_status("initializing {}...".format(Colors.BOLD("aurman")), True)
+    else:
+        aurman_status("initializing {}...".format(Colors.BOLD("aurman")), False)
 
     # analyzing installed packages
     try:
