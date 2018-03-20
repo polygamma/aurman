@@ -62,10 +62,8 @@ def process(args):
     # if not -S or --sync, just redirect to pacman
     if pacman_args.operation is not PacmanOperations.SYNC:
         try:
-            if pacman_args.operation in [PacmanOperations.UPGRADE, PacmanOperations.REMOVE, PacmanOperations.DATABASE]:
-                run("sudo pacman {}".format(" ".join(args)), shell=True)
-            else:
-                run("pacman {}".format(" ".join(args)), shell=True)
+            sudo = pacman_args.operation in [PacmanOperations.UPGRADE, PacmanOperations.REMOVE, PacmanOperations.DATABASE]
+            pacman(args, False, sudo=sudo)
         except InvalidInput:
             sys.exit(1)
 
@@ -139,7 +137,7 @@ def process(args):
     # if user wants to --clean
     if clean:
         if not aur:
-            pacman(str(pacman_args), False, sudo=True)
+            pacman(pacman_args.as_list(), False, sudo=True)
 
         if not repo:
             if not os.path.isdir(Package.cache_dir):
@@ -153,7 +151,7 @@ def process(args):
                 if ask_user("Do you want to remove {} from cache?"
                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all files"))), False):
                     aurman_status("Deleting cache dir...")
-                    if run("rm -rf {}".format(Package.cache_dir), shell=True, stdout=DEVNULL,
+                    if run(["rm", "-rf", Package.cache_dir], shell=True, stdout=DEVNULL,
                            stderr=DEVNULL).returncode != 0:
                         aurman_error("Directory {} could not be deleted"
                                      "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
@@ -177,7 +175,7 @@ def process(args):
                         if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                             if thing not in dirs_to_not_delete:
                                 dir_to_delete = os.path.join(Package.cache_dir, thing)
-                                if run("rm -rf {}".format(dir_to_delete), shell=True, stdout=DEVNULL,
+                                if run(["rm", "-rf", dir_to_delete], shell=True, stdout=DEVNULL,
                                        stderr=DEVNULL).returncode != 0:
                                     aurman_error("Directory {} could not be deleted"
                                                  "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))))
@@ -211,7 +209,7 @@ def process(args):
 
         # start search
         try:
-            search_and_print(search, installed_system, str(pacman_args), repo, aur)
+            search_and_print(search, installed_system, pacman_args.as_list(), repo, aur)
         except InvalidInput:
             sys.exit(1)
 
@@ -220,7 +218,7 @@ def process(args):
     # groups are for pacman
     groups_chosen = []
     if not aur:
-        groups = pacman("-Sg", True, sudo=False)
+        groups = pacman(["-Sg"], True, sudo=False)
         for name in packages_of_user_names[:]:
             if name in groups:
                 groups_chosen.append(name)
@@ -250,7 +248,7 @@ def process(args):
         if names_to_ignore:
             pacman_args_copy.ignore = [",".join(names_to_ignore)]
         try:
-            pacman(str(pacman_args_copy), False)
+            pacman(pacman_args_copy.as_list(), False)
         except InvalidInput:
             sys.exit(1)
 
@@ -452,10 +450,10 @@ def process(args):
     pacman_args_copy.operation = PacmanOperations.UPGRADE
     pacman_args_copy.targets = []
 
-    args_for_explicit = str(pacman_args_copy)
+    args_for_explicit = pacman_args_copy.as_list()
     pacman_args_copy.asdeps = True
     pacman_args_copy.asexplicit = False
-    args_for_dependency = str(pacman_args_copy)
+    args_for_dependency = pacman_args_copy.as_list()
 
     # calc chunks to install
     solution_packages_chunks = System.calc_install_chunks(chosen_solution)
@@ -481,12 +479,12 @@ def process(args):
             pacman_args_copy.asdeps = True
             pacman_args_copy.asexplicit = False
             try:
-                pacman(str(pacman_args_copy), False)
+                pacman(pacman_args_copy.as_list(), False)
             except InvalidInput:
                 sys.exit(1)
 
             if as_explicit_container:
-                pacman("-D --asexplicit {}".format(" ".join(as_explicit_container)), True, sudo=True)
+                pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
         # aur chunks always consist of one package
         else:
             package = package_chunk[0]
