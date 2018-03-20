@@ -1118,7 +1118,7 @@ class Package:
             raise InvalidInput("package file of {} not available".format(self.name))
 
         # install
-        pacman(args_as_list.extend([package_install_file]), False, dir_to_execute=build_dir)
+        pacman(args_as_list + [package_install_file], False, dir_to_execute=build_dir)
 
 
 class System:
