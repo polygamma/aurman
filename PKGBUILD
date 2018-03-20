@@ -9,6 +9,8 @@ license=('MIT')
 depends=('python' 'expac' 'python-requests' 'pyalpm' 'pacman' 'sudo' 'git' 'python-regex')
 source=('aurman_sources::git+https://github.com/polygamma/aurman.git#branch=master')
 md5sums=('SKIP')
+conflicts=('aurman')
+provides=('aurman')
 
 pkgver() {
     cd "$srcdir/aurman_sources"
