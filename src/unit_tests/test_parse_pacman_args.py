@@ -44,9 +44,9 @@ class TestParse_pacman_args(TestCase):
         self.assertEqual(['something'], ret_val.clean)
         self.assertEqual(True, ret_val.sysupgrade)
 
-        self.assertEqual(2, str(ret_val).count("--clean"))
-        self.assertEqual(1, str(ret_val).count("--sysupgrade"))
-        self.assertEqual(1, str(ret_val).count("--refresh"))
+        self.assertEqual(2, ret_val.as_list().count("--clean"))
+        self.assertEqual(1, ret_val.as_list().count("--sysupgrade"))
+        self.assertEqual(1, ret_val.as_list().count("--refresh"))
 
 
 if __name__ == '__main__':

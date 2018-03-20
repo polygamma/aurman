@@ -101,38 +101,40 @@ class PacmanArgs:
         self.operation: PacmanOperations = None
         self.targets: Sequence[str] = []  # contains the targets, e.g. the packages
         self.invalid_args: List[str] = []  # contains unknown parameters
-
-    def __repr__(self):
-        return_string = ""
+    
+    def as_list(self) -> Sequence[str]:
+        return_list = []
 
         for name, value in self.__dict__.items():
             if not value or name == "invalid_args":
                 continue
 
             if name == "operation":
-                return_string += " " + "--{}".format(value.value)
+                return_list.append("--{}".format(value.value))
 
             elif name == "targets":
-                return_string += " " + " ".join(value)
+                return_list.extend(value)
 
             else:
                 if pacman_options[name][2] and self.operation not in pacman_options[name][2]:
                     continue
 
                 if len(name) >= 2:
-                    return_string += " " + "--{}".format(name)
+                    return_list.append("--{}".format(name))
                 else:
-                    return_string += " " + "-{}".format(name)
+                    return_list.append("-{}".format(name))
                 if not isinstance(value, bool) and not pacman_options[name][1] == 0:
-                    return_string += " " + " ".join(value)
+                    return_list.extend(value)
                 # dirty hack for things like -yy or -cc
                 elif not isinstance(value, bool):
                     if len(name) >= 2:
-                        return_string += " " + "--{}".format(name)
+                        return_list.append("--{}".format(name))
                     else:
-                        return_string += " " + "-{}".format(name)
+                        return_list.append("-{}".format(name))
+        return return_list
 
-        return return_string.strip()
+    def __repr__(self):
+        return " ".join(self.as_list())
 
 
 def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':

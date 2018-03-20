@@ -76,35 +76,30 @@ def expac(option: str, formatting: Sequence[str], targets: Sequence[str]) -> Lis
     return return_list
 
 
-def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = None, sudo: bool = True) -> List[str]:
+def pacman(options: List[str], fetch_output: bool, dir_to_execute: str = None, sudo: bool = True) -> List[str]:
     """
     pacman wrapper. see: https://www.archlinux.org/pacman/pacman.8.html
-    provide the pacman options as string via "options_as_string".
+    provide the pacman options as a list via "options".
     e.g. "-Syu package1 package2"
 
-    :param options_as_string:   the pacman options as string
+    :param options:             the pacman options
     :param fetch_output:        True if you want to receive the output of pacman, False otherwise
     :param dir_to_execute:      if you want to execute the pacman command in a specific directory, provide the directory
     :param sudo:                True if you want to execute pacman with sudo, False otherwise
     :return:                    empty list in case of "fetch_output"=False, otherwise the lines of the pacman output as list.
                                 one line of output is one item in the list.
     """
+    pacman_query = ["pacman"] + options
     if sudo:
-        pacman_query = "sudo pacman {}".format(options_as_string)
-    else:
-        pacman_query = "pacman {}".format(options_as_string)
+        pacman_query = ["sudo"] + pacman_query
 
+    run_kwargs = dict(shell=True)
     if fetch_output:
-        if dir_to_execute is not None:
-            pacman_return = run(pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True,
-                                cwd=dir_to_execute)
-        else:
-            pacman_return = run(pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
-    else:
-        if dir_to_execute is not None:
-            pacman_return = run(pacman_query, shell=True, cwd=dir_to_execute)
-        else:
-            pacman_return = run(pacman_query, shell=True)
+        run_kwargs.update(stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+    if dir_to_execute is not None:
+        run_kwargs.update(cwd=dir_to_execute)
+    
+    pacman_return = run(pacman_query, **run_kwargs)
 
     if pacman_return.returncode != 0:
         logging.error("pacman query {} failed".format(pacman_query))
