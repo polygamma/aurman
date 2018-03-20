@@ -87,6 +87,8 @@ def process(args):
     do_everything = pacman_args.do_everything  # if --do_everything
     clean = pacman_args.clean  # if --clean
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
+    no_notification_unknown_packages = 'miscellaneous' in AurmanConfig.aurman_config \
+                                       and 'no_notification_unknown_packages' in AurmanConfig.aurman_config['miscellaneous']
 
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
@@ -265,7 +267,7 @@ def process(args):
     except InvalidInput:
         sys.exit(1)
 
-    if installed_system.not_repo_not_aur_packages_list:
+    if installed_system.not_repo_not_aur_packages_list and not no_notification_unknown_packages:
         aurman_status("the following packages are neither in known repos nor in the aur")
         for package in installed_system.not_repo_not_aur_packages_list:
             aurman_note("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))

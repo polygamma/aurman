@@ -133,6 +133,15 @@ Example:
 alt_bold_ending
 ```
 
+#### disable notification about packages neither in known repos nor in the aur
+create a key called `no_notification_unknown_packages` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+no_notification_unknown_packages
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
