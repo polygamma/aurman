@@ -88,7 +88,12 @@ def process(args):
     clean = pacman_args.clean  # if --clean
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
     no_notification_unknown_packages = 'miscellaneous' in AurmanConfig.aurman_config \
-                                       and 'no_notification_unknown_packages' in AurmanConfig.aurman_config['miscellaneous']
+                                       and 'no_notification_unknown_packages' in AurmanConfig.aurman_config[
+                                           'miscellaneous']
+    concrete_no_notification_packages = set()
+    if 'no_notification_unknown_packages' in AurmanConfig.aurman_config:
+        for package_name in AurmanConfig.aurman_config['no_notification_unknown_packages']:
+            concrete_no_notification_packages.add(package_name)
 
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
@@ -267,9 +272,11 @@ def process(args):
     except InvalidInput:
         sys.exit(1)
 
-    if installed_system.not_repo_not_aur_packages_list and not no_notification_unknown_packages:
+    packages_to_show = [package for package in installed_system.not_repo_not_aur_packages_list
+                        if package.name not in concrete_no_notification_packages]
+    if packages_to_show and not no_notification_unknown_packages:
         aurman_status("the following packages are neither in known repos nor in the aur")
-        for package in installed_system.not_repo_not_aur_packages_list:
+        for package in packages_to_show:
             aurman_note("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
 
     # fetching upstream repo packages...

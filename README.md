@@ -142,6 +142,17 @@ Example:
 no_notification_unknown_packages
 ```
 
+you may also disable the notification for single packages only.
+
+create a section `[no_notification_unknown_packages]` and list the names of the packages as values
+
+Example:
+```ini
+[no_notification_unknown_packages]
+package1_name
+package2_name
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
