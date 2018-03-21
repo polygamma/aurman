@@ -204,9 +204,13 @@ What you should do: Contact the maintainer of the relevant packages and ask to a
 How do I change the editor used by `aurman` for editing PKGBUILDs etc.?
 
 #### Answer
-`aurman` uses the environment variable `EDITOR`, hence you have to change that variable.
+`aurman` uses the environment variables `VISUAL` and `EDITOR`, hence you have to change those variables.
 
-In case of no set `EDITOR` environment variable, `aurman` uses `/usr/bin/nano`.
+If `VISUAL` is set, `aurman` uses that,
+
+else if `EDITOR` is set, `aurman` uses that,
+
+else `aurman` uses `/usr/bin/nano`
 
 ## Screenshots
 
