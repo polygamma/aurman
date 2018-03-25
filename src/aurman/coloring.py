@@ -37,7 +37,7 @@ class Colors:
     LIGHT_MAGENTA = lambda *x: Colors.concat_str("\033[95m", *x, "\033[39m")
     LIGHT_CYAN = lambda *x: Colors.concat_str("\033[96m", *x, "\033[39m")
     WHITE = lambda *x: Colors.concat_str("\033[97m", *x, "\033[39m")
-    BOLD = lambda *x: Colors.concat_str("\033[1m", *x, "\033[21m")
+    BOLD = lambda *x: Colors.concat_str("\033[1m", *x, "\033[22m")
 
 
 def aurman_status(string: str, new_line: bool = False, to_print: bool = True) -> str:

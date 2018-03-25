@@ -126,15 +126,6 @@ Example:
 keyserver=hkp://ipv4.pool.sks-keyservers.net:11371
 ```
 
-#### disable finishing **bold** in the terminal with `\033[21m` and use `\033[0m` instead.
-create a key called `alt_bold_ending` in the section `[miscellaneous]` to do that.
-
-Example:
-```ini
-[miscellaneous]
-alt_bold_ending
-```
-
 #### disable notification about packages neither in known repos nor in the aur
 create a key called `no_notification_unknown_packages` in the section `[miscellaneous]` to do that.
 
