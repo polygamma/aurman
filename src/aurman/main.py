@@ -23,8 +23,6 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(fun
 def process(args):
     import aurman.aur_utilities
 
-    sudo_acquired = False
-
     try:
         read_config()  # read config - available via AurmanConfig.aurman_config
     except InvalidInput:
@@ -94,6 +92,10 @@ def process(args):
     if 'no_notification_unknown_packages' in AurmanConfig.aurman_config:
         for package_name in AurmanConfig.aurman_config['no_notification_unknown_packages']:
             concrete_no_notification_packages.add(package_name)
+
+    sudo_acquired = 'miscellaneous' in AurmanConfig.aurman_config \
+                    and 'no_sudo_loop' in AurmanConfig.aurman_config['miscellaneous']
+    pacman_called = False
 
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
@@ -232,6 +234,7 @@ def process(args):
         if not sudo_acquired:
             acquire_sudo()
             sudo_acquired = True
+        pacman_called = True
         pacman_args_copy = deepcopy(pacman_args)
         pacman_args_copy.targets = groups_chosen
         # aurman handles the update
@@ -264,7 +267,7 @@ def process(args):
     pacman_args.refresh = False
 
     # one status message
-    if sudo_acquired:
+    if pacman_called:
         aurman_status("initializing {}...".format(Colors.BOLD("aurman")), True)
     else:
         aurman_status("initializing {}...".format(Colors.BOLD("aurman")), False)

@@ -146,6 +146,16 @@ package1_name
 package2_name
 ```
 
+
+#### disable background sudo loop
+create a key called `no_sudo_loop` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+no_sudo_loop
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
