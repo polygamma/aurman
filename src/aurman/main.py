@@ -443,6 +443,7 @@ def process(args):
     # install packages
     if not sudo_acquired:
         acquire_sudo()
+        sudo_acquired = True
 
     # repo packages to install from other sources
     repo_packages_dict = packages_from_other_sources()[1]

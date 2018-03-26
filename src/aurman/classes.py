@@ -1436,24 +1436,31 @@ class System:
                 sanitized_names.add(providers_for_name[0].name)
             # more than one provider
             else:
-                aurman_note("We found multiple providers for {}"
-                            "\nChoose one by entering the corresponding number."
-                            "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+                dep_providers_names = [package.name for package in providers_for_name]
+                dep_name = strip_versioning_from_name(name)
 
-                while True:
-                    for i in range(0, len(providers_for_name)):
-                        print(
-                            "Number {}: {}".format(i + 1, self.repo_of_package(providers_for_name[i].name)))
+                # name matches one of the providers names
+                if dep_name in dep_providers_names:
+                    sanitized_names.add(dep_name)
+                else:
+                    aurman_note("We found multiple providers for {}"
+                                "\nChoose one by entering the corresponding number."
+                                "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
 
-                    try:
-                        user_input = int(input(aurman_question("Enter the number: ", False, False)))
-                        if 1 <= user_input <= len(providers_for_name):
-                            sanitized_names.add(providers_for_name[user_input - 1].name)
-                            break
-                    except ValueError:
-                        print(aurman_error("That was not a valid choice!", False, False))
-                    else:
-                        print(aurman_error("That was not a valid choice!", False, False))
+                    while True:
+                        for i in range(0, len(providers_for_name)):
+                            print(
+                                "Number {}: {}".format(i + 1, self.repo_of_package(providers_for_name[i].name)))
+
+                        try:
+                            user_input = int(input(aurman_question("Enter the number: ", False, False)))
+                            if 1 <= user_input <= len(providers_for_name):
+                                sanitized_names.add(providers_for_name[user_input - 1].name)
+                                break
+                        except ValueError:
+                            print(aurman_error("That was not a valid choice!", False, False))
+                        else:
+                            print(aurman_error("That was not a valid choice!", False, False))
 
         return sanitized_names
 
