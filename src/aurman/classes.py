@@ -1924,5 +1924,5 @@ class System:
                             " will not actually be reinstalled.")
             self.hypothetical_append_packages_to_system(solution, print_way=True)
 
-        if not noconfirm and not ask_user(user_question, True):
+        if not noconfirm and not ask_user(user_question, True, True):
             raise InvalidInput()

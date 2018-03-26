@@ -167,12 +167,13 @@ def acquire_sudo():
     t.start()
 
 
-def ask_user(question: str, default: bool) -> bool:
+def ask_user(question: str, default: bool, new_line: bool = False) -> bool:
     """
     Asks the user a yes/no question.
     :param question:    The question to ask
     :param default:     The default answer, if user presses enter.
                         True for yes, False for no
+    :param new_line:    If new_line before printing the question
     :return:            yes: True, no: False
     """
 
@@ -186,7 +187,8 @@ def ask_user(question: str, default: bool) -> bool:
         choices = "N/y"
 
     while True:
-        user_choice = str(input(aurman_question("{} {}: ".format(question, choices), False, False))).strip().lower()
+        user_choice = str(input(
+            aurman_question("{} {}: ".format(question, choices), new_line=new_line, to_print=False))).strip().lower()
         if user_choice in yes or user_choice in no:
             return user_choice in yes
         aurman_error("That was not a valid choice!")
