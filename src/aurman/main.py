@@ -52,9 +52,9 @@ def process(args):
     if pacman_args.operation is PacmanOperations.VERSION:
         # remove colors in case of not terminal
         if stdout.isatty():
-            aurman_note(expac("-Q", ("v",), ("aurman-git",))[0])
+            aurman_note(expac("-Q", ("v",), ("aurman-git", "aurman"))[0])
         else:
-            print(expac("-Q", ("v",), ("aurman-git",))[0])
+            print(expac("-Q", ("v",), ("aurman-git", "aurman"))[0])
         sys.exit(0)
 
     # if not -S or --sync, just redirect to pacman
