@@ -35,6 +35,9 @@ def read_config() -> 'configparser.ConfigParser':
             configfile.write("")
 
     config = configparser.ConfigParser(allow_no_value=True)
+    # make the config case sensitive
+    config.optionxform = str
+    # read the config
     config.read(config_file)
     AurmanConfig.aurman_config = config
 
