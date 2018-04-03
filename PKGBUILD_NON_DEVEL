@@ -1,6 +1,6 @@
 # Maintainer: Jonni Westphalen <jonny.westphalen@googlemail.com>
 pkgname=aurman
-pkgver=2.9.19
+pkgver=2.9.20
 pkgrel=1
 pkgdesc="aurman AUR helper with almost pacman syntax"
 arch=('any')
@@ -12,6 +12,6 @@ md5sums=('SKIP')
 
 package() {
     cd "$srcdir/aurman_sources"
-    python setup.py install --root="$pkgdir/" --optimize=1
+    /usr/bin/env python3 setup.py install --root="$pkgdir/" --optimize=1
     install -Dm644 ./bash.completion "$pkgdir/usr/share/bash-completion/completions/aurman"
 }
