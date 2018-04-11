@@ -497,8 +497,8 @@ def process(args):
         # aur chunks always consist of one package
         else:
             package = package_chunk[0]
-            package.build()
             try:
+                package.build()
                 if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
                         or ((package.name in installed_system.all_packages_dict)
                             and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
