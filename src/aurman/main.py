@@ -152,8 +152,9 @@ def process(args):
             aurman_note("Cache directory: {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
 
             if clean_force:
-                if ask_user("Do you want to remove {} from cache?"
-                            "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all files"))), False):
+                if noconfirm or \
+                        ask_user("Do you want to remove {} from cache?"
+                                 "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all files"))), False):
                     aurman_status("Deleting cache dir...")
                     if run("rm -rf {}".format(Package.cache_dir), shell=True, stdout=DEVNULL,
                            stderr=DEVNULL).returncode != 0:
@@ -161,8 +162,9 @@ def process(args):
                                      "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
                         sys.exit(1)
             else:
-                if ask_user("Do you want to remove {} clones from cache?"
-                            "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all uninstalled"))), False):
+                if noconfirm or \
+                        ask_user("Do you want to remove {} clones from cache?"
+                                 "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all uninstalled"))), False):
                     aurman_status("Deleting uninstalled clones from cache...")
 
                     # if pkgbase not available, the name of the package is the base
@@ -185,9 +187,10 @@ def process(args):
                                                  "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))))
                                     sys.exit(1)
 
-                if ask_user("Do you want to remove {} from cache? ({})"
-                            "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all untracked git files")),
-                                      Colors.BOLD(Colors.LIGHT_MAGENTA("even from installed packages"))), False):
+                if not noconfirm and \
+                        ask_user("Do you want to remove {} from cache? ({})"
+                                 "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all untracked git files")),
+                                           Colors.BOLD(Colors.LIGHT_MAGENTA("even from installed packages"))), False):
                     aurman_status("Deleting untracked git files from cache...")
                     for thing in os.listdir(Package.cache_dir):
                         if os.path.isdir(os.path.join(Package.cache_dir, thing)):
