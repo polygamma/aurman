@@ -75,6 +75,7 @@ def process(args):
     sysupgrade_force = sysupgrade and not isinstance(sysupgrade, bool)  # if -u -u or --sysupgrade --sysupgrade
     needed = pacman_args.needed  # if --needed
     noedit = pacman_args.noedit  # if --noedit
+    always_edit = pacman_args.always_edit  # if --always_edit
     show_changes = pacman_args.show_changes  # if --show_changes
     devel = pacman_args.devel  # if --devel
     only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
@@ -106,6 +107,10 @@ def process(args):
 
     if noedit and show_changes:
         aurman_error("--noedit and --show_changes is not what you want")
+        sys.exit(1)
+
+    if noedit and always_edit:
+        aurman_error("--noedit and --always_edit is not what you want")
         sys.exit(1)
 
     aur = pacman_args.aur  # do only aur things
@@ -358,7 +363,7 @@ def process(args):
             package.fetch_pkgbuild()
         try:
             for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver)
+                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit)
         except InvalidInput:
             sys.exit(1)
         for package in upstream_system.devel_packages_list:
@@ -442,7 +447,7 @@ def process(args):
                 if package.type_of is PossibleTypes.REPO_PACKAGE \
                         or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                     continue
-                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver)
+                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit)
         except InvalidInput:
             sys.exit(1)
 

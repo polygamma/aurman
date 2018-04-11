@@ -887,7 +887,7 @@ class Package:
                             raise ConnectionProblem("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
 
     def show_pkgbuild(self, noedit: bool = False, show_changes: bool = False,
-                      fetch_always: bool = False, keyserver: str = None):
+                      fetch_always: bool = False, keyserver: str = None, always_edit: bool = False):
         """
         Lets the user review and edit unreviewed PKGBUILD and install files of this package
 
@@ -895,6 +895,7 @@ class Package:
         :param show_changes:    True if the user wants to see the changes without being asked, False otherwise
         :param fetch_always:    True if the keys should be fetched without asking the user, False otherwise
         :param keyserver:       keyserver to fetch the pgp keys from
+        :param always_edit:     True if the user wants to edit package files, even if there are no new changes
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
@@ -929,7 +930,8 @@ class Package:
         with open(last_commit_hash_file, "r") as f:
             last_seen_hash = f.read().strip()
 
-        if last_seen_hash == current_commit_hash:
+        # do not return if always_edit is true
+        if last_seen_hash == current_commit_hash and not always_edit:
             return
 
         # relevant files are all files besides .SRCINFO
@@ -945,8 +947,8 @@ class Package:
 
         # check if there are changes, if there are, ask the user if he wants to see them
         if not noedit:
-            if show_changes or ask_user("Do you want to see the changes of {}?"
-                                        "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), False):
+            if show_changes or always_edit or ask_user("Do you want to see the changes of {}?"
+                                                       "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), False):
 
                 run("git diff {} {} -- . ':(exclude).SRCINFO'"
                     "".format(last_seen_hash, current_commit_hash), shell=True, cwd=package_dir)

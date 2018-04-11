@@ -54,6 +54,8 @@ All pacman operations are supported, but calling aurman with an operation beside
 
 - `--noedit`: Will not show changes of PKGBUILDs, .install and other relevant files. just assumes you are okay with the changes.
 
+- `--always_edit`: Lets the user edit the files of packages, even if there are no new changes.
+
 - `--show_changes`: Will show changes of PKGBUILDs, .install and other relevant files without asking
 
 - `--devel`: Will fetch current development packages versions to decide whether a new version is available or not.

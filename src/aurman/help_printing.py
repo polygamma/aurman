@@ -135,6 +135,8 @@ aurman_help.points.append(HelpPoint(only_aurman, only_aurman_points))
 
 only_aurman_points.append(HelpOption(["--noedit"],
                                      "Will not show changes of PKGBUILDs, .install and other relevant files"))
+only_aurman_points.append(HelpOption(["--always_edit"],
+                                     "Lets the user edit the files of packages, even if there are no new changes"))
 only_aurman_points.append(HelpOption(["--show_changes"],
                                      "Will show changes of PKGBUILDs, .install and other relevant files without asking"))
 only_aurman_points.append(HelpOption(["--devel"],
