@@ -85,6 +85,8 @@ you may specify more than one package, space separated
 may be useful if you are using the `aurman` config to fetch repo packages from other repos than they would normally be installed from.
 this is in general **not** recommended!
 
+- `--optimistic_versioning`: In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled
+
 ## Config
 You may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback to `~/.config/aurman` in case of no `$XDG_CONFIG_HOME`) as config for aurman.
 

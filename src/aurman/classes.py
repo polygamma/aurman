@@ -152,6 +152,10 @@ class Package:
     # directory of the cache
     cache_dir = os.path.join(os.environ.get("XDG_CACHE_HOME", os.path.expanduser(os.path.join("~", ".cache"))),
                              "aurman")
+    # assume that dependencies are fulfilled, if the exact version of the provider is not known,
+    # but a specific version is needed
+    # default is FALSE, may be set to TRUE via a command line flag
+    optimistic_versioning: bool = False
 
     @staticmethod
     def get_packages_from_aur(packages_names: Sequence[str]) -> List['Package']:
@@ -1277,6 +1281,9 @@ class System:
                                                                                             dep_version):
                         return_list.append(package)
                     elif (provide_cmp == "") and version_comparison(package.version, dep_cmp, dep_version):
+                        return_list.append(package)
+                    # https://github.com/polygamma/aurman/issues/67
+                    elif (provide_cmp == "") and Package.optimistic_versioning:
                         return_list.append(package)
 
         return return_list

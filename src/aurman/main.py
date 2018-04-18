@@ -70,6 +70,7 @@ def process(args):
         sys.exit(0)
 
     # -S or --sync
+    Package.optimistic_versioning = pacman_args.optimistic_versioning  # if --optimistic_versioning
     packages_of_user_names = list(set(pacman_args.targets))  # targets of the aurman command without duplicates
     sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
     sysupgrade_force = sysupgrade and not isinstance(sysupgrade, bool)  # if -u -u or --sysupgrade --sysupgrade

@@ -165,3 +165,6 @@ only_aurman_points.append(HelpOption(["--holdpkg_conf"],
 only_aurman_points.append(HelpOption(["--do_everything"],
                                      "{} will be handled by aurman for repo packages, too"
                                      "".format(Colors.LIGHT_GREEN("-u"))))
+only_aurman_points.append(HelpOption(["--optimistic_versioning"],
+                                     "In case of an unknown version of a provider for a versioned dependency, "
+                                     "assume that the dependency is fulfilled"))

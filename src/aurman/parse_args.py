@@ -65,7 +65,8 @@ pacman_options = {
     "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,)),
     "holdpkg": ("holdpkg", 2, (PacmanOperations.AURMAN,)),
     "holdpkg_conf": ("holdpkg_conf", 0, (PacmanOperations.AURMAN,)),
-    "do_everything": ("do_everything", 0, (PacmanOperations.AURMAN,))
+    "do_everything": ("do_everything", 0, (PacmanOperations.AURMAN,)),
+    "optimistic_versioning": ("optimistic_versioning", 0, (PacmanOperations.AURMAN,))
 }
 
 pacman_operations = {
