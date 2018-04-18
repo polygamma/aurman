@@ -184,26 +184,17 @@ https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
 ## FAQ
 #### Question
 `aurman` wants to remove packages, which should not be removed, what's the matter?
-##### example
-![](https://i.imgur.com/Q2OKkKb.png)
 
 #### Answer
-It may be, like in this case, that `aurman` assumes that three packages are going to be removed, which is in fact not going to happen (in this case).
-
-The problem is, that the package `ffmpeg-full` does not list the exact versions of the .so which are being provided.
-
-Hence `aurman` assumes, that the listed deps are going to be unfulfilled, and hence those packages are going to be removed.
-
-However: `aurman` does not delete packages by itself, so, if `ffmpeg-full` actually provides the correct versions of the files, nothing is going to be deleted.
-
-But the information about the exact versions are only available after building `ffmpeg-full`, hence it's nothing which may be determined that early.
-
-So: The problem really is the PKGBUILD of `ffmpeg-full`, not `aurman`.
-
-**tl;dr**: If you just install, and the versions are actually fine, nothing is going to be deleted.
-Otherwise it will be as predicted by `aurman`.
-
-What you should do: Contact the maintainer of the relevant packages and ask to append the explicit versions of the files being provided.
+Please check, if the problem arises, because `aurman` assumes `.so` dependencies to be unfulfilled.
+E. g. `libavcodec.so=57-64` which requires a specific version of the mentioned `.so`.
+This may be the case, because a providing AUR package only lists `libavcodec.so` as being provided,
+without specifying the version. Hence `aurman` cannot be sure, if the version will match,
+since this can only be known after building the package, thus assumes that the dependency is not fulfilled.
+You may change this behavior by yielding `--optimistic_versioning` via the command line,
+in that case `aurman` assumes the dependency to be fulfilled.
+You should make sure, that the version is going to be the needed one, otherwise
+the behavior of installing the packages is undefined.
 
 #### Question
 How do I change the editor used by `aurman` for editing PKGBUILDs etc.?
