@@ -1,6 +1,6 @@
 # Maintainer: Jonni Westphalen <jonny.westphalen@googlemail.com>
 pkgname=aurman-git
-pkgver=2.9.22
+pkgver=2.9.23
 pkgrel=1
 pkgdesc="aurman AUR helper with almost pacman syntax"
 arch=('any')
@@ -24,7 +24,7 @@ pkgver() {
 
 package() {
     cd "$srcdir/aurman_sources"
-    /usr/bin/env python3 setup.py install --root="$pkgdir/" --optimize=1
+    /usr/bin/python3 setup.py install --root="$pkgdir/" --optimize=1
     install -Dm644 ./bash.completion "$pkgdir/usr/share/bash-completion/completions/aurman"
     install -Dm644 ./aurman.fish "$pkgdir/usr/share/fish/vendor_completions.d/aurman.fish"
 }
