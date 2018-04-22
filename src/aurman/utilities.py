@@ -65,12 +65,14 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
 
         found_names = set(ret_dict['Name'] for ret_dict in get_aur_info([names_beginnings_without_regex[0]], True)
                           if regex_patterns[0].findall(ret_dict['Name'])
-                          or regex_patterns[0].findall(ret_dict['Description']))
+                          or isinstance(ret_dict['Description'], str)
+                          and regex_patterns[0].findall(ret_dict['Description']))
 
         for i in range(1, len(names)):
             found_names &= set(ret_dict['Name'] for ret_dict in get_aur_info([names_beginnings_without_regex[i]], True)
                                if regex_patterns[i].findall(ret_dict['Name'])
-                               or regex_patterns[i].findall(ret_dict['Description']))
+                               or isinstance(ret_dict['Description'], str)
+                               and regex_patterns[i].findall(ret_dict['Description']))
 
         search_return = get_aur_info(found_names)
 
