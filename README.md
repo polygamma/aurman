@@ -196,6 +196,8 @@ in that case `aurman` assumes the dependency to be fulfilled.
 You should make sure, that the version is going to be the needed one, otherwise
 the behavior of installing the packages is undefined.
 
+> **Notice**: `aurman` will **never** remove packages on its own, `aurman` just **predicts** what is going to happen
+
 #### Question
 How do I change the editor used by `aurman` for editing PKGBUILDs etc.?
 
