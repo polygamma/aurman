@@ -87,7 +87,14 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
             first_line = "{}{} {} ({}, {})".format(repo_with_slash, name, version, ret_dict['NumVotes'],
                                                    ret_dict['Popularity'])
             if ret_dict['Name'] in installed_system.all_packages_dict:
-                first_line += " {}".format(Colors.BOLD(Colors.CYAN("[installed]")))
+                if version_comparison(ret_dict['Version'],
+                                      "=",
+                                      installed_system.all_packages_dict[ret_dict['Name']].version):
+                    first_line += " {}".format(Colors.BOLD(Colors.CYAN("[installed]")))
+                else:
+                    first_line += " {}".format(Colors.BOLD(
+                        Colors.CYAN("[installed: {}]"
+                                    "".format(installed_system.all_packages_dict[ret_dict['Name']].version))))
             print(first_line)
             print("    {}".format(ret_dict['Description']))
 
