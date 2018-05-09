@@ -891,7 +891,8 @@ class Package:
                             raise ConnectionProblem("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
 
     def show_pkgbuild(self, noedit: bool = False, show_changes: bool = False,
-                      fetch_always: bool = False, keyserver: str = None, always_edit: bool = False):
+                      fetch_always: bool = False, keyserver: str = None, always_edit: bool = False,
+                      default_show_changes: bool = False):
         """
         Lets the user review and edit unreviewed PKGBUILD and install files of this package
 
@@ -900,6 +901,8 @@ class Package:
         :param fetch_always:    True if the keys should be fetched without asking the user, False otherwise
         :param keyserver:       keyserver to fetch the pgp keys from
         :param always_edit:     True if the user wants to edit package files, even if there are no new changes
+        :param default_show_changes:    True if the default for the question "Do you want to see the changes of ..."
+                                        should be Yes, False for default No
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
@@ -952,7 +955,8 @@ class Package:
         # check if there are changes, if there are, ask the user if he wants to see them
         if not noedit:
             if show_changes or always_edit or ask_user("Do you want to see the changes of {}?"
-                                                       "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), False):
+                                                       "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
+                                                       default_show_changes):
 
                 run("git diff {} {} -- . ':(exclude).SRCINFO'"
                     "".format(last_seen_hash, current_commit_hash), shell=True, cwd=package_dir)

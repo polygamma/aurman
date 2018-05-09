@@ -160,6 +160,15 @@ Example:
 no_sudo_loop
 ```
 
+#### Set the default for the question: `Do you want to see the changes of x?` to yes
+create a key called `default_show_changes` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+default_show_changes
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once

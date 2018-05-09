@@ -133,6 +133,9 @@ def process(args):
     if pacman_args.domain:
         aurman.aur_utilities.aur_domain = pacman_args.domain[0]
 
+    default_show_changes = 'miscellaneous' in AurmanConfig.aurman_config \
+                           and 'default_show_changes' in AurmanConfig.aurman_config['miscellaneous']
+
     # do not allow -y without -u
     if pacman_args.refresh and not sysupgrade:
         aurman_error("-y without -u is not allowed!")
@@ -364,7 +367,7 @@ def process(args):
             package.fetch_pkgbuild()
         try:
             for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit)
+                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit, default_show_changes)
         except InvalidInput:
             sys.exit(1)
         for package in upstream_system.devel_packages_list:
@@ -448,7 +451,7 @@ def process(args):
                 if package.type_of is PossibleTypes.REPO_PACKAGE \
                         or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                     continue
-                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit)
+                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit, default_show_changes)
         except InvalidInput:
             sys.exit(1)
 
