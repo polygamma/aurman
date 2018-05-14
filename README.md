@@ -219,6 +219,12 @@ else if `EDITOR` is set, `aurman` uses that,
 
 else `aurman` uses `/usr/bin/nano`
 
+#### Question
+How to install packages whose names are saved in a file with `aurman`?
+
+#### Answer
+You may simply use something like: `aurman -S $(cat ~/packages_names.txt | xargs)`
+
 ## Screenshots
 
 ![](https://i.imgur.com/VipYpfj.png)
