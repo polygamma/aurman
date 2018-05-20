@@ -1098,10 +1098,12 @@ class Package:
         else:
             return None
 
-    def build(self):
+    def build(self, ignore_arch: bool = False):
         """
         Build this package
 
+        :param ignore_arch: If True, pass -A to makepkg, thus allows building packages for architectures,
+                            not mentioned in the PKGBUILD
         """
         # check if build needed
         build_version = self.version_from_srcinfo()
@@ -1109,7 +1111,10 @@ class Package:
         build_dir = Package.get_build_dir(package_dir)
 
         if self.get_package_file_to_install(build_dir, build_version) is None:
-            makepkg("-cf --noconfirm", False, package_dir)
+            if not ignore_arch:
+                makepkg("-cf --noconfirm", False, package_dir)
+            else:
+                makepkg("-cfA --noconfirm", False, package_dir)
 
     def install(self, args_as_string: str):
         """

@@ -136,6 +136,9 @@ def process(args):
     default_show_changes = 'miscellaneous' in AurmanConfig.aurman_config \
                            and 'default_show_changes' in AurmanConfig.aurman_config['miscellaneous']
 
+    ignore_arch = 'miscellaneous' in AurmanConfig.aurman_config and \
+                  'ignore_arch' in AurmanConfig.aurman_config['miscellaneous']
+
     # do not allow -y without -u
     if pacman_args.refresh and not sysupgrade:
         aurman_error("-y without -u is not allowed!")
@@ -507,7 +510,7 @@ def process(args):
         else:
             package = package_chunk[0]
             try:
-                package.build()
+                package.build(ignore_arch)
                 if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
                         or ((package.name in installed_system.all_packages_dict)
                             and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):

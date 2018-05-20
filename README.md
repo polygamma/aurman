@@ -169,6 +169,15 @@ Example:
 default_show_changes
 ```
 
+#### Ignore a missing or incomplete arch field in the build script, which means: pass `-A` to `makepkg` during building of packages
+create a key called `ignore_arch` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+ignore_arch
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
