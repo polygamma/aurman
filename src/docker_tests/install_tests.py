@@ -26,12 +26,12 @@ if __name__ == '__main__':
     test_command("sudo python setup.py install --optimize=1", "/home/aurman/aurman-git")
 
     # install cower
-    test_command("yes | aurman -S cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
+    test_command("aurman -S cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
     # check if cower installed
     test_command("pacman -Qi cower")
 
     # install cower-git
-    test_command("yes | aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
+    test_command("aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
     # check if cower-git installed
     test_command("pacman -Qi cower-git")
 
@@ -44,15 +44,15 @@ if __name__ == '__main__':
     test_command("aurmansolver -S ros-indigo-desktop-full --deep_search")
 
     # install fprintd and libfprint-vfs0090-git
-    test_command("yes | aurman -S fprintd libfprint-vfs0090-git "
-                 "--noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
+    test_command("aurman -S fprintd libfprint-vfs0090-git "
+                 "--noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
 
     # check if fprintd and libfprint-vfs0090-git are installed
     test_command("pacman -Qi fprintd")
     test_command("pacman -Qi libfprint-vfs0090-git")
 
     # install pacman-git
-    test_command("yes | aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
+    test_command("aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
 
     # check if pacman-git installed
     test_command("pacman -Qi pacman-git")

@@ -51,7 +51,7 @@ if __name__ == '__main__':
         print("Success: there are things to update")
 
     # update with aurman --do_everything
-    test_command("yes | aurman -Syu --do_everything --force"
+    test_command("aurman -Syu --do_everything --force --noconfirm"
                  " --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
 
     if run("pacman -Qqun", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:

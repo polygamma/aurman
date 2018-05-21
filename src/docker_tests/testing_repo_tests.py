@@ -30,8 +30,8 @@ if __name__ == '__main__':
                  ''.format("sed -i '/\[testing\]/,/Include/s/^[ ]*#//' /etc/pacman.conf"))
 
     # update with aurman --do_everything
-    test_command("yes | aurman -Syu --do_everything"
-                 " --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
+    test_command("aurman -Syu --do_everything"
+                 " --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
 
     if run("pacman -Qqun", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
         print("Success: everything known has been updated")
