@@ -500,7 +500,7 @@ def process(args):
             pacman_args_copy.asdeps = True
             pacman_args_copy.asexplicit = False
             try:
-                pacman(str(pacman_args_copy), False)
+                pacman(str(pacman_args_copy), False, use_ask=True)
             except InvalidInput:
                 sys.exit(1)
 
@@ -514,9 +514,9 @@ def process(args):
                 if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
                         or ((package.name in installed_system.all_packages_dict)
                             and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
-                    package.install(args_for_explicit)
+                    package.install(args_for_explicit, use_ask=True)
                 else:
-                    package.install(args_for_dependency)
+                    package.install(args_for_dependency, use_ask=True)
             except InvalidInput:
                 sys.exit(1)
 

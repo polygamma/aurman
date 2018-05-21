@@ -1116,11 +1116,12 @@ class Package:
             else:
                 makepkg("-cfA --noconfirm", False, package_dir)
 
-    def install(self, args_as_string: str):
+    def install(self, args_as_string: str, use_ask: bool = False):
         """
         Install this package
 
-        :param args_as_string: Args for pacman
+        :param args_as_string:  Args for pacman
+        :param use_ask:         Use --ask=4 when calling pacman, see: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
         """
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
 
@@ -1131,6 +1132,9 @@ class Package:
         if package_install_file is None:
             logging.error("package file of {} not available".format(self.name))
             raise InvalidInput("package file of {} not available".format(self.name))
+
+        if use_ask:
+            args_as_string += " --ask=4"
 
         # install
         pacman("{} {}".format(args_as_string, package_install_file), False, dir_to_execute=build_dir)
