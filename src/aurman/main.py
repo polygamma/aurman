@@ -424,7 +424,9 @@ def process(args):
         chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
     except InvalidInput:
         aurman_error("we could not find a solution")
-        aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
+        # if not --deep_search
+        if only_unfulfilled_deps:
+            aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
         sys.exit(1)
 
     # needed because deep_search ignores installed packages
