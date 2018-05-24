@@ -60,7 +60,9 @@ def process(args):
     # if not -S or --sync, just redirect to pacman
     if pacman_args.operation is not PacmanOperations.SYNC:
         try:
-            if pacman_args.operation in [PacmanOperations.UPGRADE, PacmanOperations.REMOVE, PacmanOperations.DATABASE]:
+            if pacman_args.operation in [
+                PacmanOperations.UPGRADE, PacmanOperations.REMOVE, PacmanOperations.DATABASE, PacmanOperations.FILES
+            ]:
                 run("sudo pacman {}".format(" ".join(["'{}'".format(arg) for arg in args])), shell=True)
             else:
                 run("pacman {}".format(" ".join(["'{}'".format(arg) for arg in args])), shell=True)
