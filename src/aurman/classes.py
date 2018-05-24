@@ -1098,19 +1098,20 @@ class Package:
         else:
             return None
 
-    def build(self, ignore_arch: bool = False):
+    def build(self, ignore_arch: bool = False, rebuild: bool = False):
         """
         Build this package
 
         :param ignore_arch: If True, pass -A to makepkg, thus allows building packages for architectures,
                             not mentioned in the PKGBUILD
+        :param rebuild:     If True, always rebuild package
         """
         # check if build needed
         build_version = self.version_from_srcinfo()
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         build_dir = Package.get_build_dir(package_dir)
 
-        if self.get_package_file_to_install(build_dir, build_version) is None:
+        if rebuild or (self.get_package_file_to_install(build_dir, build_version) is None):
             if not ignore_arch:
                 makepkg("-cf --noconfirm", False, package_dir)
             else:

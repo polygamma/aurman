@@ -88,6 +88,7 @@ def process(args):
     solution_way = pacman_args.solution_way  # if --solution_way
     do_everything = pacman_args.do_everything  # if --do_everything
     clean = pacman_args.clean  # if --clean
+    rebuild = pacman_args.rebuild  # if --rebuild
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
     no_notification_unknown_packages = 'miscellaneous' in AurmanConfig.aurman_config \
                                        and 'no_notification_unknown_packages' in AurmanConfig.aurman_config[
@@ -514,7 +515,7 @@ def process(args):
         else:
             package = package_chunk[0]
             try:
-                package.build(ignore_arch)
+                package.build(ignore_arch, rebuild)
                 if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
                         or ((package.name in installed_system.all_packages_dict)
                             and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):

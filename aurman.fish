@@ -139,6 +139,7 @@ complete -c $progname -n $sync -l repo                  -d 'Apply only for regul
 complete -c $progname -n $sync -l domain             -x -d 'Point at a domain other than the default aur.archlinux.org'
 complete -c $progname -n $sync -l solution_way          -d 'Print pending actions in order'
 complete -c $progname -n $sync -l optimistic_versioning -d 'In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled'
+complete -c $progname -n $sync -l rebuild               -d 'Always rebuild packages before installing them'
 
 # Database options
 set -l has_db_opt '__fish_contains_opt asdeps asexplicit'
