@@ -32,7 +32,8 @@ if __name__ == '__main__':
                  ''.format("echo 'BUILDDIR=/home/aurman/build_dir' >> /etc/makepkg.conf"))
 
     # install cower
-    test_command("aurman -S cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+    test_command(
+        "aurman -S cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
     # check if cower installed
     test_command("pacman -Qi cower")
 
@@ -43,7 +44,8 @@ if __name__ == '__main__':
         print("Success: cower has been built in build_dir")
 
     # install pacman-git
-    test_command("aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+    test_command(
+        "aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
 
     # check if pacman-git installed
     test_command("pacman -Qi pacman-git")
@@ -53,7 +55,8 @@ if __name__ == '__main__':
                  ''.format("echo 'BUILDDIR=/home/aurman/build_dir' >> /etc/makepkg.conf"))
 
     # install cower-git
-    test_command("aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+    test_command(
+        "aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
     # check if cower-git installed
     test_command("pacman -Qi cower-git")
 

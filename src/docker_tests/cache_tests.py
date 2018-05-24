@@ -27,7 +27,8 @@ if __name__ == '__main__':
     test_command("sudo python setup.py install --optimize=1", "/home/aurman/aurman-git")
 
     # install cower
-    test_command("aurman -S cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+    test_command(
+        "aurman -S cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
     # check if cower installed
     test_command("pacman -Qi cower")
     # remove uninstalled packages
@@ -39,7 +40,8 @@ if __name__ == '__main__':
         CurrentTest.to_return = 1
 
     # install cower-git
-    test_command("aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+    test_command(
+        "aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
     # check if cower-git installed
     test_command("pacman -Qi cower-git")
 
