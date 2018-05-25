@@ -135,14 +135,13 @@ def makepkg(options_as_string: str, fetch_output: bool, dir_to_execute: str) -> 
     """
     makepkg_query = "makepkg {}".format(options_as_string)
     if fetch_output:
-        makepkg_return = run(makepkg_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True,
-                             cwd=dir_to_execute)
+        makepkg_return = run(makepkg_query, shell=True, stdout=PIPE, universal_newlines=True, cwd=dir_to_execute)
     else:
         makepkg_return = run(makepkg_query, shell=True, cwd=dir_to_execute)
 
     if makepkg_return.returncode != 0:
-        logging.error("makepkg query {} failed".format(makepkg_query))
-        raise InvalidInput("makepkg query {} failed".format(makepkg_query))
+        logging.error("makepkg query {} failed in directory {}".format(makepkg_query, dir_to_execute))
+        raise InvalidInput("makepkg query {} failed in directory {}".format(makepkg_query, dir_to_execute))
 
     if fetch_output:
         return makepkg_return.stdout.strip().splitlines()
