@@ -198,6 +198,71 @@ class Package:
         return return_list
 
     @staticmethod
+    def getPGPKeys(pkgbuild_path: str) -> List[str]:
+        """
+        returns pgp keys from a pkgbuild
+
+        :param pkgbuild_path: the path to the pkgbuild
+        :return: the keys contained in the pkgbuild
+        """
+
+        def getStringsBetweenChars(to_search_in: str, separator: str) -> List[str]:
+            """
+            helper function to find strings between separating strings
+            :param to_search_in: the string to search in
+            :param separator: the separator
+            :return: list containing the strings between the separators
+            """
+            to_return: List[str] = []
+
+            current_index: int = 0
+            while current_index < len(to_search_in):
+                first_sep: int = to_search_in.find(separator, current_index)
+                next_sep: int = to_search_in.find(separator, first_sep + 1)
+                current_index = next_sep + 1
+                if current_index == 0:
+                    break
+
+                to_return.append(to_search_in[first_sep + 1:next_sep])
+
+            return to_return
+
+        to_return: List[str] = []
+        quotes: List[str] = ["\"", "\'"]
+
+        if not os.path.isfile(pkgbuild_path):
+            logging.error("{} not found".format(pkgbuild_path))
+            raise InvalidInput("{} not found".format(pkgbuild_path))
+
+        with open(pkgbuild_path, 'r') as f:
+            pkgbuild_lines: List[str] = f.read().strip().splitlines()
+
+        in_key_array: bool = False
+        for line in pkgbuild_lines:
+            if not in_key_array and "validpgpkeys" not in line:
+                continue
+
+            if in_key_array:
+                begin_line_index: int = 0
+            else:
+                begin_line_index: int = line.find("(") + 1
+                if begin_line_index == 0:
+                    continue
+                in_key_array = True
+
+            closing_index: int = line.find(")", begin_line_index)
+            if closing_index != -1:
+                end_line_index: int = closing_index - 1
+                in_key_array = False
+            else:
+                end_line_index: int = len(line) - 1
+
+            for quote in quotes:
+                to_return.extend(getStringsBetweenChars(line[begin_line_index:end_line_index + 1], quote))
+
+        return to_return
+
+    @staticmethod
     def get_ignored_packages_names(ign_packages_names: Sequence[str], ign_groups_names: Sequence[str],
                                    upstream_system: 'System') -> Set[str]:
         """
@@ -869,8 +934,7 @@ class Package:
             logging.error("Package dir of {} does not exist".format(self.name))
             raise InvalidInput("Package dir of {} does not exist".format(self.name))
 
-        pgp_keys = [line.split("=")[1].strip() for line in makepkg("--printsrcinfo", True, package_dir) if
-                    "validpgpkeys =" in line]
+        pgp_keys = Package.getPGPKeys(os.path.join(package_dir, "PKGBUILD"))
 
         for pgp_key in pgp_keys:
             is_key_known = run("gpg --list-public-keys {}".format(pgp_key), shell=True, stdout=DEVNULL,
