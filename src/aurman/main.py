@@ -370,14 +370,17 @@ def process(args):
     if devel and not repo:
         aurman_status("looking for new pkgbuilds of devel packages and fetch them...")
         for package in upstream_system.devel_packages_list:
-            package.fetch_pkgbuild()
+            if package.name not in ignored_packages_names:
+                package.fetch_pkgbuild()
         try:
             for package in upstream_system.devel_packages_list:
-                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit, default_show_changes)
+                if package.name not in ignored_packages_names:
+                    package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit, default_show_changes)
         except InvalidInput:
             sys.exit(1)
         for package in upstream_system.devel_packages_list:
-            package.get_devel_version()
+            if package.name not in ignored_packages_names:
+                package.get_devel_version()
 
     # checking which packages need to be installed
     if not needed:
