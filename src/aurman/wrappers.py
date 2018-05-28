@@ -147,3 +147,26 @@ def makepkg(options_as_string: str, fetch_output: bool, dir_to_execute: str) -> 
         return makepkg_return.stdout.strip().splitlines()
 
     return []
+
+
+def pacman_conf(option_as_string: str) -> List[str]:
+    """
+    returns all values for a given option as received by executing pacman-conf
+    e.g. calling with "HoldPkg" returns all "hold packages" declared in the pacman.conf
+    :param option_as_string: the option to receive the values for
+    :return: the values for the given option as strings in a list
+    """
+    pacman_conf_return = run("pacman-conf", shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+
+    if pacman_conf_return.returncode != 0:
+        logging.error("pacman-conf not available")
+        raise InvalidInput("pacman-conf not available")
+
+    to_return: List[str] = []
+
+    for line in pacman_conf_return.stdout.strip().splitlines():
+        to_split_at: str = "{} =".format(option_as_string)
+        if line.startswith(to_split_at):
+            to_return.append(line.split(to_split_at)[1].strip())
+
+    return to_return

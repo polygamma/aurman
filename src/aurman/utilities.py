@@ -1,8 +1,7 @@
 import logging
 import threading
 import time
-from pyalpm import vercmp
-from subprocess import run, DEVNULL
+from subprocess import run, DEVNULL, PIPE
 from typing import Tuple, Sequence
 
 import regex
@@ -147,7 +146,8 @@ def version_comparison(version1: str, comparison_operator: str, version2: str) -
     :return:                        True if the conditional relationship holds, False otherwise
     """
 
-    vercmp_return = int(vercmp(version1, version2))
+    vercmp_return = int(run("vercmp '{}' '{}'".format(version1, version2), shell=True, stdout=PIPE, stderr=DEVNULL,
+                            universal_newlines=True).stdout.strip())
 
     if vercmp_return < 0:
         return "<" in comparison_operator

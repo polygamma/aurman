@@ -5,8 +5,6 @@ from copy import deepcopy
 from subprocess import run, DEVNULL
 from sys import argv, stdout
 
-from pycman.config import PacmanConfig
-
 from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
@@ -15,7 +13,7 @@ from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args
 from aurman.parsing_config import read_config, packages_from_other_sources, AurmanConfig
 from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user
-from aurman.wrappers import pacman, expac
+from aurman.wrappers import pacman, expac, pacman_conf
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
 
@@ -105,7 +103,7 @@ def process(args):
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
     if pacman_args.holdpkg_conf:
-        not_remove.extend(PacmanConfig(conf="/etc/pacman.conf").options['HoldPkg'])
+        not_remove.extend(pacman_conf("HoldPkg"))
     # remove duplicates
     not_remove = list(set(not_remove))
 

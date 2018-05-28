@@ -17,7 +17,7 @@ RUN sudo sh -c "sed -i '/MAKEFLAGS=/s/^.*$/MAKEFLAGS=\"-j\$(nproc)\"/' /etc/make
 RUN sudo sh -c "sed -i '/PKGEXT=/s/^.*$/PKGEXT=\".pkg.tar\"/' /etc/makepkg.conf"
 
 # aurman requirements and sysupgrade
-RUN sudo pacman --needed --noconfirm -Syu python expac python-requests pyalpm pacman sudo git python-regex
+RUN sudo pacman --needed --noconfirm -Syu python expac python-requests pacman sudo git python-regex
 
 # add files of the current branch
 ADD . /home/aurman/aurman-git
