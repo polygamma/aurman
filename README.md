@@ -180,6 +180,16 @@ Example:
 ignore_arch
 ```
 
+#### Set names of packages to be treated as development packages
+list the names of the packages in the section `[devel_packages]` to do that
+
+Example:
+```ini
+[devel_packages]
+package_name1
+package_name2
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once

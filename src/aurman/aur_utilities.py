@@ -6,6 +6,7 @@ from urllib.parse import quote_plus
 import requests
 
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
+from aurman.parsing_config import AurmanConfig
 from aurman.wrappers import split_query_helper
 
 aur_domain = "https://aur.archlinux.org"
@@ -68,5 +69,9 @@ def is_devel(name: str) -> bool:
     for develending in develendings:
         if name.endswith("-{}".format(develending)):
             return True
+
+    # devel packages names specified in the aurman config
+    if 'devel_packages' in AurmanConfig.aurman_config:
+        return name in AurmanConfig.aurman_config['devel_packages']
 
     return False
