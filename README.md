@@ -246,6 +246,15 @@ How to install packages whose names are saved in a file with `aurman`?
 #### Answer
 You may simply use something like: `aurman -S $(cat ~/packages_names.txt | xargs)`
 
+#### Question
+How do I change the cache directory of `aurman`?
+
+#### Answer
+aurman uses `$XDG_CACHE_HOME/aurman` with fallback to `~/.cache/aurman`, hence you have to change `$XDG_CACHE_HOME`.
+If you don't want to change the variable globally, use something like: `XDG_CACHE_HOME=/new/cache/dir aurman` to call `aurman`
+
+> **Notice**: It's being asked quite frequently to introduce a config option to change the cache dir, that is not going to happen, unless you provide really, really good arguments.
+
 ## Screenshots
 
 ![](https://i.imgur.com/VipYpfj.png)
