@@ -1090,18 +1090,12 @@ class Package:
 
         self.version = self.version_from_srcinfo()
 
-    @staticmethod
-    def get_build_dir(package_dir):
-        """
-        Gets the build directoy, if it is different from the package dir
 
-        :param package_dir:     The package dir of the package
-        :return:                The build dir in case there is one, the package dir otherwise
-        """
-        makepkg_conf = os.path.join("/etc", "makepkg.conf")
+    @staticmethod
+    def get_pkgdest_from_makepkg_conf(makepkg_conf):
         if not os.path.isfile(makepkg_conf):
-            logging.error("makepkg.conf not found")
-            raise InvalidInput("makepkg.conf not found")
+            logging.error("{} not found".format(makepkg_conf))
+            return None
 
         with open(makepkg_conf, "r") as f:
             makepkg_conf_lines = f.read().strip().splitlines()
@@ -1111,7 +1105,27 @@ class Package:
             if line_stripped.startswith("PKGDEST="):
                 return os.path.expandvars(os.path.expanduser(line_stripped.split("PKGDEST=")[1].strip()))
         else:
-            return package_dir
+            return None
+
+
+    @staticmethod
+    def get_build_dir(package_dir):
+        """
+        Gets the build directoy, if it is different from the package dir
+
+        :param package_dir:     The package dir of the package
+        :return:                The build dir in case there is one, the package dir otherwise
+        """
+        makepkg_conf = os.path.join(os.environ.get("HOME"), ".makepkg.conf")
+        pkgdest = Package.get_pkgdest_from_makepkg_conf(makepkg_conf)
+        if pkgdest:
+            return pkgdest
+        makepkg_conf = os.path.join("/etc", "makepkg.conf")
+        pkgdest = Package.get_pkgdest_from_makepkg_conf(makepkg_conf)
+        if pkgdest:
+            return pkgdest
+        return package_dir
+
 
     def get_package_file_to_install(self, build_dir: str, build_version: str) -> Union[str, None]:
         """
