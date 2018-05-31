@@ -31,6 +31,11 @@ class TestParse_pacman_args(TestCase):
         self.assertIsInstance(ret_val.domain, list)
         self.assertIsInstance(ret_val.cachedir, list)
 
+        args = "--sync --search -- -viewer".split()
+        ret_val = parse_pacman_args(args)
+        self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
+        self.assertEqual(["--", "-viewer"], ret_val.search)
+
         args = "-Syyu -c --clean".split()
         ret_val = parse_pacman_args(args)
         self.assertEqual(['something'], ret_val.refresh)

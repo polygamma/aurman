@@ -172,16 +172,21 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
     args_to_return = PacmanArgs()
     current_field = "targets"
     number_of_valid_arguments = 2
+    no_more_options = False
 
     for arg in args:
         arg_length = len(arg)
-        if arg.startswith("-"):
-            if arg.startswith("--"):
-                dashes = 2
-            else:
-                dashes = 1
-        else:
+        if no_more_options or arg == '--':
+            no_more_options = True
             dashes = 0
+        else:
+            if arg.startswith("-"):
+                if arg.startswith("--"):
+                    dashes = 2
+                else:
+                    dashes = 1
+            else:
+                dashes = 0
         arg = arg.replace("-", "", dashes)
 
         if dashes == 2:
