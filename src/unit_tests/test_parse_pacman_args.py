@@ -53,11 +53,13 @@ class TestParse_pacman_args(TestCase):
         ret_val = parse_pacman_args(args)
         self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
         self.assertEqual(["aurman"], ret_val.targets)
+        self.assertEqual("--sync -- aurman", str(ret_val))
 
         args = "-Ss -- -viewer test --view".split()
         ret_val = parse_pacman_args(args)
         self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
         self.assertEqual(["-viewer", "test", "--view"], ret_val.targets)
+        self.assertEqual("--sync --search -- -viewer test --view", str(ret_val))
 
 
 if __name__ == '__main__':
