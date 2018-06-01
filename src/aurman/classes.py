@@ -1098,25 +1098,7 @@ class Package:
         :param package_dir:     The package dir of the package
         :return:                The build dir in case there is one, the package dir otherwise
         """
-        possible_makepkg_confs: List[str] = [os.path.expanduser(os.path.join("~", ".makepkg.conf")),
-                                             os.path.join("/etc", "makepkg.conf")]
-
-        if "XDG_CONFIG_HOME" in os.environ:
-            possible_makepkg_confs.insert(0, os.path.join(os.environ.get("XDG_CONFIG_HOME"), "pacman", "makepkg.conf"))
-
-        for makepkg_conf in possible_makepkg_confs:
-            if not os.path.isfile(makepkg_conf):
-                continue
-
-            with open(makepkg_conf, "r") as f:
-                makepkg_conf_lines = f.read().strip().splitlines()
-
-            for line in makepkg_conf_lines:
-                line_stripped = line.strip()
-                if line_stripped.startswith("PKGDEST="):
-                    return os.path.expandvars(os.path.expanduser(line_stripped.split("PKGDEST=")[1].strip()))
-        else:
-            return package_dir
+        return os.path.split(makepkg("--packagelist", True, package_dir)[0])[0]
 
     def get_package_file_to_install(self, build_dir: str, build_version: str) -> Union[str, None]:
         """
