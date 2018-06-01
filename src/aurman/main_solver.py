@@ -8,7 +8,7 @@ from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, Colors
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import parse_pacman_args, PacmanOperations
-from aurman.parsing_config import read_config
+from aurman.parsing_config import read_config, AurmanConfig
 from aurman.utilities import version_comparison, strip_versioning_from_name
 from aurman.wrappers import makepkg, pacman_conf
 
@@ -85,6 +85,13 @@ def process(args):
     packages_of_user_names = list(set(pacman_args.targets))  # targets of the aurman command without duplicates
     sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
     sysupgrade_force = sysupgrade and not isinstance(sysupgrade, bool)  # if -u -u or --sysupgrade --sysupgrade
+    no_notification_unknown_packages = 'miscellaneous' in AurmanConfig.aurman_config \
+                                       and 'no_notification_unknown_packages' in AurmanConfig.aurman_config[
+                                           'miscellaneous']
+    concrete_no_notification_packages = set()
+    if 'no_notification_unknown_packages' in AurmanConfig.aurman_config:
+        for package_name in AurmanConfig.aurman_config['no_notification_unknown_packages']:
+            concrete_no_notification_packages.add(package_name)
 
     # nothing to do for us
     if not sysupgrade and not packages_of_user_names:
@@ -116,10 +123,16 @@ def process(args):
     except InvalidInput:
         sys.exit(1)
 
-    if installed_system.not_repo_not_aur_packages_list:
-        logging.debug("the following packages are neither in known repos nor in the aur")
-        for package in installed_system.not_repo_not_aur_packages_list:
-            logging.debug("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
+    packages_to_show = [package for package in installed_system.not_repo_not_aur_packages_list
+                        if package.name not in concrete_no_notification_packages]
+    if packages_to_show and not no_notification_unknown_packages:
+        if not pacman_args.show_unknown:
+            logging.debug("the following packages are neither in known repos nor in the aur")
+            for package in packages_to_show:
+                logging.debug("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
+        else:
+            print(" ".join([package.name for package in packages_to_show]))
+            sys.exit(0)
 
     # fetching upstream repo packages...
     try:

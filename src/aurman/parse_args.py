@@ -52,6 +52,9 @@ pacman_options = {
     "c": ("clean", 0, (PacmanOperations.SYNC,)),
     "clean": ("clean", 0, (PacmanOperations.SYNC,)),
 
+    # aurmansolver only - shows unknown packages in a single line
+    "show_unknown": ("show_unknown", 0, (PacmanOperations.AURMAN,)),
+
     "noedit": ("noedit", 0, (PacmanOperations.AURMAN,)),
     "always_edit": ("always_edit", 0, (PacmanOperations.AURMAN,)),
     "show_changes": ("show_changes", 0, (PacmanOperations.AURMAN,)),
