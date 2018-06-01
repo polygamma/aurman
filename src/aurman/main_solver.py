@@ -131,8 +131,10 @@ def process(args):
             for package in packages_to_show:
                 logging.debug("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
         else:
-            print(" ".join([package.name for package in packages_to_show]))
-            sys.exit(0)
+            print("\n".join([package.name for package in packages_to_show]))
+
+    if pacman_args.show_unknown:
+        sys.exit(0)
 
     # fetching upstream repo packages...
     try:
