@@ -43,8 +43,8 @@ pacman_options = {
     "ignore": ("ignore", 1, ()),
     "ignoregroup": ("ignoregroup", 1, ()),
 
-    "s": ("search", 2, (PacmanOperations.SYNC,)),
-    "search": ("search", 2, (PacmanOperations.SYNC,)),
+    "s": ("search", 0, (PacmanOperations.SYNC,)),
+    "search": ("search", 0, (PacmanOperations.SYNC,)),
     "u": ("sysupgrade", 0, (PacmanOperations.SYNC,)),
     "sysupgrade": ("sysupgrade", 0, (PacmanOperations.SYNC,)),
     "y": ("refresh", 0, (PacmanOperations.SYNC,)),
@@ -116,7 +116,7 @@ class PacmanArgs:
                 return_string += " " + "--{}".format(value.value)
 
             elif name == "targets":
-                return_string += " " + " ".join(value)
+                continue
 
             else:
                 if pacman_options[name][2] and self.operation not in pacman_options[name][2]:
@@ -140,6 +140,10 @@ class PacmanArgs:
                         return_string += " " + "--{}".format(name)
                     else:
                         return_string += " " + "-{}".format(name)
+
+        # guarantees the targets to be at the end
+        if self.targets:
+            return_string += " -- " + " ".join(self.targets)
 
         return return_string.strip()
 
@@ -172,10 +176,19 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
     args_to_return = PacmanArgs()
     current_field = "targets"
     number_of_valid_arguments = 2
+    only_targets = False
 
     for arg in args:
         arg_length = len(arg)
-        if arg.startswith("-"):
+
+        if only_targets:
+            dashes = 0
+        elif arg == '--':
+            only_targets = True
+            current_field = "targets"
+            number_of_valid_arguments = 2
+            continue
+        elif arg.startswith("-"):
             if arg.startswith("--"):
                 dashes = 2
             else:

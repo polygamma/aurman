@@ -92,7 +92,7 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
                                 one line of output is one item in the list.
     """
     if use_ask:
-        options_as_string += " --ask=4"
+        options_as_string = "--ask=4 " + options_as_string
 
     if sudo:
         pacman_query = "sudo pacman {}".format(options_as_string)

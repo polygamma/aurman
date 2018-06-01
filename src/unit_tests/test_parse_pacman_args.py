@@ -25,7 +25,8 @@ class TestParse_pacman_args(TestCase):
         args = "--sync --search aurman-git --verbose -s helper aur".split()
         ret_val = parse_pacman_args(args)
         self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
-        self.assertEqual(["aurman-git", "helper", "aur"], ret_val.search)
+        self.assertEqual(["aurman-git", "helper", "aur"], ret_val.targets)
+        self.assertTrue(ret_val.search)
         self.assertTrue(ret_val.verbose)
         self.assertFalse(ret_val.needed)
         self.assertIsInstance(ret_val.domain, list)
@@ -47,6 +48,16 @@ class TestParse_pacman_args(TestCase):
         self.assertEqual(2, str(ret_val).count("--clean"))
         self.assertEqual(1, str(ret_val).count("--sysupgrade"))
         self.assertEqual(1, str(ret_val).count("--refresh"))
+
+        args = "--sync -- aurman".split()
+        ret_val = parse_pacman_args(args)
+        self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
+        self.assertEqual(["aurman"], ret_val.targets)
+
+        args = "-Ss -- -viewer test --view".split()
+        ret_val = parse_pacman_args(args)
+        self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
+        self.assertEqual(["-viewer", "test", "--view"], ret_val.targets)
 
 
 if __name__ == '__main__':

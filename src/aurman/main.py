@@ -82,7 +82,7 @@ def process(args):
     only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
     pgp_fetch = pacman_args.pgp_fetch  # if --pgp_fetch
     noconfirm = pacman_args.noconfirm  # if --noconfirm
-    search = pacman_args.search  # list containing the specified strings for -s and --search
+    search = pacman_args.search  # if --search
     solution_way = pacman_args.solution_way  # if --solution_way
     do_everything = pacman_args.do_everything  # if --do_everything
     clean = pacman_args.clean  # if --clean
@@ -229,7 +229,7 @@ def process(args):
 
         # start search
         try:
-            search_and_print(search, installed_system, str(pacman_args), repo, aur)
+            search_and_print(packages_of_user_names, installed_system, str(pacman_args), repo, aur)
         except InvalidInput:
             sys.exit(1)
 

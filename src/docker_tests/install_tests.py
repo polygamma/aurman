@@ -37,6 +37,12 @@ if __name__ == '__main__':
     # check if cower-git installed
     test_command("pacman -Qi cower-git")
 
+    # install repo package mu with double dashes
+    test_command(
+        "aurman -S --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm -- mu")
+    # check if mu installed
+    test_command("pacman -Qi mu")
+
     # search solutions to install mingw-w64-gcc
     test_command("aurmansolver -S mingw-w64-gcc")
     test_command("aurmansolver -S mingw-w64-gcc --deep_search")

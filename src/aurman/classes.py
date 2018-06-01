@@ -1166,7 +1166,7 @@ class Package:
             raise InvalidInput("package file of {} not available".format(self.name))
 
         if use_ask:
-            args_as_string += " --ask=4"
+            args_as_string = "--ask=4 " + args_as_string
 
         # install
         pacman("{} {}".format(args_as_string, package_install_file), False, dir_to_execute=build_dir)
