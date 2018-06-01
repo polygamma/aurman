@@ -1098,18 +1098,23 @@ class Package:
         :param package_dir:     The package dir of the package
         :return:                The build dir in case there is one, the package dir otherwise
         """
-        makepkg_conf = os.path.join("/etc", "makepkg.conf")
-        if not os.path.isfile(makepkg_conf):
-            logging.error("makepkg.conf not found")
-            raise InvalidInput("makepkg.conf not found")
+        possible_makepkg_confs: List[str] = [os.path.expanduser(os.path.join("~", ".makepkg.conf")),
+                                             os.path.join("/etc", "makepkg.conf")]
 
-        with open(makepkg_conf, "r") as f:
-            makepkg_conf_lines = f.read().strip().splitlines()
+        if "XDG_CONFIG_HOME" in os.environ:
+            possible_makepkg_confs.insert(0, os.path.join(os.environ.get("XDG_CONFIG_HOME"), "pacman", "makepkg.conf"))
 
-        for line in makepkg_conf_lines:
-            line_stripped = line.strip()
-            if line_stripped.startswith("PKGDEST="):
-                return os.path.expandvars(os.path.expanduser(line_stripped.split("PKGDEST=")[1].strip()))
+        for makepkg_conf in possible_makepkg_confs:
+            if not os.path.isfile(makepkg_conf):
+                continue
+
+            with open(makepkg_conf, "r") as f:
+                makepkg_conf_lines = f.read().strip().splitlines()
+
+            for line in makepkg_conf_lines:
+                line_stripped = line.strip()
+                if line_stripped.startswith("PKGDEST="):
+                    return os.path.expandvars(os.path.expanduser(line_stripped.split("PKGDEST=")[1].strip()))
         else:
             return package_dir
 
