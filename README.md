@@ -226,6 +226,13 @@ in that case `aurman` assumes the dependency to be fulfilled.
 You should make sure, that the version is going to be the needed one, otherwise
 the behavior of installing the packages is undefined.
 
+This behavior of `aurman` may even occur, if there are no `.so` dependencies involved.
+In that case check, if the dependencies are *really* fulfilled on your system.
+If they are not, because you forced installations of packages with `pacman -d`, that behavior of `aurman` is explicitly wanted.
+It warns you about broken package dependencies of your system.
+To remove that output of `aurman` you have to fulfill the dependencies.
+
+
 > **Notice**: `aurman` will **never** remove packages on its own, `aurman` just **predicts** what is going to happen
 
 #### Question
