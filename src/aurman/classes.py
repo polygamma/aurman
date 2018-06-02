@@ -1884,7 +1884,7 @@ class System:
                                          "are getting "
                                          "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("installed"))), True, False)
         packages_to_uninstall = aurman_note("The following {} package(s) "
-                                            "are getting "
+                                            "are predicted to get "
                                             "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("removed"))), True, False)
         packages_to_upgrade = aurman_note("The following {} package(s) "
                                           "are getting "
