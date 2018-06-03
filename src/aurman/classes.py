@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 import re
@@ -230,11 +231,11 @@ class Package:
         :param upstream_system:     System containing the upstream packages
         :return:                    a set containing the names of the ignored packages
         """
-        # ignored packages names
-        return_set = set(pacman_conf("IgnorePkg"))
+        # ignored packages names - may contain glob patterns
+        names_to_ignore = set(pacman_conf("IgnorePkg"))
         for ign_packages_name in ign_packages_names:
             for name in ign_packages_name.split(","):
-                return_set.add(name)
+                names_to_ignore.add(name)
 
         # ignored groups names
         ignored_groups_names = set(pacman_conf("IgnoreGroup"))
@@ -242,12 +243,21 @@ class Package:
             for name in ign_groups_name.split(","):
                 ignored_groups_names.add(name)
 
+        # contains the concrete packages names to ignore
+        return_set = set()
+
+        # check globbing
+        packages_names = [package_name for package_name in upstream_system.all_packages_dict]
+        for possible_glob in names_to_ignore:
+            return_set |= set(fnmatch.filter(packages_names, possible_glob))
+
         if not ignored_groups_names:
             return return_set
 
         # fetch packages names of groups to ignore
-        for package_name in upstream_system.all_packages_dict:
+        for package_name in packages_names:
             package = upstream_system.all_packages_dict[package_name]
+            # check groups
             for package_group in package.groups:
                 if package_group in ignored_groups_names:
                     return_set.add(package_name)
@@ -1874,7 +1884,7 @@ class System:
                                          "are getting "
                                          "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("installed"))), True, False)
         packages_to_uninstall = aurman_note("The following {} package(s) "
-                                            "are getting "
+                                            "are predicted to get "
                                             "{}:".format("{}", Colors.BOLD(Colors.LIGHT_CYAN("removed"))), True, False)
         packages_to_upgrade = aurman_note("The following {} package(s) "
                                           "are getting "
