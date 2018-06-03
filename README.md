@@ -190,6 +190,17 @@ package_name1
 package_name2
 ```
 
+#### Specify the folder to save `aurman` cache files
+create a key called `cache_dir` in the section `[miscellaneous]` to do that.
+
+default: `$XDG_CACHE_HOME/aurman` (fallback to `~/.cache/aurman` in case of no `$XDG_CACHE_HOME`).
+
+Example:
+```ini
+[miscellaneous]
+cache_dir=/tmp
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once

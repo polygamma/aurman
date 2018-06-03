@@ -315,10 +315,6 @@ def process(args):
     default_show_changes = 'miscellaneous' in AurmanConfig.aurman_config \
                            and 'default_show_changes' in AurmanConfig.aurman_config['miscellaneous']
 
-    if 'miscellaneous' in AurmanConfig.aurman_config \
-            and 'cache_dir' in AurmanConfig.aurman_config['miscellaneous']:
-        Package.cache_dir = AurmanConfig.aurman_config['miscellaneous']['cache_dir']
-
     # if to pass -A to makepkg
     ignore_arch = 'miscellaneous' in AurmanConfig.aurman_config and \
                   'ignore_arch' in AurmanConfig.aurman_config['miscellaneous']
@@ -372,6 +368,11 @@ def process(args):
     # change aur domain if configured by the user
     if pacman_args.domain:
         aurman.aur_utilities.aur_domain = pacman_args.domain[0]
+
+    # set the folder to save `aurman` cache files
+    if 'miscellaneous' in AurmanConfig.aurman_config \
+            and 'cache_dir' in AurmanConfig.aurman_config['miscellaneous']:
+        Package.cache_dir = AurmanConfig.aurman_config['miscellaneous']['cache_dir']
 
     # --- start actually executing things --- #
 
