@@ -198,7 +198,7 @@ default: `$XDG_CACHE_HOME/aurman` (fallback to `~/.cache/aurman` in case of no `
 Example:
 ```ini
 [miscellaneous]
-cache_dir=/tmp
+cache_dir=/tmp/aurman
 ```
 
 ## Features
