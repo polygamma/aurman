@@ -491,7 +491,7 @@ def process(args):
 
     # if user entered --devel and not --repo, fetch all needed pkgbuilds etc. for the devel packages
     if devel and not repo:
-        aurman_status("looking for new pkgbuilds of devel packages and fetch them...")
+        aurman_status("looking for new pkgbuilds of devel packages and fetching them...")
         for package in upstream_system.devel_packages_list:
             if package.name not in ignored_packages_names:
                 package.fetch_pkgbuild()
@@ -577,7 +577,7 @@ def process(args):
 
     # fetch pkgbuilds
     if not repo:
-        aurman_status("looking for new pkgbuilds and fetch them...")
+        aurman_status("looking for new pkgbuilds and fetching them...")
         for package in chosen_solution:
             if package.type_of is PossibleTypes.REPO_PACKAGE \
                     or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
