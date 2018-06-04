@@ -10,6 +10,7 @@ from aurman.parsing_config import AurmanConfig
 from aurman.wrappers import split_query_helper
 
 aur_domain = "https://aur.archlinux.org"
+aur_timeout = 5
 
 
 def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bool = False) -> List[Dict]:
@@ -44,8 +45,8 @@ def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bo
     for query_parameters in queries_parameters:
         try:
             results_list.extend(json.loads(requests.get("{}{}".format(query_url, ''.join(
-                ["{}{}".format(query_prefix, parameter) for parameter in query_parameters])), timeout=5).text)[
-                                    'results'])
+                ["{}{}".format(query_prefix, parameter) for parameter in query_parameters])),
+                                                        timeout=aur_timeout).text)['results'])
         except requests.exceptions.RequestException:
             logging.error("Connection problem while requesting AUR info for {}".format(package_names), exc_info=True)
             raise ConnectionProblem("Connection problem while requesting AUR info for {}".format(package_names))

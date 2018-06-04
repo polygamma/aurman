@@ -369,6 +369,11 @@ def process(args):
     if pacman_args.domain:
         aurman.aur_utilities.aur_domain = pacman_args.domain[0]
 
+    # change aur rpc timeout if set by the user
+    if 'miscellaneous' in AurmanConfig.aurman_config \
+            and 'aur_timeout' in AurmanConfig.aurman_config['miscellaneous']:
+        aurman.aur_utilities.aur_timeout = int(AurmanConfig.aurman_config['miscellaneous']['aur_timeout'])
+
     # set the folder to save `aurman` cache files
     if 'miscellaneous' in AurmanConfig.aurman_config \
             and 'cache_dir' in AurmanConfig.aurman_config['miscellaneous']:

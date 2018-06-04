@@ -201,6 +201,15 @@ Example:
 cache_dir=/tmp/aurman
 ```
 
+#### Specify the timeout for AUR RPC requests
+create a key called `aur_timeout` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+aur_timeout=10
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
