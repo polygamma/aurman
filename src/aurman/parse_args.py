@@ -136,7 +136,11 @@ class PacmanArgs:
                             new_values.append("'{}'".format(val))
                         else:
                             new_values.append(val)
-                    return_string += " " + " ".join(new_values)
+                    # dirty bullshit - thanks pacman 5.1
+                    if name == "ignore" or name == "ignoregroup":
+                        return_string += " " + ",".join(new_values)
+                    else:
+                        return_string += " " + " ".join(new_values)
                 # dirty hack for things like -yy or -cc
                 elif not isinstance(value, bool):
                     if len(name) >= 2:
@@ -180,6 +184,7 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
     current_field = "targets"
     number_of_valid_arguments = 2
     only_targets = False
+    ignore_append_allowed = False
 
     for arg in args:
         arg_length = len(arg)
@@ -198,6 +203,10 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
                 dashes = 1
         else:
             dashes = 0
+
+        if arg == "--ignore" or arg == "--ignoregroup":
+            ignore_append_allowed = True
+
         arg = arg.replace("-", "", dashes)
 
         if dashes == 2:
@@ -221,14 +230,19 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
                         current_field, number_of_valid_arguments = append_bool(curr_char)
                 arg = arg[len(arg) - 1]
         else:
-            if isinstance(getattr(args_to_return, current_field), bool) or number_of_valid_arguments < 2 and len(
-                    getattr(args_to_return, current_field)) + 1 > number_of_valid_arguments:
+            if not ignore_append_allowed \
+                    and (isinstance(getattr(args_to_return, current_field), bool) or number_of_valid_arguments < 2
+                         and len(getattr(args_to_return, current_field)) + 1 > number_of_valid_arguments):
                 current_field = "targets"
                 number_of_valid_arguments = 2
 
             getattr(args_to_return, current_field).append(arg)
+            ignore_append_allowed = False
 
         if dashes > 0:
+            if not (arg == "ignore" or arg == "ignoregroup"):
+                ignore_append_allowed = False
+
             if arg in pacman_operations:
                 current_field, number_of_valid_arguments = append_operation(arg)
             elif arg not in pacman_options:
