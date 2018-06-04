@@ -13,6 +13,9 @@ _Tell what happens instead of the expected behavior_
 ## Possible Solution
 _Not obligatory, but suggest a fix/reason for the bug_
 
+## Version of aurman you are using
+_Output of `aurman -V` or `aurman --version`_
+
 ## Steps to Reproduce
 _Provide an unambiguous set of steps to reproduce this bug._
 
