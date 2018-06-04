@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     # install cower
     test_command(
-        "aurman -S cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+        "aurman -Syu cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
     # check if cower installed
     test_command("pacman -Qi cower")
 
