@@ -1,6 +1,9 @@
 import logging
+import sys
+import termios
 import threading
 import time
+import tty
 from subprocess import run, DEVNULL, PIPE
 from typing import Tuple, Sequence
 
@@ -196,8 +199,21 @@ def ask_user(question: str, default: bool, new_line: bool = False) -> bool:
         choices = "N/y"
 
     while True:
-        user_choice = str(input(
-            aurman_question("{} {}: ".format(question, choices), new_line=new_line, to_print=False))).strip().lower()
+        print(aurman_question("{} {}: ".format(question, choices), new_line=new_line, to_print=False),
+              end='', flush=True)
+
+        # see https://stackoverflow.com/a/36974338
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+
+        try:
+            tty.setcbreak(fd)
+            answer = sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+        print(flush=True)
+        user_choice = answer.strip().lower()
         if user_choice in yes or user_choice in no:
             return user_choice in yes
         aurman_error("That was not a valid choice!")
