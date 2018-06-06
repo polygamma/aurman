@@ -210,6 +210,24 @@ Example:
 aur_timeout=10
 ```
 
+#### Use `--show_changes` persistently without the need to specifiy it via the commandline
+create a key called `show_changes` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+show_changes
+```
+
+#### Use `--solution_way` persistently without the need to specifiy it via the commandline
+create a key called `solution_way` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+solution_way
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
