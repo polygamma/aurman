@@ -83,7 +83,8 @@ you may specify more than one package, space separated
 
 - `--do_everything`: `-u` for repo packages will also be handled by `aurman`, not by `pacman`.
 may be useful if you are using the `aurman` config to fetch repo packages from other repos than they would normally be installed from.
-this is in general **not** recommended!
+may also be useful, if one wants to confirm the installation of packages only once, also known as "full batch interaction".
+but this is in general **not** recommended, since the pacman call `-Syu` is being split to `-Sy`, do calculations, update the system
 
 - `--optimistic_versioning`: In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled
 
