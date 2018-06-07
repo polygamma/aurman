@@ -308,7 +308,9 @@ def process(args):
     solution_way = pacman_args.solution_way \
                    or 'miscellaneous' in AurmanConfig.aurman_config \
                    and 'solution_way' in AurmanConfig.aurman_config['miscellaneous']  # if --solution_way
-    do_everything = pacman_args.do_everything  # if --do_everything
+    do_everything = pacman_args.do_everything \
+                    or 'miscellaneous' in AurmanConfig.aurman_config \
+                    and 'do_everything' in AurmanConfig.aurman_config['miscellaneous']  # if --do_everything
     clean = pacman_args.clean  # if --clean
     rebuild = pacman_args.rebuild  # if --rebuild
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean

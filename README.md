@@ -228,6 +228,15 @@ Example:
 solution_way
 ```
 
+#### Use `--do_everything` persistently without the need to specifiy it via the commandline
+create a key called `do_everything` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+do_everything
+```
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
