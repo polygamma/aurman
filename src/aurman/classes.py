@@ -250,6 +250,8 @@ class Package:
         packages_names = [package_name for package_name in upstream_system.all_packages_dict]
         for possible_glob in names_to_ignore:
             return_set |= set(fnmatch.filter(packages_names, possible_glob))
+        # allow non upstream packages to be ignored, too - needed for correct replaces behavior
+        return_set |= set([strip_versioning_from_name(name) for name in names_to_ignore])
 
         if not ignored_groups_names:
             return return_set
