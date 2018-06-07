@@ -4,7 +4,7 @@ import sys
 from copy import deepcopy
 from subprocess import run, DEVNULL
 from sys import argv, stdout
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 
 from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
@@ -528,6 +528,10 @@ def process(args):
             else:
                 concrete_packages_to_install.append(package)
 
+    # dict for package replacements.
+    # replacing packages names as keys, packages names to be replaced as values
+    replaces_dict: Dict[str, str] = {}
+
     # in case of sysupgrade fetch all installed packages, of which newer versions are available
     if sysupgrade:
         installed_packages = []
@@ -550,6 +554,28 @@ def process(args):
                 if not version_comparison(upstream_package.version, "=", package.version):
                     if upstream_package not in concrete_packages_to_install:
                         concrete_packages_to_install.append(upstream_package)
+
+        # fetch packages to replace
+        if do_everything:
+            for possible_replacing_package in upstream_system.repo_packages_list:
+                for replaces in possible_replacing_package.replaces:
+                    installed_to_replace = installed_system.provided_by(replaces)
+                    if installed_to_replace:
+                        assert len(installed_to_replace) == 1
+                        package_to_replace = installed_to_replace[0]
+                        if possible_replacing_package.name not in ignored_packages_names \
+                                and package_to_replace.name not in ignored_packages_names:
+
+                            replaces_dict[possible_replacing_package.name] = package_to_replace.name
+                            if possible_replacing_package not in concrete_packages_to_install:
+                                concrete_packages_to_install.append(possible_replacing_package)
+
+                            if package_to_replace.name in upstream_system.all_packages_dict \
+                                    and upstream_system.all_packages_dict[package_to_replace.name] \
+                                    in concrete_packages_to_install:
+                                concrete_packages_to_install.remove(
+                                    upstream_system.all_packages_dict[package_to_replace.name]
+                                )
 
     # start calculating solutions
     aurman_status("calculating solutions...")
@@ -629,9 +655,15 @@ def process(args):
             # container for explicit repo deps
             as_explicit_container = set()
             for package in package_chunk:
-                if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
-                        or ((package.name in installed_system.all_packages_dict)
-                            and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
+                if package.name in sanitized_names \
+                        and package.name not in sanitized_not_to_be_removed \
+                        and package.name not in replaces_dict \
+                        or (package.name in installed_system.all_packages_dict
+                            and installed_system.all_packages_dict[package.name].install_reason
+                            == 'explicit') \
+                        or (package.name in replaces_dict
+                            and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
+                            == 'explicit'):
                     as_explicit_container.add(package.name)
 
             pacman_args_copy = deepcopy(pacman_args)
@@ -654,9 +686,16 @@ def process(args):
             package = package_chunk[0]
             try:
                 package.build(ignore_arch, rebuild)
-                if package.name in sanitized_names and package.name not in sanitized_not_to_be_removed \
-                        or ((package.name in installed_system.all_packages_dict)
-                            and (installed_system.all_packages_dict[package.name].install_reason == 'explicit')):
+                if package.name in sanitized_names \
+                        and package.name not in sanitized_not_to_be_removed \
+                        and package.name not in replaces_dict \
+                        or (package.name in installed_system.all_packages_dict
+                            and installed_system.all_packages_dict[package.name].install_reason
+                            == 'explicit') \
+                        or (package.name in replaces_dict
+                            and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
+                            == 'explicit'):
+
                     package.install(args_for_explicit, use_ask=True)
                 else:
                     package.install(args_for_dependency, use_ask=True)

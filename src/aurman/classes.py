@@ -299,12 +299,12 @@ class Package:
         :return:                    List containing the packages
         """
         if "Q" in expac_operation:
-            formatting = list("nvDHoPReGw")
+            formatting = list("nvDHoPTeGw")
             repos = []
             repo_dict = {}
         else:
             assert "S" in expac_operation
-            formatting = list("nvDHoPReGr")
+            formatting = list("nvDHoPTeGr")
             repos = Package.get_known_repos()
             # packages the user wants to install from another repo
             repo_dict = packages_from_other_sources()[1]
@@ -395,7 +395,7 @@ class Package:
         self.conflicts = conflicts  # %H
         self.optdepends = optdepends  # %o
         self.provides = provides  # %P
-        self.replaces = replaces  # %R
+        self.replaces = replaces  # %T
         self.pkgbase = pkgbase  # %e
         self.install_reason = install_reason  # %w (only with -Q)
         self.makedepends = makedepends  # aur only

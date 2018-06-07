@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from typing import Sequence, Set
+from typing import Sequence, Set, Dict
 
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, Colors
@@ -226,6 +226,10 @@ def process(args):
             else:
                 concrete_packages_to_install.append(package)
 
+    # dict for package replacements.
+    # replacing packages names as keys, packages names to be replaced as values
+    replaces_dict: Dict[str, str] = {}
+
     # in case of sysupgrade fetch all installed packages, of which newer versions are available
     if sysupgrade:
         installed_packages = []
@@ -248,6 +252,27 @@ def process(args):
                 if not version_comparison(upstream_package.version, "=", package.version):
                     if upstream_package not in concrete_packages_to_install:
                         concrete_packages_to_install.append(upstream_package)
+
+        # fetch packages to replace
+        for possible_replacing_package in upstream_system.repo_packages_list:
+            for replaces in possible_replacing_package.replaces:
+                installed_to_replace = installed_system.provided_by(replaces)
+                if installed_to_replace:
+                    assert len(installed_to_replace) == 1
+                    package_to_replace = installed_to_replace[0]
+                    if possible_replacing_package.name not in ignored_packages_names \
+                            and package_to_replace.name not in ignored_packages_names:
+
+                        replaces_dict[possible_replacing_package.name] = package_to_replace.name
+                        if possible_replacing_package not in concrete_packages_to_install:
+                            concrete_packages_to_install.append(possible_replacing_package)
+
+                        if package_to_replace.name in upstream_system.all_packages_dict \
+                                and upstream_system.all_packages_dict[package_to_replace.name] \
+                                in concrete_packages_to_install:
+                            concrete_packages_to_install.remove(
+                                upstream_system.all_packages_dict[package_to_replace.name]
+                            )
 
     # calc solutions
     if only_unfulfilled_deps:
