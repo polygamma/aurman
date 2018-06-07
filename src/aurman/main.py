@@ -475,7 +475,7 @@ def process(args):
 
     # fetching ignored packages
     ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup,
-                                                                upstream_system)
+                                                                upstream_system, installed_system, do_everything)
     # explicitly typed in names will not be ignored
     ignored_packages_names -= sanitized_names
 

@@ -222,13 +222,16 @@ class Package:
 
     @staticmethod
     def get_ignored_packages_names(ign_packages_names: Sequence[str], ign_groups_names: Sequence[str],
-                                   upstream_system: 'System') -> Set[str]:
+                                   upstream_system: 'System', installed_system: 'System',
+                                   do_everything: bool = False) -> Set[str]:
         """
         Returns the names of the ignored packages from the pacman.conf + the names from the command line
 
         :param ign_packages_names:  Names of packages to ignore
         :param ign_groups_names:    Names of groups to ignore
         :param upstream_system:     System containing the upstream packages
+        :param installed_system:    System containing the installed packages
+        :param do_everything:       if --do_everything
         :return:                    a set containing the names of the ignored packages
         """
         # ignored packages names - may contain glob patterns
@@ -251,7 +254,10 @@ class Package:
         for possible_glob in names_to_ignore:
             return_set |= set(fnmatch.filter(packages_names, possible_glob))
         # allow non upstream packages to be ignored, too - needed for correct replaces behavior
-        return_set |= set([strip_versioning_from_name(name) for name in names_to_ignore])
+        if do_everything:
+            packages_names = [package_name for package_name in installed_system.all_packages_dict]
+            for possible_glob in names_to_ignore:
+                return_set |= set(fnmatch.filter(packages_names, possible_glob))
 
         if not ignored_groups_names:
             return return_set
