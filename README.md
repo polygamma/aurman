@@ -238,6 +238,17 @@ Example:
 do_everything
 ```
 
+#### Use `--optimistic_versioning` persistently without the need to specifiy it via the commandline
+create a key called `optimistic_versioning` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+optimistic_versioning
+```
+
+> **Notice**: This is **not** recommended, since that flag should only be used if needed
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once
