@@ -1345,47 +1345,44 @@ class System:
         :param package:     The package to check for conflicts with
         :return:            List containing the conflicting packages
         """
-        name = package.name
-        version = package.version
 
         return_list = []
 
-        if name in self.all_packages_dict:
-            return_list.append(self.all_packages_dict[name])
+        if package.name in self.all_packages_dict:
+            return_list.append(self.all_packages_dict[package.name])
 
         for conflict in package.conflicts:
-            conflict_name, conflict_cmp, conflict_version = split_name_with_versioning(conflict)
+            for conflicting_package in self.provided_by(conflict):
+                if conflicting_package not in return_list:
+                    return_list.append(conflicting_package)
 
-            if conflict_name not in self.all_packages_dict:
-                continue
+        provides = list(package.provides)
+        for providing in provides[:]:
+            prov_name, prov_cmp, prov_version = split_name_with_versioning(providing)
+            if prov_name == package.name:
+                provides.remove(providing)
+        provides.append("{}={}".format(package.name, package.version))
 
-            possible_conflict_package = self.all_packages_dict[conflict_name]
+        for providing in provides:
+            prov_name, prov_cmp, prov_version = split_name_with_versioning(providing)
+            if prov_name in self.conflicts_dict:
+                possible_conflict_packages = self.conflicts_dict[prov_name]
+                for possible_conflict_package in possible_conflict_packages:
 
-            if possible_conflict_package in return_list:
-                continue
-
-            if conflict_cmp == "":
-                return_list.append(possible_conflict_package)
-            elif version_comparison(possible_conflict_package.version, conflict_cmp, conflict_version):
-                return_list.append(possible_conflict_package)
-
-        if name in self.conflicts_dict:
-            possible_conflict_packages = self.conflicts_dict[name]
-            for possible_conflict_package in possible_conflict_packages:
-
-                if possible_conflict_package in return_list:
-                    continue
-
-                for conflict in possible_conflict_package.conflicts:
-                    conflict_name, conflict_cmp, conflict_version = split_name_with_versioning(conflict)
-
-                    if conflict_name != name:
+                    if possible_conflict_package in return_list:
                         continue
 
-                    if conflict_cmp == "":
-                        return_list.append(possible_conflict_package)
-                    elif version_comparison(version, conflict_cmp, conflict_version):
-                        return_list.append(possible_conflict_package)
+                    for conflict in possible_conflict_package.conflicts:
+                        conflict_name, conflict_cmp, conflict_version = split_name_with_versioning(conflict)
+
+                        if conflict_name != prov_name:
+                            continue
+
+                        if conflict_cmp == "":
+                            return_list.append(possible_conflict_package)
+                        elif (prov_cmp == "=" or prov_cmp == "==") \
+                                and version_comparison(prov_version, conflict_cmp, conflict_version):
+                            return_list.append(possible_conflict_package)
 
         return return_list
 
