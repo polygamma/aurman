@@ -572,8 +572,10 @@ def process(args):
                     if installed_to_replace:
                         assert len(installed_to_replace) == 1
                         package_to_replace = installed_to_replace[0]
+                        # do not let packages replaces itself, e.g. mesa replaces "ati-dri" and provides "ati-dri"
                         if possible_replacing_package.name not in ignored_packages_names \
-                                and package_to_replace.name not in ignored_packages_names:
+                                and package_to_replace.name not in ignored_packages_names \
+                                and possible_replacing_package.name != package_to_replace.name:
 
                             replaces_dict[possible_replacing_package.name] = package_to_replace.name
                             if possible_replacing_package not in concrete_packages_to_install:
