@@ -1294,13 +1294,12 @@ class System:
                 else:
                     dict_to_append_to[value_name] = [package]
 
-    def provided_by(self, dep: str, provides: bool = True) -> List['Package']:
+    def provided_by(self, dep: str) -> List['Package']:
         """
         Providers for the dep
 
-        :param dep:             The dep to be provided
-        :param provides:        If deps provided via "provides" should be appended
-        :return:                List containing the providing packages
+        :param dep:     The dep to be provided
+        :return:        List containing the providing packages
         """
 
         dep_name, dep_cmp, dep_version = split_name_with_versioning(dep)
@@ -1312,10 +1311,6 @@ class System:
                 return_list.append(package)
             elif version_comparison(package.version, dep_cmp, dep_version):
                 return_list.append(package)
-
-        # needed for "replaces" checking
-        if not provides:
-            return return_list
 
         if dep_name in self.provides_dict:
             possible_packages = self.provides_dict[dep_name]
