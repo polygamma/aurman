@@ -26,9 +26,9 @@ if __name__ == '__main__':
     # install aurman
     test_command("sudo python setup.py install --optimize=1", "/home/aurman/aurman-git")
 
-    # set mirror to 30 days ago
+    # set mirror to 7 days ago
     test_command("sudo mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak")
-    d = (datetime.today() - timedelta(days=30)).date()
+    d = (datetime.today() - timedelta(days=7)).date()
     test_command('sudo sh -c "{}"'
                  ''.format("echo '"
                            "Server = https://archive.archlinux.org/repos/"
