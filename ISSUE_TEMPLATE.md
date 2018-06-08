@@ -24,4 +24,7 @@ _Provide an unambiguous set of steps to reproduce this bug._
 3.
 4.
 
+## Read the README
+_Confirm, that you have read the entire README_
+
 > **Notice**: If you do not fill out one of the fields, without mentioning **why** you left it out, the issue will be closed without any comment.
