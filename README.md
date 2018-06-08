@@ -301,6 +301,12 @@ How to install packages whose names are saved in a file with `aurman`?
 #### Answer
 You may simply use something like: `aurman -S $(cat ~/packages_names.txt | xargs)`
 
+#### Question
+Does `aurman` support ignoring packages and groups via the `pacman.conf`?
+
+#### Answer
+Yes
+
 ## Screenshots
 
 ![](https://i.imgur.com/VipYpfj.png)
