@@ -327,6 +327,12 @@ Does `aurman` support ignoring packages and groups via the `pacman.conf`?
 #### Answer
 Yes
 
+#### Question
+I get a `UnicodeEncodeError` or a `UnicodeDecodeError` when executing `aurman` - how to fix it?
+
+#### Answer
+see: https://github.com/polygamma/aurman/issues/88
+
 ## Screenshots
 
 ![](https://i.imgur.com/VipYpfj.png)
