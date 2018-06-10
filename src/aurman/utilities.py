@@ -14,6 +14,11 @@ from aurman.coloring import Colors, aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
 
 
+class SudoLoop:
+    # timeout for sudo loop
+    timeout: int = 120
+
+
 def search_and_print(names: Sequence[str], installed_system, pacman_params: str, repo: bool, aur: bool):
     """
     Searches for something and prints the results
@@ -169,7 +174,7 @@ def acquire_sudo():
         while True:
             if run("sudo -v", shell=True, stdout=DEVNULL).returncode != 0:
                 logging.error("acquire sudo failed")
-            time.sleep(120)
+            time.sleep(SudoLoop.timeout)
 
     if run("sudo -v", shell=True).returncode != 0:
         logging.error("acquire sudo failed")

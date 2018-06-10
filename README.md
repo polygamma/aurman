@@ -202,7 +202,7 @@ Example:
 cache_dir=/tmp/aurman
 ```
 
-#### Specify the timeout for AUR RPC requests
+#### Specify the timeout for AUR RPC requests in seconds
 create a key called `aur_timeout` in the section `[miscellaneous]` to do that.
 
 Example:
@@ -248,6 +248,15 @@ optimistic_versioning
 ```
 
 > **Notice**: This is **not** recommended, since that flag should only be used if needed
+
+#### Set interval in which to call `sudo -v` (sudo loop) in seconds, default is 120
+create a key called `sudo_timeout` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+sudo_timeout=120
+```
 
 ## Features
 

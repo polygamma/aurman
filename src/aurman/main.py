@@ -374,6 +374,11 @@ def process(args):
     # set keyserver
     keyserver = get_keyserver(pacman_args)
 
+    # set sudo timeout if configured by the user
+    if 'miscellaneous' in AurmanConfig.aurman_config \
+            and 'sudo_timeout' in AurmanConfig.aurman_config['miscellaneous']:
+        aurman.utilities.SudoLoop.timeout = int(AurmanConfig.aurman_config['miscellaneous']['sudo_timeout'])
+
     # change aur domain if configured by the user
     if pacman_args.domain:
         aurman.aur_utilities.aur_domain = pacman_args.domain[0]
