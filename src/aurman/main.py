@@ -600,7 +600,7 @@ def process(args):
     else:
         solutions = Package.dep_solving(concrete_packages_to_install, System(()), upstream_system)
 
-    # validates the found solutions and lets the user choose one of them, if there are more than one valid solutions
+    # validates the found solutions and lets the user choose one of them, if there is more than one valid solution
     try:
         chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
     except InvalidInput:
