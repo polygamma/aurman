@@ -27,4 +27,5 @@ package() {
     /usr/bin/python3 setup.py install --root="$pkgdir/" --optimize=1
     install -Dm644 ./bash.completion "$pkgdir/usr/share/bash-completion/completions/aurman"
     install -Dm644 ./aurman.fish "$pkgdir/usr/share/fish/vendor_completions.d/aurman.fish"
+    install -Dm644 ./aurman.zsh "$pkgdir/usr/share/zsh/site-functions/_aurman"
 }
