@@ -1801,12 +1801,16 @@ class System:
         return return_list
 
     def validate_and_choose_solution(self, solutions: List[List['Package']],
-                                     needed_packages: Sequence['Package']) -> List['Package']:
+                                     needed_packages: Sequence['Package'], upstream_system: 'System',
+                                     deep_search: bool, solution_way: bool) -> List['Package']:
         """
         Validates solutions and lets the user choose a solution
 
         :param solutions:           The solutions
         :param needed_packages:     Packages which need to be in the solutions
+        :param upstream_system:     The system containing the upstream packages
+        :param deep_search:         If --deep_search
+        :param solution_way:        If --solution_way
         :return:                    A chosen and valid solution
         """
 
@@ -1847,13 +1851,24 @@ class System:
                                             ", ".join([Colors.BOLD(Colors.RED(name)) for name in removed_names])))
 
             try:
-                user_input = int(input(aurman_question("Enter the number: ", False, False)))
+                user_input = int(input(aurman_question("Enter the number (or 0 to see every solution in detail): ",
+                                                       False, False)))
                 if 1 <= user_input <= len(valid_systems_tuples):
                     return valid_systems_tuples[user_input - 1][1]
+                # show solution details
+                elif user_input == 0:
+                    for index in range(0, len(valid_systems_tuples)):
+                        aurman_status(Colors.BOLD("Number {}".format(index + 1)) + ":", True, True)
+                        self.show_solution_differences_to_user(
+                            valid_systems_tuples[index][1], upstream_system, True, deep_search, solution_way
+                        )
+                    aurman_status("All solutions have been shown", True, True)
+
             except ValueError:
                 print(choice_not_valid)
             else:
-                print(choice_not_valid)
+                if user_input != 0:
+                    print(choice_not_valid)
 
     def repo_of_package(self, package_name: str) -> str:
         """

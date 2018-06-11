@@ -602,7 +602,9 @@ def process(args):
 
     # validates the found solutions and lets the user choose one of them, if there is more than one valid solution
     try:
-        chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install)
+        chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install,
+                                                                        upstream_system, not only_unfulfilled_deps,
+                                                                        solution_way)
     except InvalidInput:
         aurman_error("we could not find a solution")
         # if not --deep_search
