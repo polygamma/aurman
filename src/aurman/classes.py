@@ -1111,7 +1111,7 @@ class Package:
     @staticmethod
     def get_build_dir(package_dir):
         """
-        Gets the build directoy, if it is different from the package dir
+        Gets the build directory, if it is different from the package dir
 
         :param package_dir:     The package dir of the package
         :return:                The build dir in case there is one, the package dir otherwise

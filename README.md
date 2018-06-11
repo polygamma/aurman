@@ -211,7 +211,7 @@ Example:
 aur_timeout=10
 ```
 
-#### Use `--show_changes` persistently without the need to specifiy it via the commandline
+#### Use `--show_changes` persistently without the need to specify it via the commandline
 create a key called `show_changes` in the section `[miscellaneous]` to do that.
 
 Example:
@@ -220,7 +220,7 @@ Example:
 show_changes
 ```
 
-#### Use `--solution_way` persistently without the need to specifiy it via the commandline
+#### Use `--solution_way` persistently without the need to specify it via the commandline
 create a key called `solution_way` in the section `[miscellaneous]` to do that.
 
 Example:
@@ -229,7 +229,7 @@ Example:
 solution_way
 ```
 
-#### Use `--do_everything` persistently without the need to specifiy it via the commandline
+#### Use `--do_everything` persistently without the need to specify it via the commandline
 create a key called `do_everything` in the section `[miscellaneous]` to do that.
 
 Example:
@@ -238,7 +238,7 @@ Example:
 do_everything
 ```
 
-#### Use `--optimistic_versioning` persistently without the need to specifiy it via the commandline
+#### Use `--optimistic_versioning` persistently without the need to specify it via the commandline
 create a key called `optimistic_versioning` in the section `[miscellaneous]` to do that.
 
 Example:
