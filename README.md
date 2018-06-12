@@ -366,6 +366,8 @@ How to achieve `full batch interaction` with `aurman`?
 #### Answer
 Via using `--do_everything` and using `--ask` via the `aurman config`.
 
+`--do_everything` for `2*` and `--ask` for `3*` as listed [here](https://wiki.archlinux.org/index.php/AUR_helpers#Active)
+
 But there are downsides to that. See the description of `--do_everything` [here](https://github.com/polygamma/aurman#aurman-exclusive-options-for---sync-or--s)
 and the description of `--ask` [here](https://github.com/polygamma/aurman#make-use-of-the-undocumented---ask-flag-of-pacman).
 
