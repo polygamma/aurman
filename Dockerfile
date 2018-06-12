@@ -23,6 +23,10 @@ RUN sudo pacman --needed --noconfirm -Syu python reflector python-requests git p
 RUN sudo reflector --save /etc/pacman.d/mirrorlist --sort rate --age 1 --latest 10 --score 10 --number 5 --protocol http
 RUN sudo pacman --noconfirm -Syu
 
+# make use of --ask=4
+RUN mkdir -p "/home/aurman/.config/aurman/"
+RUN printf "[miscellaneous]\nuse_ask\n" > "/home/aurman/.config/aurman/aurman_config"
+
 # add files of the current branch
 ADD . /home/aurman/aurman-git
 
