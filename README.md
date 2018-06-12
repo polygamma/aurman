@@ -360,6 +360,15 @@ I get a `UnicodeEncodeError` or a `UnicodeDecodeError` when executing `aurman` -
 #### Answer
 see: https://github.com/polygamma/aurman/issues/88
 
+#### Question
+How to achieve `full batch interaction` with `aurman`?
+
+#### Answer
+Via using `--do_everything` and using `--ask` via the `aurman config`.
+
+But there are downsides to that. See the description of `--do_everything` [here](https://github.com/polygamma/aurman#aurman-exclusive-options-for---sync-or--s)
+and the description of `--ask` [here](https://github.com/polygamma/aurman#make-use-of-the-undocumented---ask-flag-of-pacman).
+
 ## Screenshots
 
 ![](https://i.imgur.com/VipYpfj.png)
