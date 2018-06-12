@@ -258,6 +258,29 @@ Example:
 sudo_timeout=120
 ```
 
+#### Make use of the undocumented `--ask` flag of `pacman`
+create a key called `use_ask` in the section `[miscellaneous]` to do that.
+
+Example:
+```ini
+[miscellaneous]
+use_ask
+```
+
+Explanation: see - https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
+
+`aurman` is going to use `--ask=4`, if this config option is set.
+That means, that the user does not have to confirm e.g. the installation of packages, or the removal of conflicting packages, again.
+"Again" - meaning again for `pacman`.
+The user still sees the overview of `aurman`, predicting what is going to happen, which the user has to confirm,
+unless using `--noconfirm`.
+To make it very clear: `aurman` is only predicting what is going to happen, in every case.
+When using `--ask=4`, it is possible, that an upcoming conflict is not detected by `aurman`, hence using `--ask=4` leading
+to the removal of a package, the user did not want to get removed.
+All in all it comes down to: "Redundant" confirmations of actions, which is less sensitive to errors, but requires more user interactions,
+or not confirming multiple times, which is more sensitive to errors.
+
+
 ## Features
 
   - threaded sudo loop in the background so you only have to enter your password once

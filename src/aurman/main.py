@@ -319,6 +319,8 @@ def process(args):
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
+    use_ask = 'miscellaneous' in AurmanConfig.aurman_config \
+              and 'use_ask' in AurmanConfig.aurman_config['miscellaneous']  # if to use --ask=4
 
     # if the default for showing changes of pkgbuilds etc. should be yes instead of no
     default_show_changes = 'miscellaneous' in AurmanConfig.aurman_config \
@@ -693,7 +695,7 @@ def process(args):
             pacman_args_copy.asdeps = True
             pacman_args_copy.asexplicit = False
             try:
-                pacman(str(pacman_args_copy), False, use_ask=True)
+                pacman(str(pacman_args_copy), False, use_ask=use_ask)
             except InvalidInput:
                 sys.exit(1)
 
@@ -714,9 +716,9 @@ def process(args):
                             and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
                             == 'explicit'):
 
-                    package.install(args_for_explicit, use_ask=True)
+                    package.install(args_for_explicit, use_ask=use_ask)
                 else:
-                    package.install(args_for_dependency, use_ask=True)
+                    package.install(args_for_dependency, use_ask=use_ask)
             except InvalidInput:
                 sys.exit(1)
 
