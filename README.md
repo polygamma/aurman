@@ -240,6 +240,8 @@ Example:
 do_everything
 ```
 
+> **Notice**: This is **not** recommended, since the usage of that flag is in general not recommended.
+
 #### Use `--optimistic_versioning` persistently without the need to specify it via the commandline
 create a key called `optimistic_versioning` in the section `[miscellaneous]` to do that.
 
