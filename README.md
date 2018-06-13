@@ -40,7 +40,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 - `-y`, `--refresh`
 - `-c`, `--clean`
 
-##### The following native pacman options for `--sync` or `-S` will also be used by aurman for aur packages:
+##### The following native pacman options for `--sync` or `-S` will also be used by aurman for AUR packages:
 
 - `--noconfirm`
 - `--needed`
@@ -68,11 +68,11 @@ It could take some time to find a solution.
 
 - `--keyserver`: Lets users specify a keyserver to fetch the PGP keys from.
 
-- `--aur`: Do things only for aur packages.
+- `--aur`: Do things only for AUR packages.
 
 - `--repo`: Do things only for regular repos.
 
-- `--domain`: Change the base url for aur requests *(https://aur.archlinux.org is the default)*
+- `--domain`: Change the base url for AUR requests *(https://aur.archlinux.org is the default)*
 
 - `--solution_way`: Print what exactly will be done, order of installing/removing packages
 
@@ -100,11 +100,11 @@ Users may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback
 By default `aurman` assumes the following priorities in case of multiple available packages with the same names (high to low):
 - Repository package as listed in the pacman.conf - see https://www.archlinux.org/pacman/pacman.conf.5.html#_repository_sections
 > The order of repositories in the configuration files matters; repositories listed first will take precedence over those listed later in the file when packages in two repositories have identical names, regardless of version number.
-- Aur packages
+- AUR packages
 
 If one wants to override this priority, it has to be done via the aurman config.
 
-For aur packages create a section  `[aur_packages]` and list the names of the aur packages.
+For AUR packages create a section  `[aur_packages]` and list the names of the AUR packages.
 
 For repo packages create a section `[repo_packages]` and list the names of the repo packages followed by `=` and the name of the repo.
 
@@ -135,7 +135,7 @@ Example:
 keyserver=hkp://ipv4.pool.sks-keyservers.net:11371
 ```
 
-#### Disable notifications about packages that are not in known repos or the aur
+#### Disable notifications about packages that are not in known repos or the AUR
 Create a key called `no_notification_unknown_packages` in the section `[miscellaneous]`.
 
 Example:
@@ -294,10 +294,10 @@ or not confirming multiple times (but more prone to errors).
   - Distinction between explicitly and implicitly installed packages.
   - Lets users see and edit all needed PKGBUILDs before starting AUR package building.
   - Fetching of needed PGP keys for package building.
-  - Pacman --search for repo and aur packages (aur results sorted by popularity).
-  - Search function supports regex for searching the aur the first span of at least two consecutive non-regex
+  - Pacman --search for repo and AUR packages (AUR results sorted by popularity).
+  - Search function supports regex for searching the AUR the first span of at least two consecutive non-regex
   characters being used. These results will be filtered by the regex expression afterwards.
-  - Differentiate between the sources of packages in case of identical names in different known repos and/or the aur.
+  - Differentiate between the sources of packages in case of identical names in different known repos and/or the AUR.
 
 ## Dependency solving description including benchmarks
 https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-solving
