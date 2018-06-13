@@ -165,7 +165,7 @@ Example:
 no_sudo_loop
 ```
 
-#### Set the default for the question: `Do you want to see the changes of x?` to yes
+#### Set the preselected answer for the question: `Do you want to see the changes of x?` to yes
 create a key called `default_show_changes` in the section `[miscellaneous]` to do that.
 
 Example:
@@ -173,6 +173,8 @@ Example:
 [miscellaneous]
 default_show_changes
 ```
+
+> **Notice**: Not setting this option retains the default, which is `no`
 
 #### Ignore a missing or incomplete arch field in the build script, which means: pass `-A` to `makepkg` during building of packages
 create a key called `ignore_arch` in the section `[miscellaneous]` to do that.
