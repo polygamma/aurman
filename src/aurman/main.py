@@ -528,7 +528,7 @@ def process(args):
             sys.exit(1)
         for package in upstream_system.devel_packages_list:
             if package.name not in ignored_packages_names:
-                package.get_devel_version()
+                package.get_devel_version(ignore_arch)
 
     # checking which packages need to be installed
     if not needed:
