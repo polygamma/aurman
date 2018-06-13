@@ -54,27 +54,27 @@ All pacman operations are supported, and calling aurman with an operation beside
 
 - `--noedit`: Will not show changes of PKGBUILDs, .install, and other relevant files. It assumes users will be okay with the changes.
 
-- `--always_edit`: Lets users edit the files of packages, even when there are no new changes.
+- `--always_edit`: Lets users edit the files of packages even when there are no new changes.
 
 - `--show_changes`: Will show changes of PKGBUILDs, .install, and other relevant files without asking.
 
 - `--devel`: Will fetch current development versions of packages to check if a new version is available.
 
 - `--deep_search`: Dependency solving will ignore currently fulfilled dependencies of users' systems and try to solve the problem for systems with zero packages installed.
-If aurman is not able to find a solution to install packages, try re-running aurman with this flag.
+If aurman is not able to find a solution when installing packages, try re-running aurman with this flag.
 It could take some time to find a solution.
 
-- `--pgp_fetch`: Fetches needed PGP keys without asking the user.
+- `--pgp_fetch`: Fetches needed PGP keys without asking users.
 
 - `--keyserver`: Lets users specify a keyserver to fetch the PGP keys from.
 
-- `--aur`: Do things only for AUR packages.
+- `--aur`: Act on AUR packages only.
 
-- `--repo`: Do things only for regular repos.
+- `--repo`: Act on regular repo packages only.
 
-- `--domain`: Change the base url for AUR requests *(https://aur.archlinux.org is the default)*
+- `--domain`: Change the base URL for AUR requests *(https://aur.archlinux.org is the default)*.
 
-- `--solution_way`: Print what exactly will be done, order of installing/removing packages
+- `--solution_way`: Print what exactly will be done (order of installing/removing packages).
 
 - `--holdpkg`: Specify packages that are installed on users' systems that must not be removed.
 Users may specify more than one package separated with spaces.
@@ -108,8 +108,8 @@ For AUR packages create a section  `[aur_packages]` and list the names of the AU
 
 For repo packages create a section `[repo_packages]` and list the names of the repo packages followed by `=` and the name of the repo.
 
-> **Notice**: Those packages will be excluded from the `pacman --sysupgrade` by `--ignore`.
-> Otherwise `pacman` would replace those packages.
+> **Notice**: These packages will be excluded from the `pacman --sysupgrade` by `--ignore`.
+> Otherwise `pacman` would replace these packages.
 
 Example:
 ```ini
@@ -165,7 +165,7 @@ Example:
 no_sudo_loop
 ```
 
-#### Set the default for the question: `Do you want to see the changes of x?` to yes.
+#### Set the default for the question: `Do you want to see the changes of x?` to `yes`.
 Create a key called `default_show_changes` in the section `[miscellaneous]`.
 
 Example:
@@ -183,7 +183,7 @@ Example:
 ignore_arch
 ```
 
-#### Set names of packages to be treated as development packages
+#### Set packages that are to be treated as development packages
 List the names of the packages in the section `[devel_packages]`.
 
 Example:
@@ -204,7 +204,7 @@ Example:
 cache_dir=/tmp/aurman
 ```
 
-#### Specify the timeout for AUR RPC requests in seconds
+#### Specify the timeout for AUR RPC requests (in seconds)
 Create a key called `aur_timeout` in the section `[miscellaneous]`.
 
 Example:
@@ -213,7 +213,7 @@ Example:
 aur_timeout=10
 ```
 
-#### Use `--show_changes` persistently without specifying via commandline.
+#### Use `--show_changes` persistently without specifying via commandline
 Create a key called `show_changes` in the section `[miscellaneous]`.
 
 Example:
@@ -222,7 +222,7 @@ Example:
 show_changes
 ```
 
-#### Use `--solution_way` persistently without specifying via commandline.
+#### Use `--solution_way` persistently without specifying via commandline
 Create a key called `solution_way` in the section `[miscellaneous]`.
 
 Example:
@@ -231,7 +231,7 @@ Example:
 solution_way
 ```
 
-#### Use `--do_everything` persistently without specifying via commandline.
+#### Use `--do_everything` persistently without specifying via commandline
 Create a key called `do_everything` in the section `[miscellaneous]`.
 
 Example:
@@ -242,7 +242,7 @@ do_everything
 
 > **Notice**: This is **not** recommended since the usage of this flag is not recommended.
 
-#### Use `--optimistic_versioning` persistently without specifying via commandline.
+#### Use `--optimistic_versioning` persistently without specifying via commandline
 Create a key called `optimistic_versioning` in the section `[miscellaneous]`.
 
 Example:
@@ -253,7 +253,7 @@ optimistic_versioning
 
 > **Notice**: This is **not** recommended since that flag should only be used when needed.
 
-#### Set interval in which to call `sudo -v` (sudo loop) in seconds (default is 120)
+#### Set interval in which to call `sudo -v` (sudo loop) (in seconds) (default is 120)
 Create a key called `sudo_timeout` in the section `[miscellaneous]`.
 
 Example:
@@ -271,17 +271,17 @@ Example:
 use_ask
 ```
 
-Explanation: see - https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
+Explanation: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
 
 `aurman` will use `--ask=4` if this config option is set.
-This means the user will not have to confirm things like the installation of packages or the removal of conflicting packages again.
+Users will not have to confirm things like the installation of packages or the removal of conflicting packages again.
 "Again" - meaning again for `pacman`.
-User will still see the overview of `aurman`, predicting what will happen, which users will have to confirm unless using `--noconfirm`.
+Users will still see the overview of `aurman`, which predicts what will happen, and users will have to confirm unless `--noconfirm` was set.
 To make clear: `aurman` will predict what will happen in every case.
 When using `--ask=4`, it may be possible that a conflict will not be detected by `aurman`. Hence, using `--ask=4` may lead
 to unintended removal of package(s).
-All in all it comes down to: "Redundant" confirmations of actions (less prone to errors but requires more user interactions)
-or not confirming multiple times (but more prone to errors).
+All in all it comes down to: "redundant" confirmations of actions (less prone to errors)
+or "not redundant" confirmations of actions (more prone to errors).
 
 
 ## Features
@@ -294,7 +294,7 @@ or not confirming multiple times (but more prone to errors).
   - Distinction between explicitly and implicitly installed packages.
   - Lets users see and edit all needed PKGBUILDs before starting AUR package building.
   - Fetching of needed PGP keys for package building.
-  - Pacman --search for repo and AUR packages (AUR results sorted by popularity).
+  - Pacman --search for repo and AUR packages (results sorted by popularity).
   - Search function supports regex for searching the AUR the first span of at least two consecutive non-regex
   characters being used. These results will be filtered by the regex expression afterwards.
   - Differentiate between the sources of packages in case of identical names in different known repos and/or the AUR.
@@ -310,9 +310,9 @@ https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
 `aurman` wants to remove packages that should not be removed - what's the matter?
 
 #### Answer
-Please check, if the problem arises, because `aurman` assumes `.so` dependencies to be unfulfilled.
-*E.g.* `libavcodec.so=57-64` which requires a specific version of the mentioned `.so`.
-This may be the case because the AUR package only lists `libavcodec.so` as being provided
+Please check as `aurman` assumes `.so` dependencies to be unfulfilled
+*e.g.* `libavcodec.so=57-64` requires a specific version of the mentioned `.so`.
+Here, the AUR package only lists `libavcodec.so` as being provided
 without specifying the version. Hence `aurman` cannot be sure if the version will match,
 since this can only be known after building the package, thus assuming that the dependency is not fulfilled.
 Users may change this behavior by yielding `--optimistic_versioning` via the command line.
@@ -322,9 +322,9 @@ the behavior of installing the packages will be undefined.
 
 This behavior may also occur when there are no `.so` dependencies involved.
 Check if the dependencies are fulfilled.
-If they are not fulfilled, because users forced installations of packages with `pacman -d`, this behavior is wanted.
+If they are not fulfilled, because users forced installations of packages with `pacman -d`, this behavior is important.
 It warns users about broken package dependencies in their systems.
-To remove this output of `aurman` users have to fulfill the dependencies.
+To remove this output of `aurman` users will have to fulfill the dependencies.
 
 
 > **Notice**: `aurman` will **never** remove packages on its own. `aurman` just **predicts** what will happen.
@@ -333,7 +333,7 @@ To remove this output of `aurman` users have to fulfill the dependencies.
 How do I change the editor used by `aurman` for editing PKGBUILDs etc.?
 
 #### Answer
-`aurman` uses the environment variables `VISUAL` and `EDITOR`. Users will have to change those variables.
+`aurman` uses the environment variables `VISUAL` and `EDITOR`. Users will have to change these variables.
 
 If `VISUAL` is set, `aurman` uses this,
 
@@ -345,7 +345,7 @@ else `aurman` resorts to `/usr/bin/nano`.
 How to install packages whose names are saved in a file with `aurman`?
 
 #### Answer
-Users may use something like: `aurman -S $(cat ~/packages_names.txt | xargs)`.
+Users may run commands like: `aurman -S $(cat ~/packages_names.txt | xargs)`.
 
 #### Question
 Does `aurman` support ignoring packages and groups via the `pacman.conf`?
