@@ -136,26 +136,35 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
 
     if not repo:
         if not os.path.isdir(Package.cache_dir):
-            aurman_error("Cache directory {} not found."
-                         "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
+            aurman_error(
+                "Cache directory {} not found.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir)))
+            )
             sys.exit(1)
 
         aurman_note("Cache directory: {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
 
         if clean_force:
             if noconfirm or \
-                    ask_user("Do you want to remove {} from cache?"
-                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all files"))), False):
+                    ask_user(
+                        "Do you want to remove {} from cache?".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all files"))),
+                        False
+                    ):
                 aurman_status("Deleting cache dir...")
-                if run("rm -rf {}".format(Package.cache_dir), shell=True, stdout=DEVNULL,
-                       stderr=DEVNULL).returncode != 0:
-                    aurman_error("Directory {} could not be deleted"
-                                 "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir))))
+                if run(
+                        "rm -rf {}".format(Package.cache_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
+                ).returncode != 0:
+                    aurman_error(
+                        "Directory {} could not be deleted".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir)))
+                    )
                     sys.exit(1)
         else:
             if noconfirm or \
-                    ask_user("Do you want to remove {} clones from cache?"
-                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all uninstalled"))), False):
+                    ask_user(
+                        "Do you want to remove {} clones from cache?".format(
+                            Colors.BOLD(Colors.LIGHT_MAGENTA("all uninstalled"))
+                        ),
+                        False
+                    ):
                 aurman_status("Deleting uninstalled clones from cache...")
 
                 # if pkgbase not available, the name of the package is the base
@@ -172,24 +181,36 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                     if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                         if thing not in dirs_to_not_delete:
                             dir_to_delete = os.path.join(Package.cache_dir, thing)
-                            if run("rm -rf {}".format(dir_to_delete), shell=True, stdout=DEVNULL,
-                                   stderr=DEVNULL).returncode != 0:
-                                aurman_error("Directory {} could not be deleted"
-                                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))))
+                            if run(
+                                    "rm -rf {}".format(dir_to_delete), shell=True, stdout=DEVNULL, stderr=DEVNULL
+                            ).returncode != 0:
+                                aurman_error(
+                                    "Directory {} could not be deleted".format(
+                                        Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))
+                                    )
+                                )
                                 sys.exit(1)
 
             if not noconfirm and \
-                    ask_user("Do you want to remove {} from cache? ({})"
-                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA("all untracked git files")),
-                                       Colors.BOLD(Colors.LIGHT_MAGENTA("even from installed packages"))), False):
+                    ask_user(
+                        "Do you want to remove {} from cache? ({})".format(
+                            Colors.BOLD(Colors.LIGHT_MAGENTA("all untracked git files")),
+                            Colors.BOLD(Colors.LIGHT_MAGENTA("even from installed packages"))
+                        ),
+                        False
+                    ):
                 aurman_status("Deleting untracked git files from cache...")
                 for thing in os.listdir(Package.cache_dir):
                     if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                         dir_to_clean = os.path.join(Package.cache_dir, thing)
-                        if run("git clean -ffdx"
-                               "", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=dir_to_clean).returncode != 0:
-                            aurman_error("Directory {} could not be cleaned"
-                                         "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_clean))))
+                        if run(
+                                "git clean -ffdx", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=dir_to_clean
+                        ).returncode != 0:
+                            aurman_error(
+                                "Directory {} could not be cleaned".format(
+                                    Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_clean))
+                                )
+                            )
                             sys.exit(1)
 
     sys.exit(0)
@@ -360,8 +381,9 @@ def process(args):
                                        'no_notification_unknown_packages' in AurmanConfig.aurman_config['miscellaneous']
     # single packages
     if 'no_notification_unknown_packages' in AurmanConfig.aurman_config:
-        concrete_no_notification_packages = set([package_name for package_name in
-                                                 AurmanConfig.aurman_config['no_notification_unknown_packages']])
+        concrete_no_notification_packages = set(
+            [package_name for package_name in AurmanConfig.aurman_config['no_notification_unknown_packages']]
+        )
     else:
         concrete_no_notification_packages = set()
 
@@ -412,8 +434,9 @@ def process(args):
     # pacman call in the beginning of the routine
     if not aur and \
             (sysupgrade and (not do_everything or pacman_args.refresh) or groups_chosen):
-        sudo_acquired, pacman_called = pacman_beginning_routine(pacman_args, groups_chosen, sudo_acquired,
-                                                                do_everything)
+        sudo_acquired, pacman_called = pacman_beginning_routine(
+            pacman_args, groups_chosen, sudo_acquired, do_everything
+        )
 
     # nothing to do for us - exit
     if not sysupgrade and not packages_of_user_names:
@@ -476,16 +499,20 @@ def process(args):
     # otherwise aurman solving cannot handle this case.
     for name in sanitized_not_to_be_removed:
         if name not in upstream_system.all_packages_dict:
-            aurman_error("Packages you want to be not removed must be aur or repo packages.\n"
-                         "   {} is not known.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+            aurman_error(
+                "Packages you want to be not removed must be aur or repo packages.\n   {} is not known.".format(
+                    Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                )
+            )
             sys.exit(1)
 
     # for dep solving not to be removed has to be treated as wanted to install
     sanitized_names |= sanitized_not_to_be_removed
 
     # fetching ignored packages
-    ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup,
-                                                                upstream_system, installed_system, do_everything)
+    ignored_packages_names = Package.get_ignored_packages_names(
+        pacman_args.ignore, pacman_args.ignoregroup, upstream_system, installed_system, do_everything
+    )
     # explicitly typed in names will not be ignored
     ignored_packages_names -= sanitized_names
 
@@ -493,22 +520,35 @@ def process(args):
     for ignored_packages_name in ignored_packages_names:
         if ignored_packages_name in upstream_system.all_packages_dict:
             if ignored_packages_name in installed_system.all_packages_dict:
-                aurman_note("{} {} package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
-                                                      Colors.BOLD(Colors.LIGHT_CYAN("installed")),
-                                                      Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+                aurman_note(
+                    "{} {} package {}".format(
+                        Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
+                        Colors.BOLD(Colors.LIGHT_CYAN("installed")),
+                        Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))
+                    )
+                )
 
                 upstream_system.all_packages_dict[ignored_packages_name] = installed_system.all_packages_dict[
-                    ignored_packages_name]
+                    ignored_packages_name
+                ]
             else:
-                aurman_note("{} {} package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
-                                                      Colors.BOLD(Colors.LIGHT_BLUE("upstream ")),
-                                                      Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+                aurman_note(
+                    "{} {} package {}".format(
+                        Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
+                        Colors.BOLD(Colors.LIGHT_BLUE("upstream ")),
+                        Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))
+                    )
+                )
 
                 del upstream_system.all_packages_dict[ignored_packages_name]
         elif ignored_packages_name in installed_system.all_packages_dict:
-            aurman_note("{} {} package {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
-                                                  Colors.BOLD(Colors.LIGHT_CYAN("installed")),
-                                                  Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))))
+            aurman_note(
+                "{} {} package {}".format(
+                    Colors.BOLD(Colors.LIGHT_MAGENTA("Ignoring")),
+                    Colors.BOLD(Colors.LIGHT_CYAN("installed")),
+                    Colors.BOLD(Colors.LIGHT_MAGENTA(ignored_packages_name))
+                )
+            )
 
     # recreating upstream system
     if ignored_packages_names:
@@ -604,9 +644,9 @@ def process(args):
 
     # validates the found solutions and lets the user choose one of them, if there is more than one valid solution
     try:
-        chosen_solution = installed_system.validate_and_choose_solution(solutions, concrete_packages_to_install,
-                                                                        upstream_system, not only_unfulfilled_deps,
-                                                                        solution_way)
+        chosen_solution = installed_system.validate_and_choose_solution(
+            solutions, concrete_packages_to_install, upstream_system, not only_unfulfilled_deps, solution_way
+        )
     except InvalidInput:
         aurman_error("we could not find a solution")
         # if not --deep_search
@@ -625,8 +665,9 @@ def process(args):
 
     # show solution to the user
     try:
-        installed_system.show_solution_differences_to_user(chosen_solution, upstream_system, noconfirm,
-                                                           not only_unfulfilled_deps, solution_way)
+        installed_system.show_solution_differences_to_user(
+            chosen_solution, upstream_system, noconfirm, not only_unfulfilled_deps, solution_way
+        )
     except InvalidInput:
         sys.exit(1)
 
@@ -687,8 +728,9 @@ def process(args):
                     as_explicit_container.add(package.name)
 
             pacman_args_copy = deepcopy(pacman_args)
-            pacman_args_copy.targets = [package.name for package in package_chunk if
-                                        package.name not in repo_packages_dict]
+            pacman_args_copy.targets = [
+                package.name for package in package_chunk if package.name not in repo_packages_dict
+            ]
 
             pacman_args_copy.targets.extend(["{}/".format(repo_packages_dict[package.name]) + package.name
                                              for package in package_chunk if package.name in repo_packages_dict])
