@@ -77,7 +77,7 @@ It could take some time to find a solution.
 - `--solution_way`: Print what exactly will be done (order of installing/removing packages).
 
 - `--holdpkg`: Specify installed packages that must not be removed.
-Separate package names with space to specify more than one packages.
+Separate package names with space to specify more than one package.
 
 - `--holdpkg_conf`: Append packages from the pacman.conf to `--holdpkg`.
 
@@ -243,7 +243,7 @@ Example:
 do_everything
 ```
 
-> **Notice**: This is **not** recommended since the usage of this flag is not recommended.
+> **Notice**: This is **not** recommended since the usage of this flag is in general not recommended.
 
 #### Use `--optimistic_versioning` persistently without specifying via commandline
 Create a key called `optimistic_versioning` in the section `[miscellaneous]`.
@@ -279,8 +279,8 @@ Explanation: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c1
 `aurman` will use `--ask=4` if this config option is set.
 You will not have to confirm things like the installation of packages or the removal of conflicting packages again.
 "Again" - meaning again for `pacman`.
-You will still see the overview of `aurman`, which predicts what will happen, and you will have to confirm unless `--noconfirm` was set.
-To make clear: `aurman` will predict what will happen in every case.
+You will still see the overview of `aurman`, which only predicts what will happen, and you will have to confirm unless `--noconfirm` was set.
+To make clear: `aurman` only predicts what will happen in every case.
 When using `--ask=4`, it may be possible that a conflict will not be detected by `aurman`. Hence, using `--ask=4` may lead
 to unintended removal of package(s).
 All in all it comes down to: "redundant" confirmations of actions (less prone to errors)
@@ -289,7 +289,7 @@ or "not redundant" confirmations of actions (more prone to errors).
 
 ## Features
 
-  - Threaded sudo loop in the background so you only have to enter their passwords once.
+  - Threaded sudo loop in the background so you only have to enter your password once.
   - Reliable dependency resolving.
   - Conflict detection.
   - Split package support.
@@ -313,8 +313,8 @@ https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
 `aurman` wants to remove packages that should not be removed - what's the matter?
 
 #### Answer
-Please check as `aurman` assumes `.so` dependencies to be unfulfilled.
-*E.g.* `libavcodec.so=57-64`, which requires a specific version of the mentioned `.so`.
+Please check, if the problem arises, because `aurman` assumes `.so` dependencies to be unfulfilled.
+*E.g.* `libavcodec.so=57-64` which requires a specific version of the mentioned `.so`.
 This may be the case because a providing AUR package only lists `libavcodec.so` as being provided
 without specifying the version. Hence `aurman` cannot be sure if the version will match,
 since this can only be known after building the package, thus assuming that the dependency is not fulfilled.
@@ -336,7 +336,7 @@ To remove this output of `aurman` you will have to fulfill the dependencies.
 How do I change the editor used by `aurman` for editing PKGBUILDs etc.?
 
 #### Answer
-`aurman` uses the environment variables `VISUAL` and `EDITOR`. You will have to change these variables.
+`aurman` uses the environment variables `VISUAL` and `EDITOR`, hence you will have to change these variables.
 
 If `VISUAL` is set, `aurman` uses this,
 
