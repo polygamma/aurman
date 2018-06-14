@@ -77,7 +77,7 @@ It could take some time to find a solution.
 - `--solution_way`: Print what exactly will be done (order of installing/removing packages).
 
 - `--holdpkg`: Specify installed packages that must not be removed.
-Separate package names with space to specify more that one packages.
+Separate package names with space to specify more than one packages.
 
 - `--holdpkg_conf`: Append packages from the pacman.conf to `--holdpkg`.
 
