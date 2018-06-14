@@ -101,8 +101,9 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
 
     if fetch_output:
         if dir_to_execute is not None:
-            pacman_return = run(pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True,
-                                cwd=dir_to_execute)
+            pacman_return = run(
+                pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True, cwd=dir_to_execute
+            )
         else:
             pacman_return = run(pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
     else:

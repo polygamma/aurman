@@ -61,12 +61,16 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
                     break
 
             if index_start == -1 or index_end - index_start < 2:
-                aurman_error("Your query {} "
-                             "contains not enough non regex chars!"
-                             "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
-                raise InvalidInput("Your query {} "
-                                   "contains not enough non regex chars!"
-                                   "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+                aurman_error(
+                    "Your query {} contains not enough non regex chars!".format(
+                        Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                    )
+                )
+                raise InvalidInput(
+                    "Your query {} contains not enough non regex chars!".format(
+                        Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                    )
+                )
 
             names_beginnings_without_regex.append(name[index_start:index_end])
 
@@ -91,17 +95,20 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
             else:
                 version = Colors.BOLD(Colors.RED(ret_dict['Version']))
 
-            first_line = "{}{} {} ({}, {})".format(repo_with_slash, name, version, ret_dict['NumVotes'],
-                                                   ret_dict['Popularity'])
+            first_line = "{}{} {} ({}, {})".format(
+                repo_with_slash, name, version, ret_dict['NumVotes'], ret_dict['Popularity']
+            )
             if ret_dict['Name'] in installed_system.all_packages_dict:
-                if version_comparison(ret_dict['Version'],
-                                      "=",
-                                      installed_system.all_packages_dict[ret_dict['Name']].version):
+                if version_comparison(
+                        ret_dict['Version'], "=", installed_system.all_packages_dict[ret_dict['Name']].version
+                ):
                     first_line += " {}".format(Colors.BOLD(Colors.CYAN("[installed]")))
                 else:
-                    first_line += " {}".format(Colors.BOLD(
-                        Colors.CYAN("[installed: {}]"
-                                    "".format(installed_system.all_packages_dict[ret_dict['Name']].version))))
+                    first_line += " {}".format(
+                        Colors.BOLD(Colors.CYAN("[installed: {}]".format(
+                            installed_system.all_packages_dict[ret_dict['Name']].version
+                        )))
+                    )
             print(first_line)
             print("    {}".format(ret_dict['Description']))
 
