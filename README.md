@@ -1,4 +1,4 @@
-# aurman - AUR helper with syntax like pacman's
+# aurman - AUR helper with almost pacman syntax
 
 ![](https://travis-ci.org/polygamma/aurman.svg?branch=master)
 
@@ -15,9 +15,9 @@ aurman < operation > [ options ] [ targets ] - see also https://www.archlinux.or
 
 ##### Description
 aurman is a **pacman wrapper**.
-All pacman operations are supported, and calling aurman with an operation besides `--sync` or `-S` will **pass the arguments to pacman**.
+All pacman operations are supported, and calling aurman with an operation besides `--sync` or `-S` **passes the arguments to pacman**.
 
-##### The following native pacman options for `--sync` or `-S` will be passed to pacman:
+##### Native pacman options for `--sync` or `-S` that are passed to pacman:
 
 - `-r`, `--root`
 - `-v`, `--verbose`
@@ -40,7 +40,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 - `-y`, `--refresh`
 - `-c`, `--clean`
 
-##### The following native pacman options for `--sync` or `-S` will also be used by aurman for AUR packages:
+##### Native pacman options for `--sync` or `-S` that are also used by aurman:
 
 - `--noconfirm`
 - `--needed`
@@ -50,23 +50,23 @@ All pacman operations are supported, and calling aurman with an operation beside
 - `-u`, `--sysupgrade`
 - `-c`, `--clean`
 
-##### The following options are exclusive to aurman for `--sync` or `-S`:
+##### Options for `--sync` or `-S` exclusive to aurman:
 
-- `--noedit`: Will not show changes of PKGBUILDs, .install, and other relevant files. It assumes users will be okay with the changes.
+- `--noedit`: Do not show changes of PKGBUILDs, .install, and other relevant files. It assumes users will be okay with the changes.
 
-- `--always_edit`: Lets users edit the files of packages even when there are no new changes.
+- `--always_edit`: Edit the files of packages even when there are no new changes.
 
-- `--show_changes`: Will show changes of PKGBUILDs, .install, and other relevant files without asking.
+- `--show_changes`: Show changes of PKGBUILDs, .install, and other relevant files without asking.
 
-- `--devel`: Will fetch current development versions of packages to check if a new version is available.
+- `--devel`: Fetch current development versions of packages to check if a new version is available.
 
-- `--deep_search`: Dependency solving will ignore currently fulfilled dependencies of users' systems and try to solve the problem for systems with zero packages installed.
-If aurman is not able to find a solution when installing packages, try re-running aurman with this flag.
+- `--deep_search`: Dependency solving will ignore currently fulfilled dependencies and try to solve the problem for systems with zero packages installed.
+If aurman is not able to find a solution, try re-running with this flag.
 It could take some time to find a solution.
 
-- `--pgp_fetch`: Fetches needed PGP keys without asking users.
+- `--pgp_fetch`: Fetch needed PGP keys without asking user.
 
-- `--keyserver`: Lets users specify a keyserver to fetch the PGP keys from.
+- `--keyserver`: Specify a keyserver to fetch the PGP keys from.
 
 - `--aur`: Act on AUR packages only.
 
@@ -76,16 +76,17 @@ It could take some time to find a solution.
 
 - `--solution_way`: Print what exactly will be done (order of installing/removing packages).
 
-- `--holdpkg`: Specify packages that are installed on users' systems that must not be removed.
-Users may specify more than one package separated with spaces.
+- `--holdpkg`: Specify installed packages that must not be removed.
+Separate package names with space to specify more that one packages.
 
 - `--holdpkg_conf`: Append packages from the pacman.conf to `--holdpkg`.
 
-- `--do_everything`: `-u` for repo packages will be handled by `aurman`, not by `pacman`.
-May be useful if (1) users use the `aurman` config to fetch repo packages from other repos than they would normally be installed from or
-if (2) users want to confirm the installation of packages only once ("full batch interaction").
-But this is **not** recommended since the pacman call `-Syu` will be split to `-Sy`, to do calculations, and to update the system.
-With `aurman` handling `-u`, it still may result with a partial upgrade, not just because of splitting `-Syu`,
+- `--do_everything`: `-u` for repo packages will be handled by `aurman` and not `pacman`.
+May be useful if (1) the `aurman` config is used to fetch repo packages from other repos than they would normally be installed from or
+if (2) you want to confirm the installation of packages only once ("full batch interaction").
+This is **not** recommended since the pacman call `-Syu` is executed in this
+order: split to `-Sy`, do calculations, and upgrade the system.
+With `aurman` handling `-u`, it still may result in a partial upgrade, not just because of splitting `-Syu`,
 but because the dependency solver of `aurman` may yield wrong results.
 
 - `--optimistic_versioning`: In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled.
@@ -93,7 +94,7 @@ but because the dependency solver of `aurman` may yield wrong results.
 - `--rebuild`: Always rebuild packages before installing them.
 
 ## Config
-Users may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback to `~/.config/aurman` in case of no `$XDG_CONFIG_HOME`) as config for aurman.
+You may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback to `~/.config/aurman` in case of no `$XDG_CONFIG_HOME`) as config for aurman.
 
 ### Config Options
 #### Choose between multiple package sources
@@ -102,7 +103,7 @@ By default `aurman` assumes the following priorities in case of multiple availab
 > The order of repositories in the configuration files matters; repositories listed first will take precedence over those listed later in the file when packages in two repositories have identical names, regardless of version number.
 - AUR packages
 
-If one wants to override this priority, it has to be done via the aurman config.
+Overriding this priority has to be done via the aurman config.
 
 For AUR packages create a section  `[aur_packages]` and list the names of the AUR packages.
 
@@ -310,9 +311,9 @@ https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
 `aurman` wants to remove packages that should not be removed - what's the matter?
 
 #### Answer
-Please check as `aurman` assumes `.so` dependencies to be unfulfilled
-*e.g.* `libavcodec.so=57-64` requires a specific version of the mentioned `.so`.
-Here, the AUR package only lists `libavcodec.so` as being provided
+Please check as `aurman` assumes `.so` dependencies to be unfulfilled.
+*E.g.* `libavcodec.so=57-64`, which requires a specific version of the mentioned `.so`.
+This may be the case because a providing AUR package only lists `libavcodec.so` as being provided
 without specifying the version. Hence `aurman` cannot be sure if the version will match,
 since this can only be known after building the package, thus assuming that the dependency is not fulfilled.
 Users may change this behavior by yielding `--optimistic_versioning` via the command line.
@@ -321,8 +322,8 @@ However, users should make sure that the version is going to be the needed one, 
 the behavior of installing the packages will be undefined.
 
 This behavior may also occur when there are no `.so` dependencies involved.
-Check if the dependencies are fulfilled.
-If they are not fulfilled, because users forced installations of packages with `pacman -d`, this behavior is important.
+Check if the dependencies are *really* fulfilled.
+If they are not, because users forced installations of packages with `pacman -d`, this behavior is explicitly wanted.
 It warns users about broken package dependencies in their systems.
 To remove this output of `aurman` users will have to fulfill the dependencies.
 
