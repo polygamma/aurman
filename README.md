@@ -52,7 +52,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 
 ##### Options for `--sync` or `-S` exclusive to aurman:
 
-- `--noedit`: Do not show changes of PKGBUILDs, .install, and other relevant files. It assumes users will be okay with the changes.
+- `--noedit`: Do not show changes of PKGBUILDs, .install, and other relevant files. It assumes you will be okay with the changes.
 
 - `--always_edit`: Edit the files of packages even when there are no new changes.
 
@@ -64,7 +64,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 If aurman is not able to find a solution, try re-running with this flag.
 It could take some time to find a solution.
 
-- `--pgp_fetch`: Fetch needed PGP keys without asking user.
+- `--pgp_fetch`: Fetch needed PGP keys without asking.
 
 - `--keyserver`: Specify a keyserver to fetch the PGP keys from.
 
@@ -124,9 +124,9 @@ other_repo_package_name=repo_two
 ```
 
 #### PGP fetching keyserver
-Users may specify the keyserver for PGP fetching in the config instead of yielding it via command line.
+You may specify the keyserver for PGP fetching in the config instead of yielding it via commandline.
 
-> **Notice**: Command line overrides config.
+> **Notice**: Commandline overrides config.
 
 Create a key called `keyserver` in the section `[miscellaneous]`.
 
@@ -145,7 +145,7 @@ Example:
 no_notification_unknown_packages
 ```
 
-Users may also disable the notification for certain packages.
+You may also disable the notification for certain packages.
 
 Create a section `[no_notification_unknown_packages]` and list the names of the packages.
 
@@ -275,9 +275,9 @@ use_ask
 Explanation: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
 
 `aurman` will use `--ask=4` if this config option is set.
-Users will not have to confirm things like the installation of packages or the removal of conflicting packages again.
+You will not have to confirm things like the installation of packages or the removal of conflicting packages again.
 "Again" - meaning again for `pacman`.
-Users will still see the overview of `aurman`, which predicts what will happen, and users will have to confirm unless `--noconfirm` was set.
+You will still see the overview of `aurman`, which predicts what will happen, and you will have to confirm unless `--noconfirm` was set.
 To make clear: `aurman` will predict what will happen in every case.
 When using `--ask=4`, it may be possible that a conflict will not be detected by `aurman`. Hence, using `--ask=4` may lead
 to unintended removal of package(s).
@@ -287,13 +287,13 @@ or "not redundant" confirmations of actions (more prone to errors).
 
 ## Features
 
-  - Threaded sudo loop in the background so users only have to enter their passwords once.
+  - Threaded sudo loop in the background so you only have to enter their passwords once.
   - Reliable dependency resolving.
   - Conflict detection.
   - Split package support.
   - Development package support.
   - Distinction between explicitly and implicitly installed packages.
-  - Lets users see and edit all needed PKGBUILDs before starting AUR package building.
+  - Lets you see and edit all needed PKGBUILDs before starting AUR package building.
   - Fetching of needed PGP keys for package building.
   - Pacman --search for repo and AUR packages (results sorted by popularity).
   - Search function supports regex for searching the AUR the first span of at least two consecutive non-regex
@@ -316,16 +316,16 @@ Please check as `aurman` assumes `.so` dependencies to be unfulfilled.
 This may be the case because a providing AUR package only lists `libavcodec.so` as being provided
 without specifying the version. Hence `aurman` cannot be sure if the version will match,
 since this can only be known after building the package, thus assuming that the dependency is not fulfilled.
-Users may change this behavior by yielding `--optimistic_versioning` via the command line.
+You may change this behavior by yielding `--optimistic_versioning` via the commandline.
 Now, `aurman` assumes the dependency will be fulfilled.
-However, users should make sure that the version is going to be the needed one, otherwise
+However, you should make sure that the version is going to be the needed one, otherwise
 the behavior of installing the packages will be undefined.
 
 This behavior may also occur when there are no `.so` dependencies involved.
 Check if the dependencies are *really* fulfilled.
-If they are not, because users forced installations of packages with `pacman -d`, this behavior is explicitly wanted.
-It warns users about broken package dependencies in their systems.
-To remove this output of `aurman` users will have to fulfill the dependencies.
+If they are not, because you forced installations of packages with `pacman -d`, this behavior is explicitly wanted.
+It warns you about broken package dependencies in the system.
+To remove this output of `aurman` you will have to fulfill the dependencies.
 
 
 > **Notice**: `aurman` will **never** remove packages on its own. `aurman` just **predicts** what will happen.
@@ -334,7 +334,7 @@ To remove this output of `aurman` users will have to fulfill the dependencies.
 How do I change the editor used by `aurman` for editing PKGBUILDs etc.?
 
 #### Answer
-`aurman` uses the environment variables `VISUAL` and `EDITOR`. Users will have to change these variables.
+`aurman` uses the environment variables `VISUAL` and `EDITOR`. You will have to change these variables.
 
 If `VISUAL` is set, `aurman` uses this,
 
@@ -346,7 +346,7 @@ else `aurman` resorts to `/usr/bin/nano`.
 How to install packages whose names are saved in a file with `aurman`?
 
 #### Answer
-Users may run commands like: `aurman -S $(cat ~/packages_names.txt | xargs)`.
+You may run commands like: `aurman -S $(cat ~/packages_names.txt | xargs)`.
 
 #### Question
 Does `aurman` support ignoring packages and groups via the `pacman.conf`?
