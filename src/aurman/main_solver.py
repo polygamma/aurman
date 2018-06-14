@@ -41,11 +41,14 @@ def sanitize_user_input(user_input: Sequence[str], system: 'System') -> Set[str]
             if dep_name in providers_names:
                 sanitized_names.add(dep_name)
             else:
-                aurman_error("Multiple providers found for {}\n"
-                             "None of the providers has the name "
-                             "of the dep without versioning.\n"
-                             "The providers are: {}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name)), ", ".join(
-                    [system.repo_of_package(provider_for_name) for provider_for_name in providers_names])))
+                aurman_error(
+                    "Multiple providers found for {}\n"
+                    "None of the providers has the name of the dep without versioning.\n"
+                    "The providers are: {}".format(
+                        Colors.BOLD(Colors.LIGHT_MAGENTA(name)),
+                        ", ".join([system.repo_of_package(provider_for_name) for provider_for_name in providers_names])
+                    )
+                )
                 sys.exit(1)
 
     return sanitized_names
@@ -90,7 +93,8 @@ def process(args):
     sysupgrade_force = sysupgrade and not isinstance(sysupgrade, bool)  # if -u -u or --sysupgrade --sysupgrade
     no_notification_unknown_packages = 'miscellaneous' in AurmanConfig.aurman_config \
                                        and 'no_notification_unknown_packages' in AurmanConfig.aurman_config[
-                                           'miscellaneous']
+                                           'miscellaneous'
+                                       ]
     concrete_no_notification_packages = set()
     if 'no_notification_unknown_packages' in AurmanConfig.aurman_config:
         for package_name in AurmanConfig.aurman_config['no_notification_unknown_packages']:
@@ -172,16 +176,21 @@ def process(args):
     # otherwise aurman solving cannot handle this case.
     for name in sanitized_not_to_be_removed:
         if name not in upstream_system.all_packages_dict:
-            aurman_error("Packages you want to be not removed must be aur or repo packages.\n"
-                         "   {} is not known.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+            aurman_error(
+                "Packages you want to be not removed must be aur or repo packages.\n"
+                "   {} is not known.".format(
+                    Colors.BOLD(Colors.LIGHT_MAGENTA(name))
+                )
+            )
             sys.exit(1)
 
     # for dep solving not to be removed has to be treated as wanted to install
     sanitized_names |= sanitized_not_to_be_removed
 
     # fetching ignored packages
-    ignored_packages_names = Package.get_ignored_packages_names(pacman_args.ignore, pacman_args.ignoregroup,
-                                                                upstream_system, installed_system, True)
+    ignored_packages_names = Package.get_ignored_packages_names(
+        pacman_args.ignore, pacman_args.ignoregroup, upstream_system, installed_system, True
+    )
     # explicitly typed in names will not be ignored
     ignored_packages_names -= sanitized_names
     for ignored_packages_name in ignored_packages_names:
