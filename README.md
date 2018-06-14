@@ -166,8 +166,7 @@ Example:
 no_sudo_loop
 ```
 
-#### Set the default for the question: `Do you want to see the changes of x?` to `yes`.
-Create a key called `default_show_changes` in the section `[miscellaneous]`.
+#### Set the preselected answer for the question: `Do you want to see the changes of x?` to `yes`.
 
 Example:
 ```ini
