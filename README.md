@@ -167,12 +167,15 @@ no_sudo_loop
 ```
 
 #### Set the preselected answer for the question: `Do you want to see the changes of x?` to `yes`.
+Create a key called `default_show_changes` in the section `[miscellaneous]`.
 
 Example:
 ```ini
 [miscellaneous]
 default_show_changes
 ```
+
+> **Notice**: Not setting this option retains the default, which is no.
 
 #### Ignore missing or incomplete arch fields in the build script, (passing `-A` to `makepkg` during package building)
 Create a key called `ignore_arch` in the section `[miscellaneous]`.
