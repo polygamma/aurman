@@ -19,8 +19,10 @@ def read_config() -> 'configparser.ConfigParser':
     :return:    The aurman config
     """
     # config dir
-    config_dir = os.path.join(os.environ.get("XDG_CONFIG_HOME", os.path.expanduser(os.path.join("~", ".config"))),
-                              "aurman")
+    config_dir = os.path.join(
+        os.environ.get("XDG_CONFIG_HOME", os.path.expanduser(os.path.join("~", ".config"))),
+        "aurman"
+    )
     config_file = os.path.join(config_dir, "aurman_config")
 
     # create config dir if it does not exist
