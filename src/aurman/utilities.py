@@ -4,7 +4,7 @@ import termios
 import threading
 import time
 import tty
-from subprocess import run, DEVNULL, PIPE
+from subprocess import run, DEVNULL, PIPE, STDOUT
 from typing import Tuple, Sequence
 
 import regex
@@ -18,6 +18,39 @@ class SudoLoop:
     # timeout for sudo loop
     timeout: int = 120
 
+def get_package_info(name: str):
+    """
+    Return package information
+
+    :param name Package name
+    :return A dictionary with info values returned by pacman or by get_aur_info
+    """
+
+    result = run(["pacman", "-Si", name], stdout=PIPE, stderr=STDOUT).stdout.decode('utf-8')
+
+    # package was not found in arch repo, so we should look for it in the AUR
+    if "not found" in result:
+        result = get_aur_info([name])
+        if result == []: result = {}
+        else:            result = result[0]
+    # parse the output of pacman
+    else:
+        lines = result.split('\n')
+        result = {}
+
+        for line in lines:
+            elems = line.split(':')
+
+            if elems[0].rstrip() == "URL":
+                result[elems[0].rstrip()] = elems[1].rstrip().lstrip() + elems[2].rstrip().lstrip()
+            elif len(elems) >= 2:
+                # if it starts with a space it means it's padded so it belongs to optional deps
+                if elems[0][0] == ' ':
+                    result['Optional Deps'] += " " + elems[0].rstrip().lstrip()
+                else:
+                    result[elems[0].rstrip()] = elems[1].rstrip().lstrip()
+
+    return result
 
 def search_and_print(names: Sequence[str], installed_system, pacman_params: str, repo: bool, aur: bool):
     """
