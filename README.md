@@ -370,7 +370,7 @@ Use `--do_everything` and `--ask` via the `aurman config`.
 
 `--do_everything` for `2*` and `--ask` for `3*` as listed [here](https://wiki.archlinux.org/index.php/AUR_helpers#Active)
 
-But there are downsides to this. See the description of `--do_everything` [here](https://github.com/polygamma/aurman#aurman-exclusive-options-for---sync-or--s)
+But there are downsides to this. See the description of `--do_everything` [here](https://github.com/polygamma/aurman#options-for---sync-or--s-exclusive-to-aurman)
 and the description of `--ask` [here](https://github.com/polygamma/aurman#make-use-of-the-undocumented---ask-flag-of-pacman).
 
 ## Screenshots
