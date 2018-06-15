@@ -13,7 +13,7 @@ from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args, PacmanArgs
 from aurman.parsing_config import read_config, packages_from_other_sources, AurmanConfig
-from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user
+from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user, get_package_info
 from aurman.wrappers import pacman, expac, pacman_conf
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -241,6 +241,18 @@ def search_packages(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]
 
     sys.exit(0)
 
+def packages_info(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]):
+    """
+    print packages information, -Si
+    :param pacman_args: the parsed arguments
+    :param packages_of_user_names: packages to show info for
+    """
+
+    for package_name in packages_of_user_names:
+        info = get_package_info(package_name)
+        print (info)
+
+    sys.exit(0)
 
 def get_groups_to_install(packages_of_user_names: List[str], aur: bool) -> List[str]:
     """
@@ -329,6 +341,7 @@ def process(args):
     pgp_fetch = pacman_args.pgp_fetch  # if --pgp_fetch
     noconfirm = pacman_args.noconfirm  # if --noconfirm
     search = pacman_args.search  # if --search
+    info = pacman_args.info # if --info
     solution_way = pacman_args.solution_way \
                    or 'miscellaneous' in AurmanConfig.aurman_config \
                    and 'solution_way' in AurmanConfig.aurman_config['miscellaneous']  # if --solution_way
@@ -426,6 +439,10 @@ def process(args):
     # if user just wants to search
     if search:
         search_packages(pacman_args, packages_of_user_names, repo, aur)
+
+    # if user just wants package info
+    if info:
+        packages_info(pacman_args, packages_of_user_names)
 
     # groups are for pacman
     # removes found groups from packages_of_user_names
