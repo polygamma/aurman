@@ -250,7 +250,12 @@ def packages_info(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]):
 
     for package_name in packages_of_user_names:
         info = get_package_info(package_name)
-        print (info)
+        if info == {}:
+            print ("Error: package {} not found".format(package_name))
+        else:
+            for key in info:
+                print ("{}: {}".format(key.ljust(15), info[key]))
+        print ()
 
     sys.exit(0)
 
