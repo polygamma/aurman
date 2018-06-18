@@ -1,4 +1,5 @@
 import logging
+import shlex
 import sys
 import termios
 import threading
@@ -34,12 +35,7 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
         return
 
     if not aur:
-        # escape for pacman
-        to_escape = list("()+?|{}")
-        for char in to_escape:
-            pacman_params = pacman_params.replace(char, "\{}".format(char))
-
-        run("pacman {}".format(pacman_params), shell=True)
+        run(["pacman"] + shlex.split(pacman_params))
 
     if not repo:
         # see: https://docs.python.org/3/howto/regex.html

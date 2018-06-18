@@ -294,7 +294,7 @@ class Package:
         return [db.name for db in PacmanConfig(conf="/etc/pacman.conf").initialize_alpm().get_syncdbs()]
 
     @staticmethod
-    def get_packages_from_expac(expac_operation: str, packages_names: Sequence[str], packages_type: PossibleTypes) -> \
+    def get_packages_from_expac(expac_operation: str, packages_names: List[str], packages_type: PossibleTypes) -> \
             List['Package']:
         """
         Generates and returns packages from an expac query.
@@ -1252,13 +1252,13 @@ class System:
 
         :return:    A list containing the installed packages
         """
-        repo_packages_names = set(expac("-S", ('n',), ()))
+        repo_packages_names = set(expac("-S", ['n'], []))
 
         # packages the user wants to install from aur
         aur_names = packages_from_other_sources()[0]
         repo_packages_names -= aur_names
 
-        installed_packages_names = set(expac("-Q", ('n',), ()))
+        installed_packages_names = set(expac("-Q", ['n'], []))
         installed_repo_packages_names = installed_packages_names & repo_packages_names
         unclassified_installed_names = installed_packages_names - installed_repo_packages_names
 
@@ -1306,7 +1306,7 @@ class System:
 
         :return:    A list containing the current repo packages
         """
-        return Package.get_packages_from_expac("-S", (), PossibleTypes.REPO_PACKAGE)
+        return Package.get_packages_from_expac("-S", [], PossibleTypes.REPO_PACKAGE)
 
     def __init__(self, packages: Sequence['Package']):
         self.all_packages_dict = {}  # names as keys and packages as values

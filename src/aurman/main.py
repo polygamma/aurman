@@ -77,9 +77,9 @@ def show_version() -> None:
     """
     # remove colors in case of not terminal
     if stdout.isatty():
-        aurman_note(expac("-Q", ("v",), ("aurman-git", "aurman"))[0])
+        aurman_note(expac("-Q", ["v"], ["aurman-git", "aurman"])[0])
     else:
-        print(expac("-Q", ("v",), ("aurman-git", "aurman"))[0])
+        print(expac("-Q", ["v"], ["aurman-git", "aurman"])[0])
     sys.exit(0)
 
 
@@ -170,7 +170,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                 aurman_status("Deleting uninstalled clones from cache...")
 
                 # if pkgbase not available, the name of the package is the base
-                expac_returns = expac("-Q -1", ("e", "n"), ())
+                expac_returns = expac("-Q1", ["e", "n"], [])
                 dirs_to_not_delete = set()
                 for expac_return in expac_returns:
                     pkgbase = expac_return.split("?!")[0]
