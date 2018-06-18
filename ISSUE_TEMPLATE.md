@@ -28,6 +28,6 @@ _Provide an unambiguous set of steps to reproduce this bug._
 _Confirm, that you have read the entire README_
 
 ## Running linux distribution
-_Output of `cat /etc/*-release`_
+_Write, which linux distribution you are using. If you are using anything besides Arch Linux, e.g. Antergos or Manjaro, you may simply not submit this issue, because those are unsupported._
 
 > **Notice**: If you do not fill out one of the fields, without mentioning **why** you left it out, the issue will be closed without any comment.
