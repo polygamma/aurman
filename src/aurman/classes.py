@@ -1017,7 +1017,7 @@ class Package:
                 universal_newlines=True
             ).stdout.strip()
 
-            with open(last_commit_hash_file, "w") as f:
+            with open(last_commit_hash_file, 'w') as f:
                 f.write(empty_tree_hash)
 
         current_commit_hash = run(
@@ -1025,7 +1025,7 @@ class Package:
         ).stdout.strip()
 
         # if files have been reviewed
-        with open(last_commit_hash_file, "r") as f:
+        with open(last_commit_hash_file, 'r') as f:
             last_seen_hash = f.read().strip()
 
         # do not return if always_edit is true
@@ -1104,7 +1104,7 @@ class Package:
             # fetch pgp keys
             self.search_and_fetch_pgp_keys(fetch_always, keyserver)
 
-            with open(last_commit_hash_file, "w") as f:
+            with open(last_commit_hash_file, 'w') as f:
                 f.write(current_commit_hash)
 
         else:
