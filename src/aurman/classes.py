@@ -917,9 +917,9 @@ class Package:
         # repo has never been fetched
         else:
             # create package dir
-            if run(
-                    "install -dm700 '{}'".format(package_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode != 0:
+            try:
+                os.makedirs(package_dir, mode=0o700, exist_ok=True)
+            except:
                 logging.error("Creating package dir of {} failed".format(self.name))
                 raise InvalidInput("Creating package dir of {} failed".format(self.name))
 
@@ -1000,12 +1000,11 @@ class Package:
             raise InvalidInput("Package dir of {} does not exist".format(self.name))
 
         # if aurman dir does not exist - create
-        if not os.path.isdir(git_aurman_dir):
-            if run(
-                    "install -dm700 '{}'".format(git_aurman_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode != 0:
-                logging.error("Creating git_aurman_dir of {} failed".format(self.name))
-                raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
+        try:
+            os.makedirs(git_aurman_dir, mode=0o700, exist_ok=True)
+        except:
+            logging.error("Creating git_aurman_dir of {} failed".format(self.name))
+            raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
 
         # if last commit seen hash file does not exist - create
         if not os.path.isfile(last_commit_hash_file):

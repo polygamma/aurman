@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import sys
 from copy import deepcopy
 from subprocess import run, DEVNULL
@@ -20,6 +21,11 @@ from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
 
+def rmtree_onerror(*args):
+    aurman_error(
+        "Directory {} could not be deleted".format(Colors.BOLD(Colors.LIGHT_MAGENTA(path)))
+    )
+    sys.exit(1)
 
 def readconfig() -> None:
     """
@@ -152,13 +158,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                         False
                     ):
                 aurman_status("Deleting cache dir...")
-                if run(
-                        "rm -rf {}".format(Package.cache_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-                ).returncode != 0:
-                    aurman_error(
-                        "Directory {} could not be deleted".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir)))
-                    )
-                    sys.exit(1)
+                shutil.rmtree(Package.cache_dir, onerror=rmtree_onerror)
         else:
             if noconfirm or \
                     ask_user(
@@ -182,16 +182,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                 for thing in os.listdir(Package.cache_dir):
                     if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                         if thing not in dirs_to_not_delete:
-                            dir_to_delete = os.path.join(Package.cache_dir, thing)
-                            if run(
-                                    "rm -rf {}".format(dir_to_delete), shell=True, stdout=DEVNULL, stderr=DEVNULL
-                            ).returncode != 0:
-                                aurman_error(
-                                    "Directory {} could not be deleted".format(
-                                        Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))
-                                    )
-                                )
-                                sys.exit(1)
+                            shutil.rmtree(os.path.join(Package.cache_dir, thing))
 
             if not noconfirm and \
                     ask_user(
