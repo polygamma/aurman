@@ -90,12 +90,12 @@ def redirect_pacman(pacman_args: 'PacmanArgs', args: List[str]) -> None:
     :param args: the args unparsed
     """
     try:
+        cmd = ["pacman"]
         if pacman_args.operation in [
             PacmanOperations.UPGRADE, PacmanOperations.REMOVE, PacmanOperations.DATABASE, PacmanOperations.FILES
         ]:
-            run("sudo pacman {}".format(" ".join(["'{}'".format(arg) for arg in args])), shell=True)
-        else:
-            run("pacman {}".format(" ".join(["'{}'".format(arg) for arg in args])), shell=True)
+            cmd = ["sudo", "pacman"]
+        run(cmd + args)
     except InvalidInput:
         sys.exit(1)
 
@@ -197,7 +197,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                     if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                         dir_to_clean = os.path.join(Package.cache_dir, thing)
                         if run(
-                                "git clean -ffdx", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=dir_to_clean
+                                ["git", "clean", "-qffdx"], stderr=DEVNULL, cwd=dir_to_clean
                         ).returncode != 0:
                             aurman_error(
                                 "Directory {} could not be cleaned".format(
