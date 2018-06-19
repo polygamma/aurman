@@ -179,7 +179,7 @@ def acquire_sudo():
 
     def sudo_loop():
         while True:
-            if run("sudo -v", shell=True, stdout=DEVNULL).returncode != 0:
+            if run("sudo --non-interactive -v", shell=True, stdout=DEVNULL).returncode != 0:
                 logging.error("acquire sudo failed")
             time.sleep(SudoLoop.timeout)
 
