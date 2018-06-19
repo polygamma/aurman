@@ -58,15 +58,17 @@ def expac(option: str, formatting: Sequence[str], targets: List[str]) -> List[st
                         the formatters are joined by '?!', so ('n', 'v') becomes %n?!%v in the output
     """
 
-    cmd = ["expac", option, "?!".join(["%{}".format(formatter) for formatter in formatting])] + targets
+    cmd = ["expac", option, "?!".join(["%{}".format(formatter) for formatter in formatting])]
+    if targets:
+        cmd += "-"
 
     return_list = []
 
-    expac_return = run(cmd, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+    expac_return = run(cmd, input='\n'.join(targets), stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
     if expac_return.returncode != 0:
         query_stringified = ' '.join(shlex.quote(i) for i in cmd[1:])
-        logging.error("expac query {} failed".format(query_stringified))
-        raise InvalidInput("expac query {} failed".format(query_stringified))
+        logging.error("expac query {} for targets {} failed".format(query_stringified, targets))
+        raise InvalidInput("expac query {} for targets {} failed".format(query_stringified, targets))
 
     return expac_return.stdout.strip().splitlines()
 
