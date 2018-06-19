@@ -12,13 +12,14 @@ import regex
 from aurman.aur_utilities import get_aur_info
 from aurman.coloring import Colors, aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
+from aurman.wrappers import expac
 
 
 class SudoLoop:
     # timeout for sudo loop
     timeout: int = 120
 
-def get_package_info(name: str):
+def get_package_info(name: str, repo: bool, aur: bool):
     """
     Return package information
 
@@ -26,29 +27,47 @@ def get_package_info(name: str):
     :return A dictionary with info values returned by pacman or by get_aur_info
     """
 
-    result = run(["pacman", "-Si", name], stdout=PIPE, stderr=STDOUT).stdout.decode('utf-8')
+    DELIMITER = "?!"          # expac standard delimiter for fields
+    LIST_DELIMITER = "@list@" # some random chars to delimit lists
+    EXPAC_TEMPLATE = [
+        "Package name",
+        "Version",
+        "Description",
+        "Architecture",
+        "URL",
+        "License",
+        "Groups",
+        "Provides",
+        "Depends on",
+        "Optional deps",
+        "Conflicts with",
+        "Replaces",
+        "Install size",
+        "Packager name",
+        "Build date",
+        "Validation"
+    ]
 
-    # package was not found in arch repo, so we should look for it in the AUR
-    if "not found" in result:
-        result = get_aur_info([name])
-        if result == []: result = {}
-        else:            result = result[0]
-    # parse the output of pacman
-    else:
-        lines = result.split('\n')
+    # You don't want both for sure
+    if repo and aur: return {}
+
+    # Fetch the package from standard repo
+    if repo:
+        formatting = list("nvdauLGPEoHTmpbV")
+        expac_output = expac("-S -l \"{}\" -v".format(LIST_DELIMITER),
+                            formatting,
+                            [name])[0]
+
         result = {}
+        expac_output = expac_output.split(DELIMITER)
+        for i in range(len(expac_output)):
+            result[EXPAC_TEMPLATE[i]] = ' '.join(expac_output[i].split(LIST_DELIMITER))
 
-        for line in lines:
-            elems = line.split(':')
-
-            if elems[0].rstrip() == "URL":
-                result[elems[0].rstrip()] = elems[1].rstrip().lstrip() + elems[2].rstrip().lstrip()
-            elif len(elems) >= 2:
-                # if it starts with a space it means it's padded so it belongs to optional deps
-                if elems[0][0] == ' ':
-                    result['Optional Deps'] += " " + elems[0].rstrip().lstrip()
-                else:
-                    result[elems[0].rstrip()] = elems[1].rstrip().lstrip()
+    # Get it from AUR
+    if aur:
+        result = get_aur_info([name])
+        if result == []: result = {} # package not found
+        else:            result = result[0]
 
     return result
 
