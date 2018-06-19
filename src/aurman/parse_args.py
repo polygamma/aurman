@@ -51,6 +51,8 @@ pacman_options = {
     "refresh": ("refresh", 0, (PacmanOperations.SYNC,)),
     "c": ("clean", 0, (PacmanOperations.SYNC,)),
     "clean": ("clean", 0, (PacmanOperations.SYNC,)),
+    "i": ("info", 0, (PacmanOperations.SYNC)),
+    "info": ("info", 0, (PacmanOperations.SYNC,)),
 
     # aurmansolver only - shows unknown packages in a single line
     "show_unknown": ("show_unknown", 0, (PacmanOperations.AURMAN,)),

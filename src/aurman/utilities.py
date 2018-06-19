@@ -4,7 +4,7 @@ import termios
 import threading
 import time
 import tty
-from subprocess import run, DEVNULL, PIPE
+from subprocess import run, DEVNULL, PIPE, STDOUT
 from typing import Tuple, Sequence
 
 import regex
@@ -12,12 +12,64 @@ import regex
 from aurman.aur_utilities import get_aur_info
 from aurman.coloring import Colors, aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
+from aurman.wrappers import expac
 
 
 class SudoLoop:
     # timeout for sudo loop
     timeout: int = 120
 
+def get_package_info(name: str, repo: bool, aur: bool):
+    """
+    Return package information
+
+    :param name Package name
+    :return A dictionary with info values returned by pacman or by get_aur_info
+    """
+
+    DELIMITER = "?!"          # expac standard delimiter for fields
+    LIST_DELIMITER = "@list@" # some random chars to delimit lists
+    EXPAC_TEMPLATE = [
+        "Package name",
+        "Version",
+        "Description",
+        "Architecture",
+        "URL",
+        "License",
+        "Groups",
+        "Provides",
+        "Depends on",
+        "Optional deps",
+        "Conflicts with",
+        "Replaces",
+        "Install size",
+        "Packager name",
+        "Build date",
+        "Validation"
+    ]
+
+    # You don't want both for sure
+    if repo and aur: return {}
+
+    # Fetch the package from standard repo
+    if repo:
+        formatting = list("nvdauLGPEoHTmpbV")
+        expac_output = expac("-S -l \"{}\" -v".format(LIST_DELIMITER),
+                            formatting,
+                            [name])[0]
+
+        result = {}
+        expac_output = expac_output.split(DELIMITER)
+        for i in range(len(expac_output)):
+            result[EXPAC_TEMPLATE[i]] = ' '.join(expac_output[i].split(LIST_DELIMITER))
+
+    # Get it from AUR
+    if aur:
+        result = get_aur_info([name])
+        if result == []: result = {} # package not found
+        else:            result = result[0]
+
+    return result
 
 def search_and_print(names: Sequence[str], installed_system, pacman_params: str, repo: bool, aur: bool):
     """
