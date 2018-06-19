@@ -1000,15 +1000,8 @@ class Package:
 
         # if last commit seen hash file does not exist - create
         if not os.path.isfile(last_commit_hash_file):
-            empty_tree_hash = run(
-                ["git", "hash-object", "-t", "tree", "/dev/null"],
-                stdout=PIPE,
-                stderr=DEVNULL,
-                universal_newlines=True
-            ).stdout.strip()
-
             with open(last_commit_hash_file, 'w') as f:
-                f.write(empty_tree_hash)
+                run(["git", "hash-object", "-t", "tree", "/dev/null"], stdout=f, stderr=DEVNULL)
 
         current_commit_hash = run(
             ["git", "rev-parse", "HEAD"], stdout=PIPE, stderr=DEVNULL, cwd=package_dir, universal_newlines=True
