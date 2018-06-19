@@ -248,12 +248,25 @@ def packages_info(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]):
     :param packages_of_user_names: packages to show info for
     """
 
+    # get names of packages from repo
+    formatting = list("n")
+    repo_list = expac("-S", formatting, ())
+
     for package_name in packages_of_user_names:
-        info = get_package_info(package_name)
+        # decide if we should get info from repo or from aur
+        if package_name in repo_list:
+            repo = True
+            aur  = False
+        else:
+            repo = False
+            aur  = True
+
+        info = get_package_info(package_name, repo, aur)
         if info == {}:
             print ("Error: package {} not found".format(package_name))
         else:
             for key in info:
+                if type(info[key]) is list: info[key] = ' '.join(info[key])
                 print ("{}: {}".format(key.ljust(15), info[key]))
         print ()
 
