@@ -33,8 +33,7 @@ def read_config() -> 'configparser.ConfigParser':
 
     # create empty config if config does not exist
     if not os.path.isfile(config_file):
-        with open(config_file, 'w') as configfile:
-            configfile.write("")
+        open(config_file, 'a').close()
 
     config = configparser.ConfigParser(allow_no_value=True)
     # make the config case sensitive
