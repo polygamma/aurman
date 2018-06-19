@@ -99,18 +99,12 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
     else:
         pacman_query = ["pacman"] + options
 
+    kwargs = {'cwd': dir_to_execute}
+
     if fetch_output:
-        if dir_to_execute is not None:
-            pacman_return = run(
-                pacman_query, stdout=PIPE, stderr=DEVNULL, universal_newlines=True, cwd=dir_to_execute
-            )
-        else:
-            pacman_return = run(pacman_query, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
-    else:
-        if dir_to_execute is not None:
-            pacman_return = run(pacman_query, cwd=dir_to_execute)
-        else:
-            pacman_return = run(pacman_query)
+        kwargs.update(stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+
+    pacman_return = run(pacman_query, **kwargs)
 
     if pacman_return.returncode != 0:
         logging.error("pacman query {} failed".format(pacman_query))
