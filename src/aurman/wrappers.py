@@ -88,18 +88,18 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
     :return:                    empty list in case of "fetch_output"=False, otherwise the lines of the pacman output as list.
                                 one line of output is one item in the list.
     """
+    if sudo:
+        pacman_query = ["sudo", "pacman"]
+    else:
+        pacman_query = ["pacman"]
+
+    if use_ask:
+        pacman_query += ['--ask=4']
+
     # I cannot be bothered to untangle the tremendous layers of strings absolutely everywhere.
     # Ruthlessly paper over this by using a shell-like parser to convert the weird string
     # representation into proper lists. FIXME: teach aurman to natively use lists everywhere.
-    options = shlex.split(options_as_string)
-
-    if use_ask:
-        options = ['--ask=4'] + options
-
-    if sudo:
-        pacman_query = ["sudo", "pacman"] + options
-    else:
-        pacman_query = ["pacman"] + options
+    pacman_query += shlex.split(options_as_string)
 
     kwargs = {'cwd': dir_to_execute}
 
