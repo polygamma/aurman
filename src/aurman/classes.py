@@ -1196,10 +1196,12 @@ class Package:
         :param build_version:   Build version to look for
         :return:                The name of the package file to install, None if there is none
         """
+        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
+
         files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
+        files_to_build = [os.path.split(build_line)[1] for build_line in makepkg("--packagelist", True, package_dir)]
         for file in files_in_build_dir:
-            if file.startswith(self.name + "-" + build_version + "-") and ".pkg." in \
-                    file.split(self.name + "-" + build_version + "-")[1]:
+            if file.startswith(self.name + "-" + build_version + "-") and file in files_to_build:
                 return file
         else:
             return None
