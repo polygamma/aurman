@@ -6,7 +6,7 @@ class CurrentTest:
 
 
 def test_command(command: str, dir_to_execute: str = None):
-    return_command = run(command, shell=True, stdout=DEVNULL, stderr=PIPE, cwd=dir_to_execute)
+    return_command = run(command, shell=True, stdout=DEVNULL, stderr=PIPE, universal_newlines=True, cwd=dir_to_execute)
 
     if return_command.returncode == 0:
         print("Success with: '{}'".format(command))
