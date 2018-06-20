@@ -30,7 +30,10 @@ RUN printf "[miscellaneous]\nuse_ask\n" > "/home/aurman/.config/aurman/aurman_co
 # add files of the current branch
 ADD . /home/aurman/aurman-git
 
+# change working dir for tests
+WORKDIR /home/aurman/aurman-git/src
+
 # chown, chmod and set entrypoint
-RUN sudo chown -R aurman:aurman /home/aurman/aurman-git/src/docker_tests
-RUN chmod +x -R /home/aurman/aurman-git/src/docker_tests
+RUN sudo chown -R aurman:aurman /home/aurman/aurman-git/src
+RUN chmod +x -R /home/aurman/aurman-git/src
 ENTRYPOINT ["/home/aurman/aurman-git/src/docker_tests/execute_test.sh"]

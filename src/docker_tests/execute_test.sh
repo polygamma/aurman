@@ -7,5 +7,5 @@ source /home/aurman/.bash_profile
 source /home/aurman/.bashrc
 
 # call test
-python /home/aurman/aurman-git/$1
+python -m docker_tests.$1
 exit $?

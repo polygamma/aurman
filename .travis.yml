@@ -11,11 +11,11 @@ install:
 script:
   - python src/unit_tests/test_split_query_helper.py
   - python src/unit_tests/test_parse_pacman_args.py
-  - docker run aurman_docker src/docker_tests/install_tests.py
-  - docker run aurman_docker src/docker_tests/cache_tests.py
-  - docker run aurman_docker src/docker_tests/build_dir_tests.py
-  - docker run aurman_docker src/docker_tests/testing_repo_tests.py
-  - docker run aurman_docker src/docker_tests/pkgdest_tests.py
-  - docker run aurman_docker src/docker_tests/archive_tests.py
+  - docker run aurman_docker install_tests
+  - docker run aurman_docker cache_tests
+  - docker run aurman_docker build_dir_tests
+  - docker run aurman_docker testing_repo_tests
+  - docker run aurman_docker pkgdest_tests
+  - docker run aurman_docker archive_tests
 notifications:
   email: false
