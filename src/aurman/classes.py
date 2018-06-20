@@ -968,14 +968,20 @@ class Package:
                     if keyserver is None:
                         if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
                             logging.error("Import PGP key {} failed.".format(pgp_key))
-                            raise ConnectionProblem("Import PGP key {} failed. This is an error in your GnuPG installation.".format(pgp_key))
+                            raise ConnectionProblem(
+                                "Import PGP key {} failed. "
+                                "This is an error in your GnuPG installation.".format(pgp_key)
+                            )
                     else:
                         if run(
                                 "gpg --keyserver {} --recv-keys {}".format(keyserver, pgp_key),
                                 shell=True
                         ).returncode != 0:
                             logging.error("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
-                            raise ConnectionProblem("Import PGP key {} from {} failed. This is an error in your GnuPG installation.".format(pgp_key, keyserver))
+                            raise ConnectionProblem(
+                                "Import PGP key {} from {} failed. "
+                                "This is an error in your GnuPG installation.".format(pgp_key, keyserver)
+                            )
 
     def show_pkgbuild(self, noedit: bool = False, show_changes: bool = False,
                       fetch_always: bool = False, keyserver: str = None, always_edit: bool = False,
