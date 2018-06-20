@@ -272,7 +272,10 @@ def process(args):
         # fetch packages to replace
         for possible_replacing_package in upstream_system.repo_packages_list:
             for replaces in possible_replacing_package.replaces:
-                installed_to_replace = installed_system.provided_by(replaces)
+                replace_name = strip_versioning_from_name(replaces)
+                installed_to_replace = [
+                    package for package in installed_system.provided_by(replaces) if package.name == replace_name
+                ]
                 if installed_to_replace:
                     assert len(installed_to_replace) == 1
                     package_to_replace = installed_to_replace[0]

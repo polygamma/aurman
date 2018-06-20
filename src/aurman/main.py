@@ -13,7 +13,7 @@ from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args, PacmanArgs
 from aurman.parsing_config import read_config, packages_from_other_sources, AurmanConfig
-from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user
+from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user, strip_versioning_from_name
 from aurman.wrappers import pacman, expac, pacman_conf
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -615,7 +615,10 @@ def process(args):
         if do_everything:
             for possible_replacing_package in upstream_system.repo_packages_list:
                 for replaces in possible_replacing_package.replaces:
-                    installed_to_replace = installed_system.provided_by(replaces)
+                    replace_name = strip_versioning_from_name(replaces)
+                    installed_to_replace = [
+                        package for package in installed_system.provided_by(replaces) if package.name == replace_name
+                    ]
                     if installed_to_replace:
                         assert len(installed_to_replace) == 1
                         package_to_replace = installed_to_replace[0]
