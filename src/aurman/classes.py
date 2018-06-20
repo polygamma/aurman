@@ -1132,24 +1132,32 @@ class Package:
         pkgver = None
         pkgrel = None
         epoch = None
-        for line in src_lines:
-            if "pkgver =" in line:
-                pkgver = line.split("=")[1].strip()
-            elif "pkgrel =" in line:
-                pkgrel = line.split("=")[1].strip()
-            elif "epoch =" in line:
-                epoch = line.split("=")[1].strip()
+        try:
+            for line in src_lines:
+                if "pkgver =" in line:
+                    pkgver = line.split("=")[1].strip()
+                elif "pkgrel =" in line:
+                    pkgrel = int(line.split("=")[1].strip())
+                elif "epoch =" in line:
+                    epoch = int(line.split("=")[1].strip())
+        except ValueError:
+            logging.error(
+                ".SRCINFO of {} is malformed. It includes non integer values for the pkgrel or epoch.".format(self.name)
+            )
+            raise InvalidInput(
+                ".SRCINFO of {} is malformed. It includes non integer values for the pkgrel or epoch.".format(self.name)
+            )
 
         version = ""
-        if epoch is not None:
-            version += epoch + ":"
+        if epoch is not None and epoch > 0:
+            version += str(epoch) + ":"
         if pkgver is not None:
             version += pkgver
         else:
             logging.info("version of {} must be there".format(self.name))
             raise InvalidInput("version of {} must be there".format(self.name))
         if pkgrel is not None:
-            version += "-" + pkgrel
+            version += "-" + str(pkgrel)
 
         return version
 
