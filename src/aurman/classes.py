@@ -1180,19 +1180,18 @@ class Package:
         """
         return os.path.split(makepkg("--packagelist", True, package_dir)[0])[0]
 
-    def get_package_file_to_install(self, build_dir: str, package_dir: str) -> Union[str, None]:
+    def get_package_file_to_install(self, build_dir: str, build_version: str) -> Union[str, None]:
         """
         Gets the .pkg. file of the package to install
 
         :param build_dir:       Build dir of the package
-        :param package_dir:     Package dir of the package
+        :param build_version:   Build version to look for
         :return:                The name of the package file to install, None if there is none
         """
         files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
-        files_to_build = [os.path.split(build_line)[1] for build_line in makepkg("--packagelist", True, package_dir)]
-
         for file in files_in_build_dir:
-            if file in files_to_build:
+            if file.startswith(self.name + "-" + build_version + "-") and ".pkg." in \
+                    file.split(self.name + "-" + build_version + "-")[1]:
                 return file
         else:
             return None
@@ -1206,10 +1205,11 @@ class Package:
         :param rebuild:     If True, always rebuild package
         """
         # check if build needed
+        build_version = self.version_from_srcinfo()
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         build_dir = Package.get_build_dir(package_dir)
 
-        if rebuild or (self.get_package_file_to_install(build_dir, package_dir) is None):
+        if rebuild or (self.get_package_file_to_install(build_dir, build_version) is None):
             if not ignore_arch:
                 makepkg("-cf --noconfirm", False, package_dir)
             else:
@@ -1222,11 +1222,11 @@ class Package:
         :param args_as_string:  Args for pacman
         :param use_ask:         Use --ask=4 when calling pacman, see: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
         """
-        package_dir = os.path.join(Package.cache_dir, self.pkgbase)
-        build_dir = Package.get_build_dir(package_dir)
+        build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
 
         # get name of package install file
-        package_install_file = self.get_package_file_to_install(build_dir, package_dir)
+        build_version = self.version_from_srcinfo()
+        package_install_file = self.get_package_file_to_install(build_dir, build_version)
 
         if package_install_file is None:
             logging.error("package file of {} not available".format(self.name))
