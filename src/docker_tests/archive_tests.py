@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # update with aurman --do_everything
     test_command("aurman -Syu --do_everything --force --noconfirm"
-                 " --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371")
+                 " --noedit --pgp_fetch --keyserver keyserver.ubuntu.com")
 
     if run("pacman -Qqun", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
         print("Success: everything known has been updated")

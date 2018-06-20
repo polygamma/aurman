@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     # install cower
     test_command(
-        "aurman -Syu cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+        "aurman -Syu cower --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
     # check if cower installed
     test_command("pacman -Qi cower")
 
@@ -30,14 +30,14 @@ if __name__ == '__main__':
 
     # install pacman-git
     test_command(
-        "aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+        "aurman -S pacman-git --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
 
     # check if pacman-git installed
     test_command("pacman -Qi pacman-git")
 
     # install cower-git
     test_command(
-        "aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+        "aurman -S cower-git --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
     # check if cower-git installed
     test_command("pacman -Qi cower-git")
 

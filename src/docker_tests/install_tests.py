@@ -15,19 +15,19 @@ if __name__ == '__main__':
 
     # install cower
     test_command(
-        "aurman -Syu cower --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+        "aurman -Syu cower --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
     # check if cower installed
     test_command("pacman -Qi cower")
 
     # install cower-git
     test_command(
-        "aurman -S cower-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+        "aurman -S cower-git --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
     # check if cower-git installed
     test_command("pacman -Qi cower-git")
 
     # install repo package mu with double dashes
     test_command(
-        "aurman -S --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm -- mu")
+        "aurman -S --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm -- mu")
     # check if mu installed
     test_command("pacman -Qi mu")
 
@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
     # install fprintd and libfprint-vfs0090-git
     test_command("aurman -S fprintd libfprint-vfs0090-git "
-                 "--noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+                 "--noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
 
     # check if fprintd and libfprint-vfs0090-git are installed
     test_command("pacman -Qi fprintd")
@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     # install pacman-git
     test_command(
-        "aurman -S pacman-git --noedit --pgp_fetch --keyserver hkp://ipv4.pool.sks-keyservers.net:11371 --noconfirm")
+        "aurman -S pacman-git --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
 
     # check if pacman-git installed
     test_command("pacman -Qi pacman-git")
