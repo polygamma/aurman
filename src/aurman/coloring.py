@@ -1,11 +1,22 @@
+from sys import stdout
+
+
 class Colors:
     """
     Class used for colored output
     """
 
+    # pacman --color equivalent
+    # 0 = auto, 1 = always, 2 = never
+    color = 0
+
     @staticmethod
     def concat_str(*args):
-        return ''.join([str(arg) for arg in args])
+        # check whether to use colors, bold etc. or not
+        if Colors.color == 1 or Colors.color == 0 and stdout.isatty():
+            return ''.join([str(arg) for arg in args])
+        else:
+            return ''.join([str(arg) for arg in args[1:-1]])
 
     @staticmethod
     def strip_colors(string: str) -> str:

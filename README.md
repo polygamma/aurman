@@ -42,6 +42,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 
 ##### Native pacman options for `--sync` or `-S` that are also used by aurman:
 
+- `--color`
 - `--noconfirm`
 - `--needed`
 - `--ignore`

@@ -111,6 +111,8 @@ native_aurman = "the following native pacman options for " \
 native_aurman_points = []
 aurman_help.points.append(HelpPoint(native_aurman, native_aurman_points))
 
+native_aurman_points.append(HelpOption(["--color"],
+                                       "Specify when to enable coloring"))
 native_aurman_points.append(HelpOption(["--noconfirm"],
                                        "Bypass any and all 'Are you sure?' messages"))
 native_aurman_points.append(HelpOption(["--needed"],

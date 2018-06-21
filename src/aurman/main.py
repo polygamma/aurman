@@ -299,6 +299,15 @@ def process(args):
     check_privileges()
     pacman_args = parse_parameters(args)
 
+    if pacman_args.color:
+        if pacman_args.color[0] == "always":
+            Colors.color = 1
+        elif pacman_args.color[0] == "never":
+            Colors.color = 2
+        elif pacman_args.color[0] != "auto":
+            aurman_error("invalid option '{}' for --color".format(pacman_args.color[0]))
+            sys.exit(1)
+
     if pacman_args.operation is PacmanOperations.HELP:
         show_help()
 
