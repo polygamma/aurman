@@ -8,6 +8,18 @@
 
 **aurman** *(https://aur.archlinux.org/packages/aurman)* - **release version**
 
+> **Notice**: Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
+> `aurman` is targeted at **advanced** users, who are familiar with `pacman`, `makepkg` and most of all with the `AUR`.
+> `aurman` is an AUR **helper**, it can't and will never be a replacement for the sometimes needed human interaction.
+> If you **ever** encounter a problem, at which `aurman` e.g. is not able to find a dependency solution, and you do not know **either**
+> how to solve the problem, you should **not** use an AUR helper. Even though the specific problem may be a bug in the `aurman`
+> implementation, it is **always** expected, that you as user know what to do. If you do not, do not use `aurman`.
+> Also: If you already fail to install `aurman`, because you do not know e. g. how to import PGP keys or how to fulfill `aurman`
+> dependencies manually, you should **not** use `aurman`.
+> Last but not least: The GitHub issues are **not** for support, they are **only** for feature requests, bug reports or general discussions.
+> To reduce the noise by users, who should not use `aurman`, but still do, users may be banned from this repository without further warning,
+> if they fill out issues in a non sensible way.
+
 ## Syntax
 
 ##### Usage
