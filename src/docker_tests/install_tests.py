@@ -1,5 +1,3 @@
-from os import getcwd
-from os.path import join
 from sys import exit
 
 from docker_tests.test_utils import CurrentTest, test_command
