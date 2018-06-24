@@ -7,10 +7,8 @@ from sys import exit
 from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
-    # install expac-git
-    test_command("git clone https://aur.archlinux.org/expac-git.git")
-    test_command("makepkg -si --needed --noconfirm", dir_to_execute=join(getcwd(), "expac-git"))
-    test_command("rm -rf expac-git/")
+    # install expac
+    test_command("sudo pacman -S expac")
 
     # install aurman
     test_command("sudo python setup.py install --optimize=1", "/home/aurman/aurman-git")
