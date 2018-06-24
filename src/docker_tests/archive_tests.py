@@ -7,9 +7,6 @@ from sys import exit
 from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
-    # install expac
-    test_command("sudo pacman -S expac")
-
     # install aurman
     test_command("sudo python setup.py install --optimize=1", "/home/aurman/aurman-git")
 
