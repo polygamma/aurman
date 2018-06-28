@@ -6,12 +6,14 @@ from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List, Tuple, Set, Union, Dict, Iterable
 
+from pycman.config import PacmanConfig
+
 from aurman.aur_utilities import is_devel, get_aur_info
 from aurman.coloring import aurman_status, aurman_note, aurman_error, aurman_question, Colors
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
 from aurman.parsing_config import packages_from_other_sources
 from aurman.utilities import strip_versioning_from_name, split_name_with_versioning, version_comparison, ask_user
-from aurman.wrappers import expac, makepkg, pacman, pacman_conf
+from aurman.wrappers import expac, makepkg, pacman
 
 
 class PossibleTypes(Enum):
@@ -242,14 +244,16 @@ class Package:
         :param do_everything:       if --do_everything
         :return:                    a set containing the names of the ignored packages
         """
+        handler = PacmanConfig(conf="/etc/pacman.conf").initialize_alpm()
+
         # ignored packages names - may contain glob patterns
-        names_to_ignore = set(pacman_conf("IgnorePkg"))
+        names_to_ignore = set(handler.ignorepkgs)
         for ign_packages_name in ign_packages_names:
             for name in ign_packages_name.split(","):
                 names_to_ignore.add(name)
 
         # ignored groups names
-        ignored_groups_names = set(pacman_conf("IgnoreGroup"))
+        ignored_groups_names = set(handler.ignoregrps)
         for ign_groups_name in ign_groups_names:
             for name in ign_groups_name.split(","):
                 ignored_groups_names.add(name)
@@ -287,19 +291,7 @@ class Package:
 
         :return:    a list containing the known repos (ordered by occurrence in pacman.conf)
         """
-        pacman_conf_return = run("pacman-conf", shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
-
-        if pacman_conf_return.returncode != 0:
-            logging.error("pacman-conf not available")
-            raise InvalidInput("pacman-conf not available")
-
-        to_return: List[str] = []
-
-        for line in pacman_conf_return.stdout.strip().splitlines():
-            if line.startswith("[") and line.endswith("]"):
-                to_return.append(line[1:len(line) - 1])
-
-        return to_return
+        return [db.name for db in PacmanConfig(conf="/etc/pacman.conf").initialize_alpm().get_syncdbs()]
 
     @staticmethod
     def get_packages_from_expac(expac_operation: str, packages_names: Sequence[str], packages_type: PossibleTypes) -> \
