@@ -7,5 +7,9 @@ source /home/aurman/.bash_profile
 source /home/aurman/.bashrc
 
 # call test
-python -m docker_tests.$1
+if [[ -f $1 ]]; then
+    python "$1"
+else
+    python -m docker_tests.$1
+fi
 exit $?
