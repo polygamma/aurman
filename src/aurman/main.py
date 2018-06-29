@@ -365,25 +365,25 @@ def process(args):
     # validity check for user arguments
     # unrecognized parameters
     if pacman_args.invalid_args:
-        aurman_error("The following parameters are not recognized yet: {}".format(pacman_args.invalid_args))
+        aurman_error("aurman: invalid option {}".format(pacman_args.invalid_args))
         aurman_note("aurman --help or aurman -h")
         sys.exit(1)
 
     if noedit and show_changes:
-        aurman_error("--noedit and --show_changes is not what you want")
+        aurman_error("error: --noedit cannot be used with --show_changes")
         sys.exit(1)
 
     if noedit and always_edit:
-        aurman_error("--noedit and --always_edit is not what you want")
+        aurman_error("error: --noedit cannot be used with --always_edit")
         sys.exit(1)
 
     if repo and aur:
-        aurman_error("--repo and --aur is not what you want")
+        aurman_error("error: --repo cannot be used with --aur")
         sys.exit(1)
 
     # do not allow -y without -u
     if pacman_args.refresh and not sysupgrade:
-        aurman_error("-y without -u is not allowed!")
+        aurman_error("error: -y cannot be used without -u")
         sys.exit(1)
 
     # packages to not notify about being unknown in either repos or the aur
@@ -475,7 +475,7 @@ def process(args):
                         if package.name not in concrete_no_notification_packages]
 
     if packages_to_show and not no_notification_unknown_packages:
-        aurman_status("the following packages are neither in known repos nor in the aur")
+        aurman_status("the following packages were not found in the repos or AUR:")
         for package in packages_to_show:
             aurman_note("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
 
@@ -511,7 +511,7 @@ def process(args):
     for name in sanitized_not_to_be_removed:
         if name not in upstream_system.all_packages_dict:
             aurman_error(
-                "Packages you want to be not removed must be aur or repo packages.\n   {} is not known.".format(
+                "error: the following packages were not found in the repos or AUR:\n   {}".format(
                     Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                 )
             )
@@ -567,7 +567,7 @@ def process(args):
 
     # if user entered --devel and not --repo, fetch all needed pkgbuilds etc. for the devel packages
     if devel and not repo:
-        aurman_status("looking for new pkgbuilds of devel packages and fetching them...")
+        aurman_status("fetching devel packages...")
         for package in upstream_system.devel_packages_list:
             if package.name not in ignored_packages_names:
                 package.fetch_pkgbuild()
@@ -650,7 +650,7 @@ def process(args):
                                 )
 
     # start calculating solutions
-    aurman_status("calculating solutions...")
+    aurman_status("resolving dependencies...")
     if only_unfulfilled_deps:
         if not rebuild:
             solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system)
@@ -674,10 +674,10 @@ def process(args):
             solutions, concrete_packages_to_install, upstream_system, not only_unfulfilled_deps, solution_way
         )
     except InvalidInput:
-        aurman_error("we could not find a solution")
+        aurman_error("error: dependency conflict")
         # if not --deep_search
         if only_unfulfilled_deps:
-            aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
+            aurman_error("to ignore currently fulfilled dependencies, run aurman with --deep-search")
         sys.exit(1)
 
     # needed because deep_search ignores installed packages
@@ -686,7 +686,7 @@ def process(args):
 
     # solution contains no packages
     if not chosen_solution:
-        aurman_note("nothing to do... everything is up to date")
+        aurman_note("there is nothing to do")
         sys.exit(0)
 
     # show solution to the user
@@ -699,7 +699,7 @@ def process(args):
 
     # fetch pkgbuilds
     if not repo:
-        aurman_status("looking for new pkgbuilds and fetching them...")
+        aurman_status("cheking for AUR updates..")
         for package in chosen_solution:
             if package.type_of is PossibleTypes.REPO_PACKAGE \
                     or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
