@@ -511,7 +511,7 @@ def process(args):
     for name in sanitized_not_to_be_removed:
         if name not in upstream_system.all_packages_dict:
             aurman_error(
-                "error: the following packages were not found in the repos or AUR:\n   {}".format(
+                "error: the following packages were not found in the AUR or repos and cannot be held back:\n   {}".format(
                     Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                 )
             )
@@ -699,7 +699,7 @@ def process(args):
 
     # fetch pkgbuilds
     if not repo:
-        aurman_status("cheking for AUR updates..")
+        aurman_status("checking for AUR updates..")
         for package in chosen_solution:
             if package.type_of is PossibleTypes.REPO_PACKAGE \
                     or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
