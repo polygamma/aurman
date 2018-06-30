@@ -4,7 +4,6 @@ from sys import exit
 from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
-
     # activate testing
     test_command('sudo sh -c "{}"'
                  ''.format("sed -i '/\[testing\]/,/Include/s/^[ ]*#//' /etc/pacman.conf"))

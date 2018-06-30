@@ -182,13 +182,13 @@ aurmansolver_help.points.append(HelpPoint(solver_usage_title, (solver_usage,)))
 # description
 solver_description_title = "Description"
 solver_description = "aurmansolver is meant as a {}. " \
-              "The operation must be {} or {}.\n    " \
-              "Valid solutions will be shown in {}, allowing " \
-              "the output to be parsed by external programs." \
-                                         .format(Colors.BOLD("dependency solver"),
-                                         Colors.BOLD(Colors.LIGHT_GREEN("--sync")),
-                                         Colors.BOLD(Colors.LIGHT_GREEN("-S")),
-                                         Colors.BOLD("JSON"))
+                     "The operation must be {} or {}.\n    " \
+                     "Valid solutions will be shown in {}, allowing " \
+                     "the output to be parsed by external programs." \
+    .format(Colors.BOLD("dependency solver"),
+            Colors.BOLD(Colors.LIGHT_GREEN("--sync")),
+            Colors.BOLD(Colors.LIGHT_GREEN("-S")),
+            Colors.BOLD("JSON"))
 aurmansolver_help.points.append(HelpPoint(solver_description_title, (solver_description,)))
 
 # aurmansolver exclusive options
@@ -197,9 +197,9 @@ only_solver_points = []
 aurmansolver_help.points.append(HelpPoint(only_solver, only_solver_points))
 
 only_solver_points.append("These options effect how the dependency resolving is " \
-                                        "calculated but {} actions will " \
-                                        "actually be performed.\n" \
-                                        .format(Colors.BOLD(Colors.LIGHT_RED("no"))))
+                          "calculated but {} actions will " \
+                          "actually be performed.\n" \
+                          .format(Colors.BOLD(Colors.LIGHT_RED("no"))))
 
 only_solver_points.append(HelpOption(["--devel"],
                                      "Will fetch current development packages versions"))
@@ -219,12 +219,12 @@ only_solver_points.append(HelpOption(["--holdpkg_conf"],
                                      "Append packages from the pacman.conf to"
                                      " {}".format(Colors.LIGHT_GREEN("--holdpkg"))))
 only_solver_points.append(HelpOption(["--ignore"],
-                                    "Directs pacman to ignore upgrades of package even if there is one available"))
+                                     "Directs pacman to ignore upgrades of package even if there is one available"))
 only_solver_points.append(HelpOption(["--ignoregroup"],
-                                    "Directs pacman to ignore upgrades of all packages in group, "
-                                    "even if there is one available."))
+                                     "Directs pacman to ignore upgrades of all packages in group, "
+                                     "even if there is one available."))
 only_solver_points.append(HelpOption(["-u", "--sysupgrade"],
-                                    "Upgrades all packages that are out-of-date"))
+                                     "Upgrades all packages that are out-of-date"))
 only_solver_points.append(HelpOption(["--optimistic_versioning"],
                                      "In case of an unknown version of a provider for a versioned dependency, "
                                      "assume that the dependency is fulfilled"))

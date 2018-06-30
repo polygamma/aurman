@@ -56,6 +56,7 @@ def sanitize_user_input(user_input: Sequence[str], system: 'System') -> Set[str]
 
     return sanitized_names
 
+
 def parse_parameters(args: List[str]) -> 'PacmanArgs':
     """
     parses the parameters of the user
@@ -68,6 +69,7 @@ def parse_parameters(args: List[str]) -> 'PacmanArgs':
         aurman_note("aurmansolver --help or aurmansolver -h")
         sys.exit(1)
 
+
 def show_help() -> None:
     """
     shows the help of aurmansolver
@@ -78,6 +80,7 @@ def show_help() -> None:
     else:
         print(Colors.strip_colors(str(aurmansolver_help)))
     sys.exit(0)
+
 
 class SolutionEncoder(json.JSONEncoder):
     def default(self, obj):

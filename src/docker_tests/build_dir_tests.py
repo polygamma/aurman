@@ -4,7 +4,6 @@ from sys import exit
 from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
-
     # change build dir
     test_command("mkdir -p /home/aurman/build_dir")
     test_command('sudo sh -c "{}"'

@@ -3,7 +3,6 @@ from sys import exit
 from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
-
     # change pkgdest dir
     test_command('sudo sh -c "{}"'
                  ''.format("echo 'PKGDEST=/tmp' >> /etc/makepkg.conf"))
