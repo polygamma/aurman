@@ -28,8 +28,8 @@ def read_config() -> 'configparser.ConfigParser':
     # create config dir if it does not exist
     if not os.path.exists(config_dir):
         if run("install -dm700 '{}'".format(config_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
-            logging.error("Creating config dir of aurman failed")
-            raise InvalidInput("Creating config dir of aurman failed")
+            logging.error("Could not create config dir")
+            raise InvalidInput("Could not create config dir")
 
     # create empty config if config does not exist
     if not os.path.isfile(config_file):
@@ -78,7 +78,7 @@ def packages_from_other_sources() -> Tuple[Set[str], Dict[str, str]]:
 
     for name in aur_set:
         if name in repo_dict:
-            aurman_error("Package {} listed for aur and repo.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
-            raise InvalidInput("Package {} listed for aur and repo.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+            aurman_error("Package {} is in the AUR and repo.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
+            raise InvalidInput("Package {} is in the AUR and repo.".format(Colors.BOLD(Colors.LIGHT_MAGENTA(name))))
 
     return aur_set, repo_dict

@@ -63,12 +63,12 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
 
             if index_start == -1 or index_end - index_start < 2:
                 aurman_error(
-                    "Your query {} contains not enough non regex chars!".format(
+                    "{} contains too much regex!".format(
                         Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                     )
                 )
                 raise InvalidInput(
-                    "Your query {} contains not enough non regex chars!".format(
+                    "{} contains too much regex!".format(
                         Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                     )
                 )
@@ -180,12 +180,12 @@ def acquire_sudo():
     def sudo_loop():
         while True:
             if run("sudo --non-interactive -v", shell=True, stdout=DEVNULL).returncode != 0:
-                logging.error("acquire sudo failed")
+                logging.error("failed to acquire root permissions")
             time.sleep(SudoLoop.timeout)
 
     if run("sudo -v", shell=True).returncode != 0:
-        logging.error("acquire sudo failed")
-        raise InvalidInput("acquire sudo failed")
+        logging.error("failed to acquire root permissions")
+        raise InvalidInput("failed to acquire root permissions")
     t = threading.Thread(target=sudo_loop)
     t.daemon = True
     t.start()
@@ -208,7 +208,7 @@ def ask_user(question: str, default: bool, new_line: bool = False) -> bool:
         choices = "Y/n"
     else:
         no.append("")
-        choices = "N/y"
+        choices = "y/N"
 
     while True:
         print(aurman_question("{} {}: ".format(question, choices), new_line=new_line, to_print=False),
@@ -228,4 +228,4 @@ def ask_user(question: str, default: bool, new_line: bool = False) -> bool:
         user_choice = answer.strip().lower()
         if user_choice in yes or user_choice in no:
             return user_choice in yes
-        aurman_error("That was not a valid choice!")
+        aurman_error("Input not valid")
