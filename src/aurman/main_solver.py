@@ -121,7 +121,7 @@ def process(args):
     repo = pacman_args.repo  # do only repo things
     rebuild = pacman_args.rebuild  # if --rebuild
     if repo and aur:
-        aurman_error("--repo and --aur is not what you want")
+        aurman_error("--repo cannot be used with --aur")
         sys.exit(1)
 
     if pacman_args.domain:
@@ -142,7 +142,7 @@ def process(args):
                         if package.name not in concrete_no_notification_packages]
     if packages_to_show and not no_notification_unknown_packages:
         if not pacman_args.show_unknown:
-            logging.debug("the following packages are neither in known repos nor in the aur")
+            logging.debug("the following packages were not found")
             for package in packages_to_show:
                 logging.debug("{}".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package))))
         else:
@@ -180,7 +180,7 @@ def process(args):
     for name in sanitized_not_to_be_removed:
         if name not in upstream_system.all_packages_dict:
             aurman_error(
-                "Packages you want to be not removed must be aur or repo packages.\n"
+                "Some packages were not found in the AUR or repo, and could not be held back.\n"
                 "   {} is not known.".format(
                     Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                 )
@@ -320,8 +320,8 @@ def process(args):
     sol_tuples = installed_system.validate_solutions(solutions, concrete_packages_to_install)
     valid_solutions = [sol_tuple[1] for sol_tuple in sol_tuples]
     if not valid_solutions:
-        aurman_error("we could not find a solution")
-        aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
+        aurman_error("could not resolve dependencies")
+        aurman_error("to ignore currently fulfilled dependencies, rerun aurman with --deep_search")
         sys.exit(1)
 
     print(json.dumps(

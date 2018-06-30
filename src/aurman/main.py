@@ -370,20 +370,20 @@ def process(args):
         sys.exit(1)
 
     if noedit and show_changes:
-        aurman_error("error: --noedit cannot be used with --show_changes")
+        aurman_error("--noedit cannot be used with --show_changes")
         sys.exit(1)
 
     if noedit and always_edit:
-        aurman_error("error: --noedit cannot be used with --always_edit")
+        aurman_error("--noedit cannot be used with --always_edit")
         sys.exit(1)
 
     if repo and aur:
-        aurman_error("error: --repo cannot be used with --aur")
+        aurman_error("--repo cannot be used with --aur")
         sys.exit(1)
 
     # do not allow -y without -u
     if pacman_args.refresh and not sysupgrade:
-        aurman_error("error: -y cannot be used without -u")
+        aurman_error("-y cannot be used without -u")
         sys.exit(1)
 
     # packages to not notify about being unknown in either repos or the aur
@@ -511,7 +511,7 @@ def process(args):
     for name in sanitized_not_to_be_removed:
         if name not in upstream_system.all_packages_dict:
             aurman_error(
-                "error: the following packages were not found in the AUR or repos and cannot be held back:\n   {}".format(
+                "the following packages were not found in the AUR or repos and cannot be held back:\n   {}".format(
                     Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                 )
             )
@@ -674,7 +674,7 @@ def process(args):
             solutions, concrete_packages_to_install, upstream_system, not only_unfulfilled_deps, solution_way
         )
     except InvalidInput:
-        aurman_error("error: dependency conflict")
+        aurman_error("dependency conflict")
         # if not --deep_search
         if only_unfulfilled_deps:
             aurman_error("to ignore currently fulfilled dependencies, run aurman with --deep-search")
