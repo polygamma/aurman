@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from typing import Sequence, Set, Dict
+from typing import Sequence, Set, Dict, List
 
 from pycman.config import PacmanConfig
 
@@ -55,6 +55,16 @@ def sanitize_user_input(user_input: Sequence[str], system: 'System') -> Set[str]
 
     return sanitized_names
 
+def parse_parameters(args: List[str]) -> 'PacmanArgs':
+    """
+    parses the parameters of the user
+    :param args: the args to parse
+    :return: the parsed args
+    """
+    try:
+        return parse_pacman_args(args)
+    except InvalidInput:
+        sys.exit(1)
 
 class SolutionEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -80,7 +90,7 @@ def process(args):
         sys.exit(1)
 
     # parse parameters of user
-    pacman_args = parse_pacman_args(args)
+    pacman_args = parse_parameters(args)
 
     if pacman_args.operation is not PacmanOperations.SYNC or pacman_args.invalid_args:
         sys.exit(1)
