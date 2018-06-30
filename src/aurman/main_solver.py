@@ -7,7 +7,8 @@ from typing import Sequence, Set, Dict, List
 from pycman.config import PacmanConfig
 
 from aurman.classes import System, Package, PossibleTypes
-from aurman.coloring import aurman_error, Colors
+from aurman.coloring import aurman_error, aurman_note, Colors
+from aurman.help_printing import aurmansolver_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import parse_pacman_args, PacmanOperations
 from aurman.parsing_config import read_config, AurmanConfig
@@ -64,7 +65,19 @@ def parse_parameters(args: List[str]) -> 'PacmanArgs':
     try:
         return parse_pacman_args(args)
     except InvalidInput:
+        aurman_note("aurmansolver --help or aurmansolver -h")
         sys.exit(1)
+
+def show_help() -> None:
+    """
+    shows the help of aurmansolver
+    """
+    # remove colors in case of not terminal
+    if sys.stdout.isatty():
+        print(aurmansolver_help)
+    else:
+        print(Colors.strip_colors(str(aurmansolver_help)))
+    sys.exit(0)
 
 class SolutionEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -91,6 +104,9 @@ def process(args):
 
     # parse parameters of user
     pacman_args = parse_parameters(args)
+
+    if pacman_args.operation is PacmanOperations.HELP:
+        show_help()
 
     if pacman_args.operation is not PacmanOperations.SYNC or pacman_args.invalid_args:
         sys.exit(1)
