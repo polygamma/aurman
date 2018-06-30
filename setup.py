@@ -40,5 +40,5 @@ setup(
         ]
     },
 
-    install_requires=['requests', 'regex']
+    install_requires=['requests', 'regex', 'pyalpm']
 )
