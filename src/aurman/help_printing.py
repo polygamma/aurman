@@ -172,3 +172,66 @@ only_aurman_points.append(HelpOption(["--optimistic_versioning"],
                                      "assume that the dependency is fulfilled"))
 only_aurman_points.append(HelpOption(["--rebuild"],
                                      "Always rebuild packages before installing them"))
+# aurmansolver help
+aurmansolver_help = Help([])
+
+solver_usage_title = "Usage"
+solver_usage = "aurmansolver <operation> [options] [targets]\n    see also https://www.archlinux.org/pacman/pacman.8.html"
+aurmansolver_help.points.append(HelpPoint(solver_usage_title, (solver_usage,)))
+
+# description
+solver_description_title = "Description"
+solver_description = "aurmansolver is meant as a {}. " \
+              "The operation must be {} or {}.\n    " \
+              "Valid solutions will be shown in {}, allowing " \
+              "the output to be parsed by external programs." \
+                                         .format(Colors.BOLD("dependency solver"),
+                                         Colors.BOLD(Colors.LIGHT_GREEN("--sync")),
+                                         Colors.BOLD(Colors.LIGHT_GREEN("-S")),
+                                         Colors.BOLD("JSON"))
+aurmansolver_help.points.append(HelpPoint(solver_description_title, (solver_description,)))
+
+# aurmansolver exclusive options
+only_solver = "aurmansolver options"
+only_solver_points = []
+aurmansolver_help.points.append(HelpPoint(only_solver, only_solver_points))
+
+only_solver_points.append("These options effect how the dependency resolving is " \
+                                        "calculated but {} actions will " \
+                                        "actually be performed.\n" \
+                                        .format(Colors.BOLD(Colors.LIGHT_RED("no"))))
+
+only_solver_points.append(HelpOption(["--devel"],
+                                     "Will fetch current development packages versions"))
+only_solver_points.append(HelpOption(["--deep_search"],
+                                     "Dependency solving will ignore currently "
+                                     "fulfilled dependencies of your system"))
+only_solver_points.append(HelpOption(["--aur"],
+                                     "Do things only for aur"))
+only_solver_points.append(HelpOption(["--repo"],
+                                     "Do things only for regular repos"))
+only_solver_points.append(HelpOption(["--domain"],
+                                     "Change the base url for aur requests (https://aur.archlinux.org is the default)"))
+only_solver_points.append(HelpOption(["--holdpkg"],
+                                     "Specify packages which must not be removed - "
+                                     "multiple packages are space separated"))
+only_solver_points.append(HelpOption(["--holdpkg_conf"],
+                                     "Append packages from the pacman.conf to"
+                                     " {}".format(Colors.LIGHT_GREEN("--holdpkg"))))
+only_solver_points.append(HelpOption(["--ignore"],
+                                    "Directs pacman to ignore upgrades of package even if there is one available"))
+only_solver_points.append(HelpOption(["--ignoregroup"],
+                                    "Directs pacman to ignore upgrades of all packages in group, "
+                                    "even if there is one available."))
+only_solver_points.append(HelpOption(["-u", "--sysupgrade"],
+                                    "Upgrades all packages that are out-of-date"))
+only_solver_points.append(HelpOption(["--optimistic_versioning"],
+                                     "In case of an unknown version of a provider for a versioned dependency, "
+                                     "assume that the dependency is fulfilled"))
+only_solver_points.append(HelpOption(["--rebuild"],
+                                     "Always rebuild packages before installing them"))
+only_solver_points.append(HelpOption(["--show_unkown"],
+                                     "Prints packages that are not know either "
+                                     "in the repos or the aur. Packages will be "
+                                     "{} instead of JSON formatted"
+                                     .format(Colors.BOLD("new line separated"))))
