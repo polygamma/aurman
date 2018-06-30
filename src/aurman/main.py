@@ -365,7 +365,7 @@ def process(args):
     # validity check for user arguments
     # unrecognized parameters
     if pacman_args.invalid_args:
-        aurman_error("aurman: invalid option {}".format(pacman_args.invalid_args))
+        aurman_error("invalid option {}".format(pacman_args.invalid_args))
         aurman_note("aurman --help or aurman -h")
         sys.exit(1)
 
