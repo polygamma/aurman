@@ -6,16 +6,14 @@ services:
   - docker
 before_install:
   - docker build -t aurman_docker .
-install:
-  - python setup.py install
 script:
-  - python src/unit_tests/test_split_query_helper.py
-  - python src/unit_tests/test_parse_pacman_args.py
-  - docker run aurman_docker install_tests
-  - docker run aurman_docker cache_tests
-  - docker run aurman_docker build_dir_tests
-  - docker run aurman_docker testing_repo_tests
-  - docker run aurman_docker pkgdest_tests
-  - docker run aurman_docker archive_tests
+  - docker run aurman_docker unit_tests.test_split_query_helper
+  - docker run aurman_docker unit_tests.test_parse_pacman_args
+  - docker run aurman_docker docker_tests.install_tests
+  - docker run aurman_docker docker_tests.cache_tests
+  - docker run aurman_docker docker_tests.build_dir_tests
+  - docker run aurman_docker docker_tests.testing_repo_tests
+  - docker run aurman_docker docker_tests.pkgdest_tests
+  - docker run aurman_docker docker_tests.archive_tests
 notifications:
   email: false

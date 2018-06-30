@@ -5,8 +5,6 @@ from sys import exit
 from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
-    # install aurman
-    test_command("sudo python setup.py install --optimize=1", "/home/aurman/aurman-git")
 
     # set mirror to 7 days ago
     test_command("sudo mv /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.bak")

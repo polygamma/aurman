@@ -30,6 +30,10 @@ RUN printf "[miscellaneous]\nuse_ask\n" > "/home/aurman/.config/aurman/aurman_co
 # add files of the current branch
 ADD . /home/aurman/aurman-git
 
+# install aurman
+WORKDIR /home/aurman/aurman-git
+RUN sudo python setup.py install --optimize=1
+
 # change working dir for tests
 WORKDIR /home/aurman/aurman-git/src
 
