@@ -239,20 +239,21 @@ def search_packages(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]
     sys.exit(0)
 
 
-def show_packages_info(packages_of_user_names: List[str]) -> None:
+def show_packages_info(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]) -> None:
     """
     shows the information of packages, just as pacman -Si
-    :param packages_of_user_names: the targets to show the information of
+    :param pacman_args:             the parsed args
+    :param packages_of_user_names:  the targets to show the information of
     """
     # pacman output
-    run(["pacman", "-Si"] + packages_of_user_names, stderr=DEVNULL)
+    run(["pacman"] + pacman_args.args_as_list(), stderr=DEVNULL)
 
     # output for aur packages
     for package_dict in get_aur_info(packages_of_user_names):
         for key, value in package_dict.items():
             if type(value) is list:
                 value = '  '.join(value)
-            print("{}{} {}".format(Colors.BOLD(key).ljust(25), Colors.BOLD(':'), value))
+            print("{}{} {}".format(Colors.BOLD(key.ljust(16)), Colors.BOLD(':'), value))
         print()
 
     sys.exit(0)
@@ -455,7 +456,7 @@ def process(args):
 
     # if user just wants to see info of packages
     if info:
-        show_packages_info(packages_of_user_names)
+        show_packages_info(pacman_args, packages_of_user_names)
 
     # groups are for pacman
     # removes found groups from packages_of_user_names
