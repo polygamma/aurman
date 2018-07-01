@@ -80,7 +80,7 @@ def possible_completions():
             return
 
     results = run(
-        "expac -Ss '%n' ^{}".format(cur), shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True
+        ["expac", "-Ss", "%n", "^{}".format(cur)], stdout=PIPE, stderr=DEVNULL, universal_newlines=True
     ).stdout.splitlines()
 
     results.extend([ret_dict["Name"] for ret_dict in get_aur_info((cur,), True, True)])

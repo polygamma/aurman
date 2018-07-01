@@ -1,4 +1,5 @@
 import logging
+from shlex import quote
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List
 
@@ -57,33 +58,27 @@ def expac(option: str, formatting: Sequence[str], targets: Sequence[str]) -> Lis
                         the formatters are joined by '?!', so ('n', 'v') becomes %n?!%v in the output
     """
 
-    max_query_length = 131071
-    expac_base_query = "expac {} '{}'".format(option, "?!".join(["%{}".format(formatter) for formatter in formatting]))
-    base_query_length = len(expac_base_query.encode("utf8"))
-    queries_parameters = split_query_helper(max_query_length, base_query_length, 1, targets)
+    cmd = ["expac", option, "?!".join(["%{}".format(formatter) for formatter in formatting])]
+    if targets:
+        cmd += ["-"]
 
-    return_list = []
+    expac_return = run(cmd, input='\n'.join(targets), stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+    if expac_return.returncode != 0:
+        query_stringified = ' '.join(quote(i) for i in cmd[1:])
+        logging.error("expac query {} for targets {} failed".format(query_stringified, targets))
+        raise InvalidInput("expac query {} for targets {} failed".format(query_stringified, targets))
 
-    for query_parameters in queries_parameters:
-        query = "{}{}".format(expac_base_query, ''.join([" {}".format(parameter) for parameter in query_parameters]))
-        expac_return = run(query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
-        if expac_return.returncode != 0:
-            logging.error("expac query {} failed".format(query))
-            raise InvalidInput("expac query {} failed".format(query))
-
-        return_list.extend(expac_return.stdout.strip().splitlines())
-
-    return return_list
+    return expac_return.stdout.strip().splitlines()
 
 
-def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = None, sudo: bool = True,
+def pacman(options_as_list: List[str], fetch_output: bool, dir_to_execute: str = None, sudo: bool = True,
            use_ask: bool = False) -> List[str]:
     """
     pacman wrapper. see: https://www.archlinux.org/pacman/pacman.8.html
     provide the pacman options as string via "options_as_string".
     e.g. "-Syu package1 package2"
 
-    :param options_as_string:   the pacman options as string
+    :param options_as_list:     the pacman options as string
     :param fetch_output:        True if you want to receive the output of pacman, False otherwise
     :param dir_to_execute:      if you want to execute the pacman command in a specific directory, provide the directory
     :param sudo:                True if you want to execute pacman with sudo, False otherwise
@@ -91,26 +86,21 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
     :return:                    empty list in case of "fetch_output"=False, otherwise the lines of the pacman output as list.
                                 one line of output is one item in the list.
     """
-    if use_ask:
-        options_as_string = "--ask=4 " + options_as_string
-
     if sudo:
-        pacman_query = "sudo pacman {}".format(options_as_string)
+        pacman_query = ["sudo", "pacman"]
     else:
-        pacman_query = "pacman {}".format(options_as_string)
+        pacman_query = ["pacman"]
+
+    if use_ask:
+        pacman_query += ["--ask=4"]
+
+    pacman_query += options_as_list
+    kwargs = {'cwd': dir_to_execute}
 
     if fetch_output:
-        if dir_to_execute is not None:
-            pacman_return = run(
-                pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True, cwd=dir_to_execute
-            )
-        else:
-            pacman_return = run(pacman_query, shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
-    else:
-        if dir_to_execute is not None:
-            pacman_return = run(pacman_query, shell=True, cwd=dir_to_execute)
-        else:
-            pacman_return = run(pacman_query, shell=True)
+        kwargs.update(stdout=PIPE, stderr=DEVNULL, universal_newlines=True)
+
+    pacman_return = run(pacman_query, **kwargs)
 
     if pacman_return.returncode != 0:
         logging.error("pacman query {} failed".format(pacman_query))
@@ -122,23 +112,23 @@ def pacman(options_as_string: str, fetch_output: bool, dir_to_execute: str = Non
     return []
 
 
-def makepkg(options_as_string: str, fetch_output: bool, dir_to_execute: str) -> List[str]:
+def makepkg(options_as_list: List[str], fetch_output: bool, dir_to_execute: str) -> List[str]:
     """
     makepkg wrapper. see: https://www.archlinux.org/pacman/makepkg.8.html
     provide the makepkg options as string via "options_as_string".
     e.g. "--printsrcinfo"
 
-    :param options_as_string:   the makepkg options as string
+    :param options_as_list:     the makepkg options as string
     :param fetch_output:        True if you want to receive the output of makepkg, False otherwise
     :param dir_to_execute:      provide the directory in which the makepkg command should be executed
     :return:                    empty list in case of "fetch_output"=False, otherwise the lines of the makepkg output as list.
                                 one line of output is one item in the list.
     """
-    makepkg_query = "makepkg {}".format(options_as_string)
+    makepkg_query = ["makepkg"] + options_as_list
     if fetch_output:
-        makepkg_return = run(makepkg_query, shell=True, stdout=PIPE, universal_newlines=True, cwd=dir_to_execute)
+        makepkg_return = run(makepkg_query, stdout=PIPE, universal_newlines=True, cwd=dir_to_execute)
     else:
-        makepkg_return = run(makepkg_query, shell=True, cwd=dir_to_execute)
+        makepkg_return = run(makepkg_query, cwd=dir_to_execute)
 
     if makepkg_return.returncode != 0:
         logging.error("makepkg query {} failed in directory {}".format(makepkg_query, dir_to_execute))

@@ -1,7 +1,6 @@
 import configparser
 import logging
 import os
-from subprocess import run, DEVNULL
 from typing import Tuple, Set, Dict
 
 from aurman.coloring import aurman_error, Colors
@@ -27,9 +26,11 @@ def read_config() -> 'configparser.ConfigParser':
 
     # create config dir if it does not exist
     if not os.path.exists(config_dir):
-        if run("install -dm700 '{}'".format(config_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
-            logging.error("Creating config dir of aurman failed")
-            raise InvalidInput("Creating config dir of aurman failed")
+        try:
+            os.makedirs(config_dir, mode=0o700, exist_ok=True)
+        except OSError:
+            logging.error("Creating config dir of aurman {} failed".format(config_dir))
+            raise InvalidInput("Creating config dir of aurman {} failed".format(config_dir))
 
     # create empty config if config does not exist
     if not os.path.isfile(config_file):

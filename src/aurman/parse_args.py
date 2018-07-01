@@ -108,15 +108,15 @@ class PacmanArgs:
         self.targets: Sequence[str] = []  # contains the targets, e.g. the packages
         self.invalid_args: List[str] = []  # contains unknown parameters
 
-    def __repr__(self):
-        return_string = ""
+    def args_as_list(self) -> List[str]:
+        return_list = []
 
         for name, value in self.__dict__.items():
             if not value or name == "invalid_args":
                 continue
 
             if name == "operation":
-                return_string += " " + "--{}".format(value.value)
+                return_list.append("--{}".format(value.value))
 
             elif name == "targets":
                 continue
@@ -126,33 +126,28 @@ class PacmanArgs:
                     continue
 
                 if len(name) >= 2:
-                    return_string += " " + "--{}".format(name)
+                    return_list.append("--{}".format(name))
                 else:
-                    return_string += " " + "-{}".format(name)
+                    return_list.append("-{}".format(name))
                 if not isinstance(value, bool) and not pacman_options[name][1] == 0:
-                    new_values = []
-                    for val in value:
-                        if " " in val:
-                            new_values.append("'{}'".format(val))
-                        else:
-                            new_values.append(val)
                     # dirty bullshit - thanks pacman 5.1
                     if name == "ignore" or name == "ignoregroup":
-                        return_string += " " + ",".join(new_values)
+                        return_list.append(",".join(value))
                     else:
-                        return_string += " " + " ".join(new_values)
+                        return_list.extend(value)
                 # dirty hack for things like -yy or -cc
                 elif not isinstance(value, bool):
                     if len(name) >= 2:
-                        return_string += " " + "--{}".format(name)
+                        return_list.append("--{}".format(name))
                     else:
-                        return_string += " " + "-{}".format(name)
+                        return_list.append("-{}".format(name))
 
         # guarantees the targets to be at the end
         if self.targets:
-            return_string += " -- " + " ".join(self.targets)
+            return_list.append("--")
+            return_list.extend(self.targets)
 
-        return return_string.strip()
+        return return_list
 
 
 def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':

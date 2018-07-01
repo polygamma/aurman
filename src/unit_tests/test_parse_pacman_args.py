@@ -45,21 +45,21 @@ class TestParse_pacman_args(TestCase):
         self.assertEqual(['something'], ret_val.clean)
         self.assertEqual(True, ret_val.sysupgrade)
 
-        self.assertEqual(2, str(ret_val).count("--clean"))
-        self.assertEqual(1, str(ret_val).count("--sysupgrade"))
-        self.assertEqual(1, str(ret_val).count("--refresh"))
+        self.assertEqual(2, ret_val.args_as_list().count("--clean"))
+        self.assertEqual(1, ret_val.args_as_list().count("--sysupgrade"))
+        self.assertEqual(1, ret_val.args_as_list().count("--refresh"))
 
         args = "--sync -- aurman".split()
         ret_val = parse_pacman_args(args)
         self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
         self.assertEqual(["aurman"], ret_val.targets)
-        self.assertEqual("--sync -- aurman", str(ret_val))
+        self.assertEqual(["--sync", "--", "aurman"], ret_val.args_as_list())
 
         args = "-Ss -- -viewer test --view".split()
         ret_val = parse_pacman_args(args)
         self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
         self.assertEqual(["-viewer", "test", "--view"], ret_val.targets)
-        self.assertEqual("--sync --search -- -viewer test --view", str(ret_val))
+        self.assertEqual(["--sync", "--search", "--", "-viewer", "test", "--view"], ret_val.args_as_list())
 
 
 if __name__ == '__main__':

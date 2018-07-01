@@ -404,25 +404,24 @@ class Package:
 
         return list(return_dict.values())
 
-    def __init__(self, name: str, version: str, depends: Sequence[str] = None, conflicts: Sequence[str] = None,
-                 optdepends: Sequence[str] = None, provides: Sequence[str] = None, replaces: Sequence[str] = None,
-                 pkgbase: str = None, install_reason: str = None, makedepends: Sequence[str] = None,
-                 checkdepends: Sequence[str] = None, type_of: PossibleTypes = None, repo: str = None,
-                 groups: Sequence[str] = None):
-        self.name = name  # %n
-        self.version = version  # %v
-        self.depends = depends  # %D
-        self.conflicts = conflicts  # %H
-        self.optdepends = optdepends  # %o
-        self.provides = provides  # %P
-        self.replaces = replaces  # %T
-        self.pkgbase = pkgbase  # %e
-        self.install_reason = install_reason  # %w (only with -Q)
-        self.makedepends = makedepends  # aur only
-        self.checkdepends = checkdepends  # aur only
-        self.type_of = type_of  # PossibleTypes Enum value
-        self.repo = repo  # %r (only useful for upstream repo packages)
-        self.groups = groups  # %G
+    def __init__(
+            self, name, version, depends=None, conflicts=None, optdepends=None, provides=None, replaces=None,
+            pkgbase=None, install_reason=None, makedepends=None, checkdepends=None, type_of=None, repo=None, groups=None
+    ):
+        self.name: str = name  # %n
+        self.version: str = version  # %v
+        self.depends: Sequence[str] = depends  # %D
+        self.conflicts: Sequence[str] = conflicts  # %H
+        self.optdepends: Sequence[str] = optdepends  # %o
+        self.provides: Sequence[str] = provides  # %P
+        self.replaces: Sequence[str] = replaces  # %T
+        self.pkgbase: str = pkgbase  # %e
+        self.install_reason: str = install_reason  # %w (only with -Q)
+        self.makedepends: Sequence[str] = makedepends  # aur only
+        self.checkdepends: Sequence[str] = checkdepends  # aur only
+        self.type_of: PossibleTypes = type_of  # PossibleTypes Enum value
+        self.repo: str = repo  # %r (only useful for upstream repo packages)
+        self.groups: Sequence[str] = groups  # %G
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self.name == other.name and self.version == other.version
@@ -895,42 +894,44 @@ class Package:
 
         # check if repo has ever been fetched
         if os.path.isdir(package_dir):
-            if run("git fetch", shell=True, cwd=package_dir).returncode != 0:
-                logging.error("git fetch of {} failed".format(self.name))
-                raise ConnectionProblem("git fetch of {} failed".format(self.name))
+            if run(["git", "fetch"], cwd=package_dir).returncode != 0:
+                logging.error("git fetch of {} failed in directory {}".format(self.name, package_dir))
+                raise ConnectionProblem("git fetch of {} failed in directory {}".format(self.name, package_dir))
 
             head = run(
-                "git rev-parse HEAD", shell=True, stdout=PIPE, universal_newlines=True, cwd=package_dir
+                ["git", "rev-parse", "HEAD"], stdout=PIPE, universal_newlines=True, cwd=package_dir
             ).stdout.strip()
             u = run(
-                "git rev-parse @{u}", shell=True, stdout=PIPE, universal_newlines=True, cwd=package_dir
+                ["git", "rev-parse", "@{u}"], stdout=PIPE, universal_newlines=True, cwd=package_dir
             ).stdout.strip()
 
             # if new sources available
             if head != u:
+                run(["git", "reset", "--hard", "HEAD"], stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir)
                 if run(
-                        "git reset --hard HEAD && git pull", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir
+                        ["git", "pull"], stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir
                 ).returncode != 0:
-                    logging.error("sources of {} could not be fetched".format(self.name))
-                    raise ConnectionProblem("sources of {} could not be fetched".format(self.name))
+                    logging.error("sources of {} could not be fetched in directory {}".format(self.name, package_dir))
+                    raise ConnectionProblem(
+                        "sources of {} could not be fetched in directory {}".format(self.name, package_dir)
+                    )
 
         # repo has never been fetched
         else:
             # create package dir
-            if run(
-                    "install -dm700 '{}'".format(package_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode != 0:
-                logging.error("Creating package dir of {} failed".format(self.name))
-                raise InvalidInput("Creating package dir of {} failed".format(self.name))
+            try:
+                os.makedirs(package_dir, mode=0o700, exist_ok=True)
+            except OSError:
+                logging.error("Creating package dir {} failed".format(package_dir))
+                raise InvalidInput("Creating package dir {} failed".format(package_dir))
 
             # clone repo
             if run(
-                    "git clone {}/{}.git".format(aurman.aur_utilities.aur_domain, self.pkgbase),
-                    shell=True,
+                    ["git", "clone", "{}/{}.git".format(aurman.aur_utilities.aur_domain, self.pkgbase)],
                     cwd=Package.cache_dir
             ).returncode != 0:
-                logging.error("Cloning repo of {} failed".format(self.name))
-                raise ConnectionProblem("Cloning repo of {} failed".format(self.name))
+                logging.error("Cloning repo of {} failed in directory {}".format(self.name, package_dir))
+                raise ConnectionProblem("Cloning repo of {} failed in directory {}".format(self.name, package_dir))
 
     def search_and_fetch_pgp_keys(self, fetch_always: bool = False, keyserver: str = None):
         """
@@ -949,27 +950,29 @@ class Package:
         pgp_keys = Package.getPGPKeys(os.path.join(package_dir, "PKGBUILD"))
 
         for pgp_key in pgp_keys:
-            is_key_known = run(
-                "gpg --list-public-keys {}".format(pgp_key), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode == 0
-            if not is_key_known:
+            if run(["gpg", "--list-public-keys", pgp_key], stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
                 if fetch_always or ask_user(
                         "PGP Key {} found in PKGBUILD of {} and is not known yet. "
                         "Do you want to import the key?".format(Colors.BOLD(Colors.LIGHT_MAGENTA(pgp_key)),
                                                                 Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), True):
                     if keyserver is None:
-                        if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
-                            logging.error("Import PGP key {} failed.".format(pgp_key))
+                        if run(["gpg", "--recv-keys", pgp_key]).returncode != 0:
+                            logging.error(
+                                "Import PGP key {} failed. "
+                                "This is an error in your GnuPG installation.".format(pgp_key)
+                            )
                             raise ConnectionProblem(
                                 "Import PGP key {} failed. "
                                 "This is an error in your GnuPG installation.".format(pgp_key)
                             )
                     else:
                         if run(
-                                "gpg --keyserver {} --recv-keys {}".format(keyserver, pgp_key),
-                                shell=True
+                                ["gpg", "--keyserver", keyserver, "--recv-keys", pgp_key]
                         ).returncode != 0:
-                            logging.error("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
+                            logging.error(
+                                "Import PGP key {} from {} failed. "
+                                "This is an error in your GnuPG installation.".format(pgp_key, keyserver)
+                            )
                             raise ConnectionProblem(
                                 "Import PGP key {} from {} failed. "
                                 "This is an error in your GnuPG installation.".format(pgp_key, keyserver)
@@ -1000,28 +1003,19 @@ class Package:
             raise InvalidInput("Package dir of {} does not exist".format(self.name))
 
         # if aurman dir does not exist - create
-        if not os.path.isdir(git_aurman_dir):
-            if run(
-                    "install -dm700 '{}'".format(git_aurman_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode != 0:
-                logging.error("Creating git_aurman_dir of {} failed".format(self.name))
-                raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
+        try:
+            os.makedirs(git_aurman_dir, mode=0o700, exist_ok=True)
+        except OSError:
+            logging.error("Creating git_aurman_dir {} failed".format(git_aurman_dir))
+            raise InvalidInput("Creating git_aurman_dir {} failed".format(git_aurman_dir))
 
         # if last commit seen hash file does not exist - create
         if not os.path.isfile(last_commit_hash_file):
-            empty_tree_hash = run(
-                "git hash-object -t tree --stdin < /dev/null",
-                shell=True,
-                stdout=PIPE,
-                stderr=DEVNULL,
-                universal_newlines=True
-            ).stdout.strip()
-
             with open(last_commit_hash_file, 'w') as f:
-                f.write(empty_tree_hash)
+                run(["git", "hash-object", "-t", "tree", "/dev/null"], stdout=f, stderr=DEVNULL)
 
         current_commit_hash = run(
-            "git rev-parse HEAD", shell=True, stdout=PIPE, stderr=DEVNULL, cwd=package_dir, universal_newlines=True
+            ["git", "rev-parse", "HEAD"], stdout=PIPE, stderr=DEVNULL, cwd=package_dir, universal_newlines=True
         ).stdout.strip()
 
         # if files have been reviewed
@@ -1035,7 +1029,7 @@ class Package:
         # relevant files are all files besides .SRCINFO
         relevant_files = []
         files_in_pack_dir = run(
-            "git ls-files", shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True, cwd=package_dir
+            ["git", "ls-files"], stdout=PIPE, stderr=DEVNULL, universal_newlines=True, cwd=package_dir
         ).stdout.strip().splitlines()
         for file in files_in_pack_dir:
             if file != ".SRCINFO":
@@ -1051,10 +1045,7 @@ class Package:
                                                        default_show_changes):
 
                 run(
-                    "git diff {} {} -- . ':(exclude).SRCINFO'".format(
-                        last_seen_hash, current_commit_hash
-                    ),
-                    shell=True,
+                    ["git", "diff", last_seen_hash, current_commit_hash, "--", ".", ":(exclude).SRCINFO"],
                     cwd=package_dir
                 )
                 any_changes_seen = True
@@ -1087,10 +1078,7 @@ class Package:
                     else:
                         file = relevant_files[user_input - 1]
                         if run(
-                                "{} {}".format(
-                                    Package.default_editor_path, os.path.join(package_dir, file)
-                                ),
-                                shell=True
+                                [Package.default_editor_path, os.path.join(package_dir, file)]
                         ).returncode != 0:
                             logging.error("Editing {} of {} failed".format(file, self.name))
                             raise InvalidInput("Editing {} of {} failed".format(file, self.name))
@@ -1126,7 +1114,7 @@ class Package:
             logging.error("package dir of {} does not exist".format(self.name))
             raise InvalidInput("package dir of {} does not exist".format(self.name))
 
-        src_lines = makepkg("--printsrcinfo", True, package_dir)
+        src_lines = makepkg(["--printsrcinfo"], True, package_dir)
         pkgver = None
         pkgrel = None
         epoch = None
@@ -1180,9 +1168,9 @@ class Package:
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         if not ignore_arch:
-            makepkg("-odc --noprepare --skipinteg", False, package_dir)
+            makepkg(["-odc", "--noprepare", "--skipinteg"], False, package_dir)
         else:
-            makepkg("-odcA --noprepare --skipinteg", False, package_dir)
+            makepkg(["-odcA", "--noprepare", "--skipinteg"], False, package_dir)
 
         self.version = self.version_from_srcinfo()
 
@@ -1194,7 +1182,7 @@ class Package:
         :param package_dir:     The package dir of the package
         :return:                The build dir in case there is one, the package dir otherwise
         """
-        return os.path.split(makepkg("--packagelist", True, package_dir)[0])[0]
+        return os.path.split(makepkg(["--packagelist"], True, package_dir)[0])[0]
 
     def get_package_file_to_install(self, build_dir: str, build_version: str) -> Union[str, None]:
         """
@@ -1207,7 +1195,7 @@ class Package:
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
 
         files_in_build_dir = [f for f in os.listdir(build_dir) if os.path.isfile(os.path.join(build_dir, f))]
-        files_to_build = [os.path.split(build_line)[1] for build_line in makepkg("--packagelist", True, package_dir)]
+        files_to_build = [os.path.split(build_line)[1] for build_line in makepkg(["--packagelist"], True, package_dir)]
         for file in files_in_build_dir:
             if file.startswith(self.name + "-" + build_version + "-") and file in files_to_build:
                 return file
@@ -1229,18 +1217,19 @@ class Package:
 
         if rebuild or (self.get_package_file_to_install(build_dir, build_version) is None):
             if not ignore_arch:
-                makepkg("-cf --noconfirm", False, package_dir)
+                makepkg(["-cf", "--noconfirm"], False, package_dir)
             else:
-                makepkg("-cfA --noconfirm", False, package_dir)
+                makepkg(["-cfA", "--noconfirm"], False, package_dir)
 
-    def install(self, args_as_string: str, use_ask: bool = False):
+    def install(self, args_as_list: List[str], use_ask: bool = False):
         """
         Install this package
 
-        :param args_as_string:  Args for pacman
+        :param args_as_list:    Args for pacman
         :param use_ask:         Use --ask=4 when calling pacman, see: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
         """
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
+        args_as_list = args_as_list[:]
 
         # get name of package install file
         build_version = self.version_from_srcinfo()
@@ -1251,10 +1240,10 @@ class Package:
             raise InvalidInput("package file of {} not available".format(self.name))
 
         if use_ask:
-            args_as_string = "--ask=4 " + args_as_string
+            args_as_list = ["--ask=4"] + args_as_list
 
         # install
-        pacman("{} {}".format(args_as_string, package_install_file), False, dir_to_execute=build_dir)
+        pacman(args_as_list + [package_install_file], False, dir_to_execute=build_dir)
 
 
 class System:
@@ -1269,13 +1258,13 @@ class System:
 
         :return:    A list containing the installed packages
         """
-        repo_packages_names = set(expac("-S", ('n',), ()))
+        repo_packages_names = set(expac("-S", ['n'], []))
 
         # packages the user wants to install from aur
         aur_names = packages_from_other_sources()[0]
         repo_packages_names -= aur_names
 
-        installed_packages_names = set(expac("-Q", ('n',), ()))
+        installed_packages_names = set(expac("-Q", ['n'], []))
         installed_repo_packages_names = installed_packages_names & repo_packages_names
         unclassified_installed_names = installed_packages_names - installed_repo_packages_names
 
@@ -1323,7 +1312,7 @@ class System:
 
         :return:    A list containing the current repo packages
         """
-        return Package.get_packages_from_expac("-S", (), PossibleTypes.REPO_PACKAGE)
+        return Package.get_packages_from_expac("-S", [], PossibleTypes.REPO_PACKAGE)
 
     def __init__(self, packages: Sequence['Package']):
         self.all_packages_dict = {}  # names as keys and packages as values

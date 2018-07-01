@@ -353,9 +353,12 @@ def process(args):
         aurman_error("if you think that there should be one, rerun aurman with the --deep_search flag")
         sys.exit(1)
 
-    print(json.dumps(
-        [valid_solutions, installed_system.differences_between_systems([sol_tuple[0] for sol_tuple in sol_tuples])],
-        cls=SolutionEncoder, indent=4))
+    print(
+        json.dumps(
+            [valid_solutions, installed_system.differences_between_systems([sol_tuple[0] for sol_tuple in sol_tuples])],
+            cls=SolutionEncoder, indent=4
+        )
+    )
 
 
 def main():

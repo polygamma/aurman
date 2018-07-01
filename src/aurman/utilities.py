@@ -5,7 +5,7 @@ import threading
 import time
 import tty
 from pyalpm import vercmp
-from subprocess import run, DEVNULL
+from subprocess import run
 from typing import Tuple, Sequence
 
 import regex
@@ -179,11 +179,11 @@ def acquire_sudo():
 
     def sudo_loop():
         while True:
-            if run("sudo --non-interactive -v", shell=True, stdout=DEVNULL).returncode != 0:
+            if run(["sudo", "--non-interactive", "-v"]).returncode != 0:
                 logging.error("acquire sudo failed")
             time.sleep(SudoLoop.timeout)
 
-    if run("sudo -v", shell=True).returncode != 0:
+    if run(["sudo", "-v"]).returncode != 0:
         logging.error("acquire sudo failed")
         raise InvalidInput("acquire sudo failed")
     t = threading.Thread(target=sudo_loop)
