@@ -57,7 +57,7 @@ def sanitize_user_input(user_input: Sequence[str], system: 'System') -> Set[str]
     return sanitized_names
 
 
-def parse_parameters(args: List[str]) -> 'PacmanArgs':
+def parse_parameters(args: List[str]):
     """
     parses the parameters of the user
     :param args: the args to parse
