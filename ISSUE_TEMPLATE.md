@@ -33,8 +33,7 @@ MAKE NEVERTHELESS SURE, THAT THE FEATURE REQUEST IS WORDED IN A MEANINGFUL WAY
 
 ## Running linux distribution
 <!-- _Write, which linux distribution you are using.
-If you are using anything besides Arch Linux, e.g. Antergos or Manjaro, you may simply not submit this issue, because those are unsupported_
+If you are using anything besides Arch Linux, e.g. Antergos or Manjaro, you may simply not submit this issue, because those are unsupported_ -->
 
 > **Notice**: If you do not fill out one of the fields, without mentioning **why** you left it out, the issue will be closed without any comment.
 You may also be banned from this repository without further warning.
--->
