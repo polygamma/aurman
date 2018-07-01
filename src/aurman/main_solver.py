@@ -256,7 +256,7 @@ def process(args):
             if not os.path.isdir(package_dir):
                 aurman_error("Package dir of {} not found".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))))
                 sys.exit(1)
-            makepkg("-odc --noprepare --skipinteg", True, package_dir)
+            makepkg(["-odc", "--noprepare", "--skipinteg"], True, package_dir)
 
             package.version = package.version_from_srcinfo()
 
