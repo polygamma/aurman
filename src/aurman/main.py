@@ -1,5 +1,6 @@
 import logging
 import os
+import shutil
 import sys
 from copy import deepcopy
 from subprocess import run, DEVNULL
@@ -20,6 +21,11 @@ from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
 
+def rmtree_onerror(*args):
+    aurman_error(
+        "Directory {} could not be deleted".format(Colors.BOLD(Colors.LIGHT_MAGENTA(path)))
+    )
+    sys.exit(1)
 
 def readconfig() -> None:
     """
@@ -71,9 +77,9 @@ def show_version() -> None:
     """
     # remove colors in case of not terminal
     if stdout.isatty():
-        aurman_note(expac("-Q", ("v",), ("aurman-git", "aurman"))[0])
+        aurman_note(expac("-Q", ["v"], ["aurman-git", "aurman"])[0])
     else:
-        print(expac("-Q", ("v",), ("aurman-git", "aurman"))[0])
+        print(expac("-Q", ["v"], ["aurman-git", "aurman"])[0])
     sys.exit(0)
 
 
@@ -84,12 +90,12 @@ def redirect_pacman(pacman_args: 'PacmanArgs', args: List[str]) -> None:
     :param args: the args unparsed
     """
     try:
+        cmd = ["pacman"]
         if pacman_args.operation in [
             PacmanOperations.UPGRADE, PacmanOperations.REMOVE, PacmanOperations.DATABASE, PacmanOperations.FILES
         ]:
-            run("sudo pacman {}".format(" ".join(["'{}'".format(arg) for arg in args])), shell=True)
-        else:
-            run("pacman {}".format(" ".join(["'{}'".format(arg) for arg in args])), shell=True)
+            cmd = ["sudo", "pacman"]
+        run(cmd + args)
     except InvalidInput:
         sys.exit(1)
 
@@ -152,13 +158,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                         False
                     ):
                 aurman_status("Deleting cache dir...")
-                if run(
-                        "rm -rf {}".format(Package.cache_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-                ).returncode != 0:
-                    aurman_error(
-                        "Directory {} could not be deleted".format(Colors.BOLD(Colors.LIGHT_MAGENTA(Package.cache_dir)))
-                    )
-                    sys.exit(1)
+                shutil.rmtree(Package.cache_dir, onerror=rmtree_onerror)
         else:
             if noconfirm or \
                     ask_user(
@@ -170,7 +170,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                 aurman_status("Deleting uninstalled clones from cache...")
 
                 # if pkgbase not available, the name of the package is the base
-                expac_returns = expac("-Q -1", ("e", "n"), ())
+                expac_returns = expac("-Q1", ["e", "n"], [])
                 dirs_to_not_delete = set()
                 for expac_return in expac_returns:
                     pkgbase = expac_return.split("?!")[0]
@@ -182,16 +182,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                 for thing in os.listdir(Package.cache_dir):
                     if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                         if thing not in dirs_to_not_delete:
-                            dir_to_delete = os.path.join(Package.cache_dir, thing)
-                            if run(
-                                    "rm -rf {}".format(dir_to_delete), shell=True, stdout=DEVNULL, stderr=DEVNULL
-                            ).returncode != 0:
-                                aurman_error(
-                                    "Directory {} could not be deleted".format(
-                                        Colors.BOLD(Colors.LIGHT_MAGENTA(dir_to_delete))
-                                    )
-                                )
-                                sys.exit(1)
+                            shutil.rmtree(os.path.join(Package.cache_dir, thing))
 
             if not noconfirm and \
                     ask_user(
@@ -206,7 +197,7 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                     if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                         dir_to_clean = os.path.join(Package.cache_dir, thing)
                         if run(
-                                "git clean -ffdx", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=dir_to_clean
+                                ["git", "clean", "-qffdx"], stderr=DEVNULL, cwd=dir_to_clean
                         ).returncode != 0:
                             aurman_error(
                                 "Directory {} could not be cleaned".format(

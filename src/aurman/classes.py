@@ -294,7 +294,7 @@ class Package:
         return [db.name for db in PacmanConfig(conf="/etc/pacman.conf").initialize_alpm().get_syncdbs()]
 
     @staticmethod
-    def get_packages_from_expac(expac_operation: str, packages_names: Sequence[str], packages_type: PossibleTypes) -> \
+    def get_packages_from_expac(expac_operation: str, packages_names: List[str], packages_type: PossibleTypes) -> \
             List['Package']:
         """
         Generates and returns packages from an expac query.
@@ -895,38 +895,36 @@ class Package:
 
         # check if repo has ever been fetched
         if os.path.isdir(package_dir):
-            if run("git fetch", shell=True, cwd=package_dir).returncode != 0:
+            if run(["git", "fetch"], cwd=package_dir).returncode != 0:
                 logging.error("git fetch of {} failed".format(self.name))
                 raise ConnectionProblem("git fetch of {} failed".format(self.name))
 
             head = run(
-                "git rev-parse HEAD", shell=True, stdout=PIPE, universal_newlines=True, cwd=package_dir
+                ["git", "rev-parse", "HEAD"], stdout=PIPE, universal_newlines=True, cwd=package_dir
             ).stdout.strip()
             u = run(
-                "git rev-parse @{u}", shell=True, stdout=PIPE, universal_newlines=True, cwd=package_dir
+                ["git", "rev-parse", "@{u}"], stdout=PIPE, universal_newlines=True, cwd=package_dir
             ).stdout.strip()
 
             # if new sources available
             if head != u:
-                if run(
-                        "git reset --hard HEAD && git pull", shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir
-                ).returncode != 0:
+                run(["git", "reset", "-q", "--hard", "HEAD"], stderr=DEVNULL cwd=package_dir)
+                if run(["git", "pull", "-q"], stderr=DEVNULL, cwd=package_dir).returncode != 0:
                     logging.error("sources of {} could not be fetched".format(self.name))
                     raise ConnectionProblem("sources of {} could not be fetched".format(self.name))
 
         # repo has never been fetched
         else:
             # create package dir
-            if run(
-                    "install -dm700 '{}'".format(package_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode != 0:
+            try:
+                os.makedirs(package_dir, mode=0o700, exist_ok=True)
+            except:
                 logging.error("Creating package dir of {} failed".format(self.name))
                 raise InvalidInput("Creating package dir of {} failed".format(self.name))
 
             # clone repo
             if run(
-                    "git clone {}/{}.git".format(aurman.aur_utilities.aur_domain, self.pkgbase),
-                    shell=True,
+                    ["git", "clone", "{}/{}.git".format(aurman.aur_utilities.aur_domain, self.pkgbase)],
                     cwd=Package.cache_dir
             ).returncode != 0:
                 logging.error("Cloning repo of {} failed".format(self.name))
@@ -949,26 +947,20 @@ class Package:
         pgp_keys = Package.getPGPKeys(os.path.join(package_dir, "PKGBUILD"))
 
         for pgp_key in pgp_keys:
-            is_key_known = run(
-                "gpg --list-public-keys {}".format(pgp_key), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode == 0
-            if not is_key_known:
+            if run(["gpg", "--list-keys", pgp_key], stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
                 if fetch_always or ask_user(
                         "PGP Key {} found in PKGBUILD of {} and is not known yet. "
                         "Do you want to import the key?".format(Colors.BOLD(Colors.LIGHT_MAGENTA(pgp_key)),
                                                                 Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))), True):
                     if keyserver is None:
-                        if run("gpg --recv-keys {}".format(pgp_key), shell=True).returncode != 0:
+                        if run(["gpg", "--recv-keys", pgp_key]).returncode != 0:
                             logging.error("Import PGP key {} failed.".format(pgp_key))
                             raise ConnectionProblem(
                                 "Import PGP key {} failed. "
                                 "This is an error in your GnuPG installation.".format(pgp_key)
                             )
                     else:
-                        if run(
-                                "gpg --keyserver {} --recv-keys {}".format(keyserver, pgp_key),
-                                shell=True
-                        ).returncode != 0:
+                        if run(["gpg", "--keyserver", keyserver, "--recv-keys", pgp_key]).returncode != 0:
                             logging.error("Import PGP key {} from {} failed.".format(pgp_key, keyserver))
                             raise ConnectionProblem(
                                 "Import PGP key {} from {} failed. "
@@ -1000,28 +992,19 @@ class Package:
             raise InvalidInput("Package dir of {} does not exist".format(self.name))
 
         # if aurman dir does not exist - create
-        if not os.path.isdir(git_aurman_dir):
-            if run(
-                    "install -dm700 '{}'".format(git_aurman_dir), shell=True, stdout=DEVNULL, stderr=DEVNULL
-            ).returncode != 0:
-                logging.error("Creating git_aurman_dir of {} failed".format(self.name))
-                raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
+        try:
+            os.makedirs(git_aurman_dir, mode=0o700, exist_ok=True)
+        except:
+            logging.error("Creating git_aurman_dir of {} failed".format(self.name))
+            raise InvalidInput("Creating git_aurman_dir of {} failed".format(self.name))
 
         # if last commit seen hash file does not exist - create
         if not os.path.isfile(last_commit_hash_file):
-            empty_tree_hash = run(
-                "git hash-object -t tree --stdin < /dev/null",
-                shell=True,
-                stdout=PIPE,
-                stderr=DEVNULL,
-                universal_newlines=True
-            ).stdout.strip()
-
             with open(last_commit_hash_file, 'w') as f:
-                f.write(empty_tree_hash)
+                run(["git", "hash-object", "-t", "tree", "/dev/null"], stdout=f, stderr=DEVNULL)
 
         current_commit_hash = run(
-            "git rev-parse HEAD", shell=True, stdout=PIPE, stderr=DEVNULL, cwd=package_dir, universal_newlines=True
+            ["git", "rev-parse", "HEAD"], stdout=PIPE, stderr=DEVNULL, cwd=package_dir, universal_newlines=True
         ).stdout.strip()
 
         # if files have been reviewed
@@ -1035,7 +1018,7 @@ class Package:
         # relevant files are all files besides .SRCINFO
         relevant_files = []
         files_in_pack_dir = run(
-            "git ls-files", shell=True, stdout=PIPE, stderr=DEVNULL, universal_newlines=True, cwd=package_dir
+            ["git", "ls-files"], stdout=PIPE, stderr=DEVNULL, universal_newlines=True, cwd=package_dir
         ).stdout.strip().splitlines()
         for file in files_in_pack_dir:
             if file != ".SRCINFO":
@@ -1050,11 +1033,7 @@ class Package:
                                                        "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name))),
                                                        default_show_changes):
 
-                run(
-                    "git diff {} {} -- . ':(exclude).SRCINFO'".format(
-                        last_seen_hash, current_commit_hash
-                    ),
-                    shell=True,
+                run(["git", "diff", last_seen_hash, current_commit_hash, "--", ".", ":(exclude).SRCINFO"],
                     cwd=package_dir
                 )
                 any_changes_seen = True
@@ -1087,10 +1066,7 @@ class Package:
                     else:
                         file = relevant_files[user_input - 1]
                         if run(
-                                "{} {}".format(
-                                    Package.default_editor_path, os.path.join(package_dir, file)
-                                ),
-                                shell=True
+                                [Package.default_editor_path, os.path.join(package_dir, file)]
                         ).returncode != 0:
                             logging.error("Editing {} of {} failed".format(file, self.name))
                             raise InvalidInput("Editing {} of {} failed".format(file, self.name))
@@ -1269,13 +1245,13 @@ class System:
 
         :return:    A list containing the installed packages
         """
-        repo_packages_names = set(expac("-S", ('n',), ()))
+        repo_packages_names = set(expac("-S", ['n'], []))
 
         # packages the user wants to install from aur
         aur_names = packages_from_other_sources()[0]
         repo_packages_names -= aur_names
 
-        installed_packages_names = set(expac("-Q", ('n',), ()))
+        installed_packages_names = set(expac("-Q", ['n'], []))
         installed_repo_packages_names = installed_packages_names & repo_packages_names
         unclassified_installed_names = installed_packages_names - installed_repo_packages_names
 
@@ -1323,7 +1299,7 @@ class System:
 
         :return:    A list containing the current repo packages
         """
-        return Package.get_packages_from_expac("-S", (), PossibleTypes.REPO_PACKAGE)
+        return Package.get_packages_from_expac("-S", [], PossibleTypes.REPO_PACKAGE)
 
     def __init__(self, packages: Sequence['Package']):
         self.all_packages_dict = {}  # names as keys and packages as values

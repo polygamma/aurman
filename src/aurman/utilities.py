@@ -1,4 +1,5 @@
 import logging
+import shlex
 import sys
 import termios
 import threading
@@ -34,12 +35,7 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
         return
 
     if not aur:
-        # escape for pacman
-        to_escape = list("()+?|{}")
-        for char in to_escape:
-            pacman_params = pacman_params.replace(char, "\{}".format(char))
-
-        run("pacman {}".format(pacman_params), shell=True)
+        run(["pacman"] + shlex.split(pacman_params))
 
     if not repo:
         # see: https://docs.python.org/3/howto/regex.html
@@ -179,11 +175,11 @@ def acquire_sudo():
 
     def sudo_loop():
         while True:
-            if run("sudo --non-interactive -v", shell=True, stdout=DEVNULL).returncode != 0:
+            if run(["sudo", "--non-interactive", "-v"]).returncode != 0:
                 logging.error("acquire sudo failed")
             time.sleep(SudoLoop.timeout)
 
-    if run("sudo -v", shell=True).returncode != 0:
+    if run(["sudo", "-v"]).returncode != 0:
         logging.error("acquire sudo failed")
         raise InvalidInput("acquire sudo failed")
     t = threading.Thread(target=sudo_loop)
