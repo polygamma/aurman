@@ -319,7 +319,13 @@ or "not redundant" confirmations of actions (more prone to errors).
 https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-solving
 
 ## Using aurman just as a dependency solver
-https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver
+In order to discover available updates, search for potential packages to install and more, it is useful to get machine-readable descriptions of the potential sync/install/update transactions aurman can propose.
+
+`aurmansolver [options]` answers this need, by providing a json *desciption* of the equivalent `aurman [options]` transaction, but without carrying out any changes.
+
+One example use is with `-Su`, in order to list packages which have updates available.
+
+See https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver for a detailed explanation
 
 ## FAQ
 #### Question
