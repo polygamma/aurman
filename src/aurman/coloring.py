@@ -1,5 +1,7 @@
 from sys import stdout
 
+from pycman.config import PacmanConfig
+
 
 class Colors:
     """
@@ -8,7 +10,10 @@ class Colors:
 
     # pacman --color equivalent
     # 0 = auto, 1 = always, 2 = never
-    color = 0
+    if PacmanConfig("/etc/pacman.conf").options.get('Color', False) is True:
+        color = 0
+    else:
+        color = 2
 
     @staticmethod
     def concat_str(*args):
