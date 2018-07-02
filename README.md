@@ -108,6 +108,12 @@ but because the dependency solver of `aurman` may yield wrong results.
 
 - `--rebuild`: Always rebuild packages before installing them.
 
+- `--sort_by_name`: Sort `-Ss` AUR results by name.
+
+- `--sort_by_votes`: Sort `-Ss` AUR results by votes.
+
+- `--sort_by_popularity`: Sort `-Ss` AUR results by popularity.
+
 ## Config
 You may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback to `~/.config/aurman` in case of no `$XDG_CONFIG_HOME`) as config for aurman.
 

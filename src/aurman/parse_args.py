@@ -57,6 +57,12 @@ pacman_options = {
     # aurmansolver only - shows unknown packages in a single line
     "show_unknown": ("show_unknown", 0, (PacmanOperations.AURMAN,)),
 
+    # to sort -Ss results
+    "sort_by_name": ("sort_by_name", 0, (PacmanOperations.AURMAN,)),
+    "sort_by_votes": ("sort_by_votes", 0, (PacmanOperations.AURMAN,)),
+    "sort_by_popularity": ("sort_by_popularity", 0, (PacmanOperations.AURMAN,)),
+
+    # regular aurman params
     "noedit": ("noedit", 0, (PacmanOperations.AURMAN,)),
     "always_edit": ("always_edit", 0, (PacmanOperations.AURMAN,)),
     "show_changes": ("show_changes", 0, (PacmanOperations.AURMAN,)),

@@ -30,7 +30,7 @@ class SearchSortBy(Enum):
 
 
 def search_and_print(names: Sequence[str], installed_system, pacman_params: 'PacmanArgs',
-                     repo: bool, aur: bool, sort_by: SearchSortBy = SearchSortBy.POPULARITY):
+                     repo: bool, aur: bool, sort_by: SearchSortBy):
     """
     Searches for something and prints the results
 
@@ -48,6 +48,9 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: 'Pac
         run(["pacman"] + pacman_params.args_as_list())
 
     if not repo:
+        if sort_by is None:
+            sort_by = SearchSortBy.POPULARITY
+
         # see: https://docs.python.org/3/howto/regex.html
         regex_chars = list("^.+*?$[](){}\|")
 

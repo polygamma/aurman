@@ -18,7 +18,7 @@ from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args, PacmanArgs
 from aurman.parsing_config import read_config, packages_from_other_sources, AurmanConfig
 from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user, strip_versioning_from_name, \
-    SudoLoop
+    SudoLoop, SearchSortBy
 from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -231,9 +231,23 @@ def search_packages(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]
     else:
         installed_system = None
 
+    sort_by: SearchSortBy = None
+    if pacman_args.sort_by_name:
+        sort_by = SearchSortBy.NAME
+    if pacman_args.sort_by_votes:
+        if sort_by is not None:
+            aurman_error("You cannot sort by multiple criteria at the same time")
+            sys.exit(1)
+        sort_by = SearchSortBy.VOTES
+    if pacman_args.sort_by_popularity:
+        if sort_by is not None:
+            aurman_error("You cannot sort by multiple criteria at the same time")
+            sys.exit(1)
+        sort_by = SearchSortBy.POPULARITY
+
     # start search
     try:
-        search_and_print(packages_of_user_names, installed_system, pacman_args, repo, aur)
+        search_and_print(packages_of_user_names, installed_system, pacman_args, repo, aur, sort_by)
     except InvalidInput:
         sys.exit(1)
 

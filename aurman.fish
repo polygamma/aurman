@@ -140,6 +140,9 @@ complete -c $progname -n $sync -l domain             -x -d 'Point at a domain ot
 complete -c $progname -n $sync -l solution_way          -d 'Print pending actions in order'
 complete -c $progname -n $sync -l optimistic_versioning -d 'In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled'
 complete -c $progname -n $sync -l rebuild               -d 'Always rebuild packages before installing them'
+complete -c $progname -n $sync -l sort_by_name          -d 'Sort AUR search results by name'
+complete -c $progname -n $sync -l sort_by_votes         -d 'Sort AUR search results by votes'
+complete -c $progname -n $sync -l sort_by_popularity    -d 'Sort AUR search results by popularity'
 
 # Database options
 set -l has_db_opt '__fish_contains_opt asdeps asexplicit'
