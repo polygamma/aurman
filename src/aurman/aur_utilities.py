@@ -9,8 +9,10 @@ from aurman.own_exceptions import InvalidInput, ConnectionProblem
 from aurman.parsing_config import AurmanConfig
 from aurman.wrappers import split_query_helper
 
-aur_domain = "https://aur.archlinux.org"
-aur_timeout = 5
+
+class AurVars:
+    aur_domain: str = "https://aur.archlinux.org"
+    aur_timeout: int = 5
 
 
 def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bool = False) -> List[Dict]:
@@ -26,10 +28,10 @@ def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bo
 
     max_query_length = 8000
     if not search:
-        query_url = aur_domain + "/rpc/?v=5&type=info"
+        query_url = AurVars.aur_domain + "/rpc/?v=5&type=info"
         query_prefix = "&arg[]="
     else:
-        query_url = aur_domain + "/rpc/?v=5&type=search"
+        query_url = AurVars.aur_domain + "/rpc/?v=5&type=search"
         if by_name:
             query_url += "&by=name"
         query_prefix = "&arg="
@@ -51,7 +53,7 @@ def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bo
                             query_url,
                             ''.join(["{}{}".format(query_prefix, parameter) for parameter in query_parameters])
                         ),
-                        timeout=aur_timeout
+                        timeout=AurVars.aur_timeout
                     ).text
                 )['results']
             )

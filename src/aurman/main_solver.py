@@ -6,6 +6,7 @@ from typing import Sequence, Set, Dict, List
 
 from pycman.config import PacmanConfig
 
+from aurman.aur_utilities import AurVars
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, aurman_note, Colors
 from aurman.help_printing import aurmansolver_help
@@ -94,8 +95,6 @@ class SolutionEncoder(json.JSONEncoder):
 
 
 def process(args):
-    import aurman.aur_utilities
-
     try:
         read_config()  # read config - available via AurmanConfig.aurman_config
     except InvalidInput:
@@ -154,12 +153,12 @@ def process(args):
         sys.exit(1)
 
     if pacman_args.domain:
-        aurman.aur_utilities.aur_domain = pacman_args.domain[0]
+        AurVars.aur_domain = pacman_args.domain[0]
 
     # change aur rpc timeout if set by the user
     if 'miscellaneous' in AurmanConfig.aurman_config \
             and 'aur_timeout' in AurmanConfig.aurman_config['miscellaneous']:
-        aurman.aur_utilities.aur_timeout = int(AurmanConfig.aurman_config['miscellaneous']['aur_timeout'])
+        AurVars.aur_timeout = int(AurmanConfig.aurman_config['miscellaneous']['aur_timeout'])
 
     # analyzing installed packages
     try:

@@ -8,7 +8,7 @@ from typing import Sequence, List, Tuple, Set, Union, Dict, Iterable
 
 from pycman.config import PacmanConfig
 
-from aurman.aur_utilities import is_devel, get_aur_info
+from aurman.aur_utilities import is_devel, get_aur_info, AurVars
 from aurman.coloring import aurman_status, aurman_note, aurman_error, aurman_question, Colors
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
 from aurman.parsing_config import packages_from_other_sources
@@ -888,7 +888,6 @@ class Package:
         """
         Fetches the current git aur repo changes for this package
         """
-        import aurman.aur_utilities
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
 
@@ -927,7 +926,7 @@ class Package:
 
             # clone repo
             if run(
-                    ["git", "clone", "{}/{}.git".format(aurman.aur_utilities.aur_domain, self.pkgbase)],
+                    ["git", "clone", "{}/{}.git".format(AurVars.aur_domain, self.pkgbase)],
                     cwd=Package.cache_dir
             ).returncode != 0:
                 logging.error("Cloning repo of {} failed in directory {}".format(self.name, package_dir))

@@ -9,7 +9,7 @@ from typing import List, Tuple, Dict
 
 from pycman.config import PacmanConfig
 
-from aurman.aur_utilities import get_aur_info
+from aurman.aur_utilities import get_aur_info, AurVars
 from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
@@ -17,7 +17,8 @@ from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput
 from aurman.parse_args import PacmanOperations, parse_pacman_args, PacmanArgs
 from aurman.parsing_config import read_config, packages_from_other_sources, AurmanConfig
-from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user, strip_versioning_from_name
+from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user, strip_versioning_from_name, \
+    SudoLoop
 from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
@@ -310,8 +311,6 @@ def pacman_beginning_routine(pacman_args: 'PacmanArgs', groups_chosen: List[str]
 
 
 def process(args):
-    import aurman.aur_utilities
-
     readconfig()
     check_privileges()
     pacman_args = parse_parameters(args)
@@ -428,16 +427,16 @@ def process(args):
     # set sudo timeout if configured by the user
     if 'miscellaneous' in AurmanConfig.aurman_config \
             and 'sudo_timeout' in AurmanConfig.aurman_config['miscellaneous']:
-        aurman.utilities.SudoLoop.timeout = int(AurmanConfig.aurman_config['miscellaneous']['sudo_timeout'])
+        SudoLoop.timeout = int(AurmanConfig.aurman_config['miscellaneous']['sudo_timeout'])
 
     # change aur domain if configured by the user
     if pacman_args.domain:
-        aurman.aur_utilities.aur_domain = pacman_args.domain[0]
+        AurVars.aur_domain = pacman_args.domain[0]
 
     # change aur rpc timeout if set by the user
     if 'miscellaneous' in AurmanConfig.aurman_config \
             and 'aur_timeout' in AurmanConfig.aurman_config['miscellaneous']:
-        aurman.aur_utilities.aur_timeout = int(AurmanConfig.aurman_config['miscellaneous']['aur_timeout'])
+        AurVars.aur_timeout = int(AurmanConfig.aurman_config['miscellaneous']['aur_timeout'])
 
     # set the folder to save `aurman` cache files
     if 'miscellaneous' in AurmanConfig.aurman_config \
