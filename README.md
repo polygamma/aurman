@@ -48,6 +48,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 - `--ignore`
 - `--ignoregroup`
 - `-s`, `--search`
+- `-i`, `--info`
 - `-u`, `--sysupgrade`
 - `-y`, `--refresh`
 - `-c`, `--clean`
@@ -60,6 +61,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 - `--ignore`
 - `--ignoregroup`
 - `-s`, `--search`
+- `-i`, `--info`
 - `-u`, `--sysupgrade`
 - `-c`, `--clean`
 
