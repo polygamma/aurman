@@ -232,7 +232,7 @@ def search_packages(pacman_args: 'PacmanArgs', packages_of_user_names: List[str]
 
     # start search
     try:
-        search_and_print(packages_of_user_names, installed_system, str(pacman_args), repo, aur)
+        search_and_print(packages_of_user_names, installed_system, pacman_args, repo, aur)
     except InvalidInput:
         sys.exit(1)
 

@@ -13,6 +13,7 @@ import regex
 from aurman.aur_utilities import get_aur_info
 from aurman.coloring import Colors, aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
+from aurman.parse_args import PacmanArgs
 
 
 class SudoLoop:
@@ -20,7 +21,7 @@ class SudoLoop:
     timeout: int = 120
 
 
-def search_and_print(names: Sequence[str], installed_system, pacman_params: str, repo: bool, aur: bool):
+def search_and_print(names: Sequence[str], installed_system, pacman_params: 'PacmanArgs', repo: bool, aur: bool):
     """
     Searches for something and prints the results
 
@@ -34,12 +35,7 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: str,
         return
 
     if not aur:
-        # escape for pacman
-        to_escape = list("()+?|{}")
-        for char in to_escape:
-            pacman_params = pacman_params.replace(char, "\{}".format(char))
-
-        run("pacman {}".format(pacman_params), shell=True)
+        run(["pacman"] + pacman_params.args_as_list())
 
     if not repo:
         # see: https://docs.python.org/3/howto/regex.html
