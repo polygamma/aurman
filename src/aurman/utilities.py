@@ -4,6 +4,7 @@ import termios
 import threading
 import time
 import tty
+from enum import Enum, auto
 from pyalpm import vercmp
 from subprocess import run
 from typing import Tuple, Sequence
@@ -21,7 +22,15 @@ class SudoLoop:
     timeout: int = 120
 
 
-def search_and_print(names: Sequence[str], installed_system, pacman_params: 'PacmanArgs', repo: bool, aur: bool):
+class SearchSortBy(Enum):
+    # values to sort the -Ss results by
+    NAME = auto()
+    POPULARITY = auto()
+    VOTES = auto()
+
+
+def search_and_print(names: Sequence[str], installed_system, pacman_params: 'PacmanArgs',
+                     repo: bool, aur: bool, sort_by: SearchSortBy = SearchSortBy.POPULARITY):
     """
     Searches for something and prints the results
 
@@ -30,6 +39,7 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: 'Pac
     :param pacman_params:       parameters for pacman as string
     :param repo:                search only in repo
     :param aur:                 search only in aur
+    :param sort_by:             according to which the results are to be sorted
     """
     if not names:
         return
@@ -84,7 +94,18 @@ def search_and_print(names: Sequence[str], installed_system, pacman_params: 'Pac
 
         search_return = get_aur_info(found_names)
 
-        for ret_dict in sorted(search_return, key=lambda x: float(x['Popularity']), reverse=True):
+        kwargs = {}
+        if sort_by in [SearchSortBy.POPULARITY, SearchSortBy.VOTES]:
+            kwargs.update(reverse=True)
+
+        if sort_by is SearchSortBy.POPULARITY:
+            kwargs.update(key=lambda x: float(x['Popularity']))
+        elif sort_by is SearchSortBy.VOTES:
+            kwargs.update(key=lambda x: int(x['NumVotes']))
+        elif sort_by is SearchSortBy.NAME:
+            kwargs.update(key=lambda x: str(x['Name']))
+
+        for ret_dict in sorted(search_return, **kwargs):
             repo_with_slash = Colors.BOLD(Colors.LIGHT_MAGENTA("aur/"))
             name = Colors.BOLD(ret_dict['Name'])
             if ret_dict['OutOfDate'] is None:
