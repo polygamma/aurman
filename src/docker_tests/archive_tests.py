@@ -17,7 +17,7 @@ if __name__ == '__main__':
                            "".format(d.year, str(d.month).zfill(2), str(d.day).zfill(2))))
 
     # downgrade
-    test_command("sudo pacman -Syyuu --noconfirm --overwrite **/*")
+    test_command("sudo pacman -Syyuu --noconfirm --overwrite '*'")
 
     # reset mirrors
     test_command("sudo mv /etc/pacman.d/mirrorlist.bak /etc/pacman.d/mirrorlist")
@@ -30,7 +30,7 @@ if __name__ == '__main__':
         print("Success: there are things to update")
 
     # update with aurman --do_everything
-    test_command("aurman -Syu --do_everything --overwrite **/* --noconfirm"
+    test_command("aurman -Syu --do_everything --overwrite '*' --noconfirm"
                  " --noedit --pgp_fetch --keyserver keyserver.ubuntu.com")
 
     if run("pacman -Qqun", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:

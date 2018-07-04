@@ -67,6 +67,15 @@ class TestParse_pacman_args(TestCase):
         self.assertEqual(["--sync", "--sysupgrade", "--overwrite", "glob1,glob2,glob3", "--refresh"],
                          ret_val.args_as_list())
 
+        args = "-Su --overwrite glob1,glob2 testpackage1 --refresh --overwrite glob3 " \
+               "--ignore ignorepackage1,ignorepackage2 testpackage2 --ignore ignorepackage3".split()
+        ret_val = parse_pacman_args(args)
+        self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
+        self.assertEqual(
+            ["--sync", "--sysupgrade", "--overwrite", "glob1,glob2,glob3", "--refresh", "--ignore",
+             "ignorepackage1,ignorepackage2,ignorepackage3", "--", "testpackage1", "testpackage2"],
+            ret_val.args_as_list())
+
 
 if __name__ == '__main__':
     main()
