@@ -5,8 +5,7 @@ from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
     # install yay
-    test_command(
-        "aurman -Syu yay --noedit --noconfirm")
+    test_command("aurman -Syu yay --noedit --noconfirm")
     # check if yay installed
     test_command("pacman -Qi yay")
     # remove uninstalled packages
@@ -18,8 +17,7 @@ if __name__ == '__main__':
         CurrentTest.to_return = 1
 
     # install yay-git
-    test_command(
-        "aurman -S yay-git --noedit --noconfirm")
+    test_command("aurman -S yay-git --noedit --noconfirm")
     # check if yay-git installed
     test_command("pacman -Qi yay-git")
 

@@ -30,8 +30,7 @@ if __name__ == '__main__':
         print("Success: there are things to update")
 
     # update with aurman --do_everything
-    test_command("aurman -Syu --do_everything --overwrite '*' --noconfirm"
-                 " --noedit --pgp_fetch --keyserver keyserver.ubuntu.com")
+    test_command("aurman -Syu --do_everything --overwrite '*' --noconfirm --noedit")
 
     if run("pacman -Qqun", shell=True, stdout=DEVNULL, stderr=DEVNULL).returncode != 0:
         print("Success: everything known has been updated")

@@ -10,8 +10,7 @@ if __name__ == '__main__':
                  ''.format("echo 'BUILDDIR=/home/aurman/build_dir' >> /etc/makepkg.conf"))
 
     # install yay
-    test_command(
-        "aurman -Syu yay --noedit --noconfirm")
+    test_command("aurman -Syu yay --noedit --noconfirm")
     # check if yay installed
     test_command("pacman -Qi yay")
 
@@ -22,8 +21,7 @@ if __name__ == '__main__':
         print("Success: yay has been built in build_dir")
 
     # install pacman-git
-    test_command(
-        "aurman -S pacman-git --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
+    test_command("aurman -S pacman-git --noedit --noconfirm")
 
     # check if pacman-git installed
     test_command("pacman -Qi pacman-git")
@@ -33,8 +31,7 @@ if __name__ == '__main__':
                  ''.format("echo 'BUILDDIR=/home/aurman/build_dir' >> /etc/makepkg.conf"))
 
     # install yay-git
-    test_command(
-        "aurman -S yay-git --noedit --noconfirm")
+    test_command("aurman -S yay-git --noedit --noconfirm")
     # check if yay-git installed
     test_command("pacman -Qi yay-git")
 
