@@ -3,17 +3,17 @@ from sys import exit
 from docker_tests.test_utils import CurrentTest, test_command
 
 if __name__ == '__main__':
-    # install cower
+    # install yay
     test_command(
-        "aurman -Syu cower --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
-    # check if cower installed
-    test_command("pacman -Qi cower")
+        "aurman -Syu yay --noedit --noconfirm")
+    # check if yay installed
+    test_command("pacman -Qi yay")
 
-    # install cower-git
+    # install yay-git
     test_command(
-        "aurman -S cower-git --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
-    # check if cower-git installed
-    test_command("pacman -Qi cower-git")
+        "aurman -S yay-git --noedit --noconfirm")
+    # check if yay-git installed
+    test_command("pacman -Qi yay-git")
 
     # install repo package mu with double dashes
     test_command(

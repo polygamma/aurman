@@ -7,11 +7,11 @@ if __name__ == '__main__':
     test_command('sudo sh -c "{}"'
                  ''.format("echo 'PKGDEST=/tmp' >> /etc/makepkg.conf"))
 
-    # install cower
+    # install yay
     test_command(
-        "aurman -Syu cower --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
-    # check if cower installed
-    test_command("pacman -Qi cower")
+        "aurman -Syu yay --noedit --noconfirm")
+    # check if yay installed
+    test_command("pacman -Qi yay")
 
     # change pkgdest dir in different makepkg.conf
     test_command("mkdir -p /home/aurman/build_dir")
@@ -25,10 +25,10 @@ if __name__ == '__main__':
     # check if pacman-git installed
     test_command("pacman -Qi pacman-git")
 
-    # install cower-git
+    # install yay-git
     test_command(
-        "aurman -S cower-git --noedit --pgp_fetch --keyserver keyserver.ubuntu.com --noconfirm")
-    # check if cower-git installed
-    test_command("pacman -Qi cower-git")
+        "aurman -S yay-git --noedit --noconfirm")
+    # check if yay-git installed
+    test_command("pacman -Qi yay-git")
 
     exit(CurrentTest.to_return)
