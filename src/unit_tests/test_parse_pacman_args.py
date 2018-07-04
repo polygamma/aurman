@@ -10,7 +10,7 @@ class TestParse_pacman_args(TestCase):
         ret_val = parse_pacman_args(args)
         self.assertEqual(["package1", "package2", "package3"], ret_val.targets)
         self.assertTrue(ret_val.verbose)
-        self.assertFalse(ret_val.force)
+        self.assertFalse(ret_val.overwrite)
         self.assertTrue(ret_val.refresh)
         self.assertTrue(ret_val.sysupgrade)
         self.assertEqual(["localhost"], ret_val.domain)
@@ -60,6 +60,12 @@ class TestParse_pacman_args(TestCase):
         self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
         self.assertEqual(["-viewer", "test", "--view"], ret_val.targets)
         self.assertEqual(["--sync", "--search", "--", "-viewer", "test", "--view"], ret_val.args_as_list())
+
+        args = "-Su --overwrite glob1,glob2 --refresh --overwrite glob3".split()
+        ret_val = parse_pacman_args(args)
+        self.assertEqual(PacmanOperations.SYNC, ret_val.operation)
+        self.assertEqual(["--sync", "--sysupgrade", "--overwrite", "glob1,glob2,glob3", "--refresh"],
+                         ret_val.args_as_list())
 
 
 if __name__ == '__main__':

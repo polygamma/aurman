@@ -82,7 +82,7 @@ native_points.append(HelpOption(["--noconfirm"],
                                 "Bypass any and all 'Are you sure?' messages"))
 native_points.append(HelpOption(["--confirm"],
                                 "Cancels the effects of a previous --noconfirm"))
-native_points.append(HelpOption(["--force"],
+native_points.append(HelpOption(["--overwrite"],
                                 "Bypass file conflict checks and overwrite conflicting files"))
 native_points.append(HelpOption(["--asdeps"],
                                 "Install packages non-explicitly"))

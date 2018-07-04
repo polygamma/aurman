@@ -41,7 +41,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 - `--logfile`
 - `--noconfirm`
 - `--confirm`
-- `--force`
+- `--overwrite`
 - `--asdeps`
 - `--asexplicit`
 - `--needed`

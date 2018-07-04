@@ -23,62 +23,64 @@ class PacmanOperations(Enum):
 # name of the option in the PacmanArgs object,
 # number of arguments needed (2 means at least one),
 # option valid for the operations in the tuple (empty tuple means valid for all)
+# if multiple arguments are comma separated
+# if argument may be specified multiple times
 pacman_options = {
-    "r": ("root", 1, ()),
-    "root": ("root", 1, ()),
-    "v": ("verbose", 0, ()),
-    "verbose": ("verbose", 0, ()),
-    "cachedir": ("cachedir", 2, ()),
-    "color": ("color", 1, ()),
-    "debug": ("debug", 0, ()),
-    "gpgdir": ("gpgdir", 1, ()),
-    "hookdir": ("hookdir", 2, ()),
-    "logfile": ("logfile", 1, ()),
-    "noconfirm": ("noconfirm", 0, ()),
-    "confirm": ("confirm", 0, ()),
-    "force": ("force", 0, ()),
-    "asdeps": ("asdeps", 0, ()),
-    "asexplicit": ("asexplicit", 0, ()),
-    "needed": ("needed", 0, ()),
-    "ignore": ("ignore", 1, ()),
-    "ignoregroup": ("ignoregroup", 1, ()),
+    "r": ("root", 1, (), False, False),
+    "root": ("root", 1, (), False, False),
+    "v": ("verbose", 0, (), False, False),
+    "verbose": ("verbose", 0, (), False, False),
+    "cachedir": ("cachedir", 2, (), False, False),
+    "color": ("color", 1, (), False, False),
+    "debug": ("debug", 0, (), False, False),
+    "gpgdir": ("gpgdir", 1, (), False, False),
+    "hookdir": ("hookdir", 2, (), False, False),
+    "logfile": ("logfile", 1, (), False, False),
+    "noconfirm": ("noconfirm", 0, (), False, False),
+    "confirm": ("confirm", 0, (), False, False),
+    "overwrite": ("overwrite", 1, (), True, True),
+    "asdeps": ("asdeps", 0, (), False, False),
+    "asexplicit": ("asexplicit", 0, (), False, False),
+    "needed": ("needed", 0, (), False, False),
+    "ignore": ("ignore", 1, (), True, True),
+    "ignoregroup": ("ignoregroup", 1, (), True, True),
 
-    "s": ("search", 0, (PacmanOperations.SYNC,)),
-    "search": ("search", 0, (PacmanOperations.SYNC,)),
-    "u": ("sysupgrade", 0, (PacmanOperations.SYNC,)),
-    "sysupgrade": ("sysupgrade", 0, (PacmanOperations.SYNC,)),
-    "y": ("refresh", 0, (PacmanOperations.SYNC,)),
-    "refresh": ("refresh", 0, (PacmanOperations.SYNC,)),
-    "c": ("clean", 0, (PacmanOperations.SYNC,)),
-    "clean": ("clean", 0, (PacmanOperations.SYNC,)),
-    "i": ("info", 0, (PacmanOperations.SYNC,)),
-    "info": ("info", 0, (PacmanOperations.SYNC,)),
+    "s": ("search", 0, (PacmanOperations.SYNC,), False, False),
+    "search": ("search", 0, (PacmanOperations.SYNC,), False, False),
+    "u": ("sysupgrade", 0, (PacmanOperations.SYNC,), False, False),
+    "sysupgrade": ("sysupgrade", 0, (PacmanOperations.SYNC,), False, False),
+    "y": ("refresh", 0, (PacmanOperations.SYNC,), False, False),
+    "refresh": ("refresh", 0, (PacmanOperations.SYNC,), False, False),
+    "c": ("clean", 0, (PacmanOperations.SYNC,), False, False),
+    "clean": ("clean", 0, (PacmanOperations.SYNC,), False, False),
+    "i": ("info", 0, (PacmanOperations.SYNC,), False, False),
+    "info": ("info", 0, (PacmanOperations.SYNC,), False, False),
 
     # aurmansolver only - shows unknown packages in a single line
-    "show_unknown": ("show_unknown", 0, (PacmanOperations.AURMAN,)),
+    "show_unknown": ("show_unknown", 0, (PacmanOperations.AURMAN,), False, False),
 
     # to sort -Ss results
-    "sort_by_name": ("sort_by_name", 0, (PacmanOperations.AURMAN,)),
-    "sort_by_votes": ("sort_by_votes", 0, (PacmanOperations.AURMAN,)),
-    "sort_by_popularity": ("sort_by_popularity", 0, (PacmanOperations.AURMAN,)),
+    "sort_by_name": ("sort_by_name", 0, (PacmanOperations.AURMAN,), False, False),
+    "sort_by_votes": ("sort_by_votes", 0, (PacmanOperations.AURMAN,), False, False),
+    "sort_by_popularity": ("sort_by_popularity", 0, (PacmanOperations.AURMAN,), False, False),
 
     # regular aurman params
-    "noedit": ("noedit", 0, (PacmanOperations.AURMAN,)),
-    "always_edit": ("always_edit", 0, (PacmanOperations.AURMAN,)),
-    "show_changes": ("show_changes", 0, (PacmanOperations.AURMAN,)),
-    "devel": ("devel", 0, (PacmanOperations.AURMAN,)),
-    "deep_search": ("deep_search", 0, (PacmanOperations.AURMAN,)),
-    "pgp_fetch": ("pgp_fetch", 0, (PacmanOperations.AURMAN,)),
-    "keyserver": ("keyserver", 1, (PacmanOperations.AURMAN,)),
-    "aur": ("aur", 0, (PacmanOperations.AURMAN,)),
-    "repo": ("repo", 0, (PacmanOperations.AURMAN,)),
-    "domain": ("domain", 1, (PacmanOperations.AURMAN,)),
-    "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,)),
-    "holdpkg": ("holdpkg", 2, (PacmanOperations.AURMAN,)),
-    "holdpkg_conf": ("holdpkg_conf", 0, (PacmanOperations.AURMAN,)),
-    "do_everything": ("do_everything", 0, (PacmanOperations.AURMAN,)),
-    "optimistic_versioning": ("optimistic_versioning", 0, (PacmanOperations.AURMAN,)),
-    "rebuild": ("rebuild", 0, (PacmanOperations.AURMAN,))
+    "noedit": ("noedit", 0, (PacmanOperations.AURMAN,), False, False),
+    "always_edit": ("always_edit", 0, (PacmanOperations.AURMAN,), False, False),
+    "show_changes": ("show_changes", 0, (PacmanOperations.AURMAN,), False, False),
+    "devel": ("devel", 0, (PacmanOperations.AURMAN,), False, False),
+    "deep_search": ("deep_search", 0, (PacmanOperations.AURMAN,), False, False),
+    "pgp_fetch": ("pgp_fetch", 0, (PacmanOperations.AURMAN,), False, False),
+    "keyserver": ("keyserver", 1, (PacmanOperations.AURMAN,), False, False),
+    "aur": ("aur", 0, (PacmanOperations.AURMAN,), False, False),
+    "repo": ("repo", 0, (PacmanOperations.AURMAN,), False, False),
+    "domain": ("domain", 1, (PacmanOperations.AURMAN,), False, False),
+    "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,), False, False),
+    "holdpkg": ("holdpkg", 2, (PacmanOperations.AURMAN,), False, False),
+    "holdpkg_conf": ("holdpkg_conf", 0, (PacmanOperations.AURMAN,), False, False),
+    "do_everything": ("do_everything", 0, (PacmanOperations.AURMAN,), False, False),
+    "optimistic_versioning": ("optimistic_versioning", 0, (PacmanOperations.AURMAN,), False, False),
+    "rebuild": ("rebuild", 0, (PacmanOperations.AURMAN,), False, False)
 }
 
 pacman_operations = {
@@ -138,8 +140,8 @@ class PacmanArgs:
                 else:
                     return_list.append("-{}".format(name))
                 if not isinstance(value, bool) and not pacman_options[name][1] == 0:
-                    # dirty bullshit - thanks pacman 5.1
-                    if name == "ignore" or name == "ignoregroup":
+                    # multiple arguments comma separated
+                    if pacman_options[name][3]:
                         return_list.append(",".join(value))
                     else:
                         return_list.extend(value)
@@ -187,7 +189,7 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
     current_field = "targets"
     number_of_valid_arguments = 2
     only_targets = False
-    ignore_append_allowed = False
+    multiple_append_allowed = False
 
     for arg in args:
         arg_length = len(arg)
@@ -207,15 +209,15 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
         else:
             dashes = 0
 
-        if arg == "--ignore" or arg == "--ignoregroup":
-            ignore_append_allowed = True
-
         arg = arg.replace("-", "", dashes)
 
         if dashes == 2:
             if arg_length < 4:
                 logging.error("{} is too short".format(arg))
                 raise InvalidInput("{} is too short".format(arg))
+
+            if arg in pacman_options and pacman_options[arg][4]:
+                multiple_append_allowed = True
 
         elif dashes == 1:
             if arg_length < 2:
@@ -232,19 +234,23 @@ def parse_pacman_args(args: Sequence[str]) -> 'PacmanArgs':
                     else:
                         current_field, number_of_valid_arguments = append_bool(curr_char)
                 arg = arg[len(arg) - 1]
+
+                if arg in pacman_options and pacman_options[arg][4]:
+                    multiple_append_allowed = True
         else:
-            if not ignore_append_allowed \
-                    and (isinstance(getattr(args_to_return, current_field), bool) or number_of_valid_arguments < 2
-                         and len(getattr(args_to_return, current_field)) + 1 > number_of_valid_arguments):
+            if isinstance(getattr(args_to_return, current_field), bool) or \
+                    (not multiple_append_allowed
+                     and number_of_valid_arguments < 2
+                     and len(getattr(args_to_return, current_field)) + 1 > number_of_valid_arguments):
                 current_field = "targets"
                 number_of_valid_arguments = 2
 
             getattr(args_to_return, current_field).append(arg)
-            ignore_append_allowed = False
+            multiple_append_allowed = False
 
         if dashes > 0:
-            if not (arg == "ignore" or arg == "ignoregroup"):
-                ignore_append_allowed = False
+            if arg not in pacman_options or not pacman_options[arg][4]:
+                multiple_append_allowed = False
 
             if arg in pacman_operations:
                 current_field, number_of_valid_arguments = append_operation(arg)
