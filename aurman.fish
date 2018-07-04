@@ -83,7 +83,7 @@ end
 
 # Upgrade options (sync, upgrade)
 for condition in sync upgrade
-    complete -c $progname -n $$condition -l force -d 'Bypass file conflict checks' -f
+    complete -c $progname -n $$condition -l overwrite -d 'Bypass file conflict checks' -f
     complete -c $progname -n $$condition -l ignore -d 'Ignore upgrade of PACKAGE' -xa "$listinstalled" -f
     complete -c $progname -n $$condition -l ignoregroup -d 'Ignore upgrade of GROUP' -xa "$listgroups" -f
     complete -c $progname -n $$condition -l needed -d 'Do not reinstall up-to-date targets' -f
