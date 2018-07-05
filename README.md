@@ -390,6 +390,14 @@ I get a `UnicodeEncodeError` or a `UnicodeDecodeError` when executing `aurman` -
 See: https://github.com/polygamma/aurman/issues/88.
 
 #### Question
+I am using `Arch ARM` and I am getting `expac` errors when executing `aurman`, what to do?
+
+#### Answer
+see: https://github.com/polygamma/aurman/issues/200
+
+tl;dr - install the latest `expac-git` version from the AUR and everything works
+
+#### Question
 How to achieve `full batch interaction` with `aurman`?
 
 #### Answer
