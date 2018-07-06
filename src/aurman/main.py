@@ -2,7 +2,6 @@ import logging
 import os
 import sys
 from copy import deepcopy
-from datetime import datetime
 from shutil import rmtree
 from subprocess import run, DEVNULL, PIPE
 from sys import argv, stdout
@@ -271,7 +270,7 @@ def show_packages_info(pacman_args: 'PacmanArgs', packages_of_user_names: List[s
                 value = '  '.join(value)
             elif key in ["OutOfDate", "FirstSubmitted", "LastModified"] and value is not None:
                 value = run(
-                    ['date', '--date', '@%s' % value, '+%c'],  universal_newlines=True, stdout=PIPE
+                    ['date', '--date', '@%s' % value, '+%c'], universal_newlines=True, stdout=PIPE
                 ).stdout.strip()
             print("{}{} {}".format(Colors.BOLD(key.ljust(16)), Colors.BOLD(':'), value))
         print()
