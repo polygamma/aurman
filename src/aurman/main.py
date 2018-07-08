@@ -2,11 +2,13 @@ import logging
 import os
 import sys
 from copy import deepcopy
+from datetime import datetime
 from shutil import rmtree
-from subprocess import run, DEVNULL, PIPE
+from subprocess import run, DEVNULL
 from sys import argv, stdout
 from typing import List, Tuple, Dict
 
+from dateutil.tz import tzlocal
 from pycman.config import PacmanConfig
 
 from aurman.aur_utilities import get_aur_info, AurVars
@@ -269,9 +271,7 @@ def show_packages_info(pacman_args: 'PacmanArgs', packages_of_user_names: List[s
             if type(value) is list:
                 value = '  '.join(value)
             elif key in ["OutOfDate", "FirstSubmitted", "LastModified"] and value is not None:
-                value = run(
-                    ['date', '--date', '@%s' % value, '+%c'], universal_newlines=True, stdout=PIPE
-                ).stdout.strip()
+                value = datetime.fromtimestamp(value).replace(tzinfo=tzlocal()).strftime('%c')
             print("{}{} {}".format(Colors.BOLD(key.ljust(16)), Colors.BOLD(':'), value))
         print()
 
@@ -829,6 +829,9 @@ def process(args):
 
 
 def main():
+    from locale import setlocale, LC_ALL
+    setlocale(LC_ALL, '')  # initialize locales because python doesn't
+
     try:
         # auto completion
         if len(argv) >= 2 and argv[1] == "--auto_complete":
