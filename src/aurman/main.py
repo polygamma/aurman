@@ -3,7 +3,6 @@ import os
 import sys
 from copy import deepcopy
 from datetime import datetime
-from shutil import rmtree
 from subprocess import run, DEVNULL
 from sys import argv, stdout
 from typing import List, Tuple, Dict
@@ -24,14 +23,6 @@ from aurman.utilities import acquire_sudo, version_comparison, search_and_print,
 from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
-
-
-def rmtree_onerror(func, path, excinfo):
-    """
-    called in case of an error during execution of shutil.rmtree
-    """
-    aurman_error("Directory {} could not be deleted".format(Colors.BOLD(Colors.LIGHT_MAGENTA(path))))
-    sys.exit(1)
 
 
 def readconfig() -> None:
@@ -165,7 +156,9 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                         False
                     ):
                 aurman_status("Deleting cache dir...")
-                rmtree(Package.cache_dir, onerror=rmtree_onerror)
+                if run(["rm", "-rf", Package.cache_dir], stdout=DEVNULL).returncode != 0:
+                    aurman_error("Deleting directory {} failed".format(Package.cache_dir))
+                    sys.exit(1)
         else:
             if noconfirm or \
                     ask_user(
@@ -189,7 +182,13 @@ def clean_cache(pacman_args: 'PacmanArgs', aur: bool, repo: bool, clean_force: b
                 for thing in os.listdir(Package.cache_dir):
                     if os.path.isdir(os.path.join(Package.cache_dir, thing)):
                         if thing not in dirs_to_not_delete:
-                            rmtree(os.path.join(Package.cache_dir, thing))
+                            if run(
+                                    ["rm", "-rf", os.path.join(Package.cache_dir, thing)], stdout=DEVNULL
+                            ).returncode != 0:
+                                aurman_error(
+                                    "Deleting directory {} failed".format(os.path.join(Package.cache_dir, thing))
+                                )
+                                sys.exit(1)
 
             if not noconfirm and \
                     ask_user(
