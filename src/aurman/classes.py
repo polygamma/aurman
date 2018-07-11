@@ -894,8 +894,8 @@ class Package:
         # check if repo has ever been fetched
         if os.path.isdir(package_dir):
             if run(["git", "fetch"], cwd=package_dir).returncode != 0:
-                logging.error("git fetch of {} failed in directory {}".format(self.name, package_dir))
-                raise ConnectionProblem("git fetch of {} failed in directory {}".format(self.name, package_dir))
+                logging.error("git fetch failed in directory {}".format(package_dir))
+                raise ConnectionProblem("git fetch failed in directory {}".format(package_dir))
 
             head = run(
                 ["git", "rev-parse", "HEAD"], stdout=PIPE, universal_newlines=True, cwd=package_dir
@@ -906,14 +906,23 @@ class Package:
 
             # if new sources available
             if head != u:
-                run(["git", "reset", "--hard", "HEAD"], stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir)
-                if run(
-                        ["git", "pull"], stdout=DEVNULL, stderr=DEVNULL, cwd=package_dir
-                ).returncode != 0:
-                    logging.error("sources of {} could not be fetched in directory {}".format(self.name, package_dir))
-                    raise ConnectionProblem(
-                        "sources of {} could not be fetched in directory {}".format(self.name, package_dir)
-                    )
+                reset_return = run(
+                    ["git", "reset", "--hard", "HEAD"],
+                    stdout=DEVNULL, stderr=PIPE, cwd=package_dir, universal_newlines=True
+                )
+                if reset_return.returncode != 0:
+                    print(reset_return.stderr)
+                    logging.error("git reset failed in directory {}".format(package_dir))
+                    raise InvalidInput("git reset failed in directory {}".format(package_dir))
+
+                pull_return = run(
+                    ["git", "pull"],
+                    stdout=DEVNULL, stderr=PIPE, cwd=package_dir, universal_newlines=True
+                )
+                if pull_return.returncode != 0:
+                    print(pull_return.stderr)
+                    logging.error("git pull failed in directory {}".format(package_dir))
+                    raise ConnectionProblem("git pull failed in directory {}".format(package_dir))
 
         # repo has never been fetched
         else:
