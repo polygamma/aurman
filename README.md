@@ -1,4 +1,4 @@
-# aurman - AUR helper with almost pacman syntax
+# aurman - AUR helper with almost identical pacman syntax
 
 ![](https://travis-ci.org/polygamma/aurman.svg?branch=master)
 
@@ -8,16 +8,16 @@
 
 **aurman** *(https://aur.archlinux.org/packages/aurman)* - **release version**
 
-> **Notice**: Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
+> **Notice**: Even though it may seem like an AUR helper that is targeted at inexperienced users, the opposite is the case.
 > `aurman` is targeted at **advanced** users, who are familiar with `pacman`, `makepkg` and most of all with the `AUR`.
-> `aurman` is an AUR **helper**, it can't and will never be a replacement for the sometimes needed human interaction.
-> If you **ever** encounter a problem, at which `aurman` e.g. is not able to find a dependency solution, and you do not know **either**
+> `aurman` is an AUR **helper**, it can not and will never be a replacement for the sometimes needed human interaction.
+> If you **ever** encounter a problem, at which `aurman` e.g. is not able to find a dependency solution and you do not know **either**
 > how to solve the problem, you should **not** use an AUR helper. Even though the specific problem may be a bug in the `aurman`
-> implementation, it is **always** expected, that you as user know what to do. If you do not, do not use `aurman`.
-> Also: If you already fail to install `aurman`, because you do not know e. g. how to import PGP keys or how to fulfill `aurman`
+> implementation, it is **always** expected, that you as user will know what to do. If you do not, do not use `aurman`.
+> Also: If you already failed to install `aurman` because you do not know something like how to import PGP keys or how to fulfill `aurman`
 > dependencies manually, you should **not** use `aurman`.
 > Last but not least: The GitHub issues are **not** for support, they are **only** for feature requests, bug reports or general discussions.
-> To reduce the noise by users, who should not use `aurman`, but still do, users may be banned from this repository without further warning,
+> To reduce the noise by users, who should not use `aurman`, but still do, users may be banned from this repository without further warning
 > if they fill out issues in a non sensible way.
 
 ## Syntax
@@ -340,15 +340,15 @@ See https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver f
 `aurman` wants to remove packages that should not be removed - what's the matter?
 
 #### Answer
-Please check, if the problem arises, because `aurman` assumes `.so` dependencies to be unfulfilled.
+Please check if the problem arises because `aurman` assumes `.so` dependencies to be unfulfilled.
 *E.g.* `libavcodec.so=57-64` which requires a specific version of the mentioned `.so`.
 This may be the case because a providing AUR package only lists `libavcodec.so` as being provided
 without specifying the version. Hence `aurman` cannot be sure if the version will match,
 since this can only be known after building the package, thus assuming that the dependency is not fulfilled.
 You may change this behavior by yielding `--optimistic_versioning` via the commandline.
-Now, `aurman` assumes the dependency will be fulfilled.
-However, you should make sure that the version is going to be the needed one, otherwise
-the behavior of installing the packages will be undefined.
+Now, `aurman` will assume that the dependency will be fulfilled.
+However, you should make sure that the version you have is the needed one, otherwise
+the behavior of those packages will be undefined.
 
 This behavior may also occur when there are no `.so` dependencies involved.
 Check if the dependencies are *really* fulfilled.
