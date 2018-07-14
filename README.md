@@ -422,5 +422,6 @@ and the description of `--ask` [here](https://github.com/polygamma/aurman#make-u
 
 ## Screenshots
 
-![](https://i.imgur.com/VipYpfj.png)
-![](https://i.imgur.com/uZYbNrS.gif)
+![](https://i.imgur.com/Ug5S7C4.png)
+![](https://i.imgur.com/37SGzAe.png)
+![](https://i.imgur.com/BF3XduG.png)
