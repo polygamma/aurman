@@ -362,8 +362,8 @@ def show_unread_news():
         with open(seen_ids_file, 'a') as seenidsfile:
             seenidsfile.write('\n'.join([entry['id'] for entry in news_to_show]) + '\n')
     else:
-        logging.error("User did not read the unseen news, but wanted install packages on the system")
-        raise InvalidInput("User did not read the unseen news, but wanted install packages on the system")
+        logging.error("User did not read the unseen news, but wanted to install packages on the system")
+        raise InvalidInput("User did not read the unseen news, but wanted to install packages on the system")
 
 
 def process(args):
