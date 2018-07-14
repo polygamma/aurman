@@ -1,12 +1,14 @@
 import logging
 import os
+import re
 import sys
 from copy import deepcopy
 from datetime import datetime
 from subprocess import run, DEVNULL
 from sys import argv, stdout
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 
+import feedparser
 from dateutil.tz import tzlocal
 from pycman.config import PacmanConfig
 
@@ -327,6 +329,43 @@ def pacman_beginning_routine(pacman_args: 'PacmanArgs', groups_chosen: List[str]
     return sudo_acquired, pacman_called
 
 
+def show_unread_news():
+    """
+    Shows unread news from archlinux.org
+    """
+    # load list of already seen news
+    seen_ids_file = os.path.join(Package.cache_dir, "seen_news_ids")
+    if not os.path.isfile(seen_ids_file):
+        open(seen_ids_file, 'a').close()
+
+    with open(seen_ids_file, 'r') as seenidsfile:
+        seen_ids: Set[str] = set([line for line in seenidsfile.read().strip().splitlines()])
+
+    # fetch current news and filter unseen news
+    news_to_show = list(filter(
+        lambda entry: entry['id'] not in seen_ids, feedparser.parse("https://www.archlinux.org/feeds/news/").entries
+    ))
+
+    # if no unread news, return
+    if not news_to_show:
+        return
+
+    # show unseen news
+    aurman_status(
+        "There are {} unseen news on archlinux.org".format(Colors.BOLD(Colors.LIGHT_MAGENTA(len(news_to_show))))
+    )
+    for entry in news_to_show:
+        aurman_note(Colors.BOLD(Colors.LIGHT_MAGENTA(entry['title'])), new_line=True)
+        print(re.sub('<[^<]+?>', '', entry['summary']))
+
+    if ask_user("Have you read the news?", False, True):
+        with open(seen_ids_file, 'a') as seenidsfile:
+            seenidsfile.write('\n'.join([entry['id'] for entry in news_to_show]) + '\n')
+    else:
+        logging.error("User did not read the unseen news, but wanted install packages on the system")
+        raise InvalidInput("User did not read the unseen news, but wanted install packages on the system")
+
+
 def process(args):
     readconfig()
     check_privileges()
@@ -473,6 +512,14 @@ def process(args):
     # if user just wants to see info of packages
     if info:
         show_packages_info(pacman_args, packages_of_user_names)
+
+    # show unread news from archlinux.org
+    if not aur and not ('miscellaneous' in AurmanConfig.aurman_config
+                        and 'arch_news_disable' in AurmanConfig.aurman_config['miscellaneous']):
+        try:
+            show_unread_news()
+        except InvalidInput:
+            sys.exit(1)
 
     # groups are for pacman
     # removes found groups from packages_of_user_names
