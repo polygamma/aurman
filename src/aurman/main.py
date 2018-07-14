@@ -334,6 +334,12 @@ def show_unread_news():
     Shows unread news from archlinux.org
     """
     # load list of already seen news
+    try:
+        os.makedirs(Package.cache_dir, mode=0o700, exist_ok=True)
+    except OSError:
+        logging.error("Creating cache dir {} failed".format(Package.cache_dir))
+        raise InvalidInput("Creating cache dir {} failed".format(Package.cache_dir))
+
     seen_ids_file = os.path.join(Package.cache_dir, "seen_news_ids")
     if not os.path.isfile(seen_ids_file):
         open(seen_ids_file, 'a').close()
