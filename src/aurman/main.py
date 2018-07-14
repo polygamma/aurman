@@ -430,6 +430,7 @@ def process(args):
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
+    skip_news = pacman_args.skip_news  # if --skip_news
     use_ask = 'miscellaneous' in AurmanConfig.aurman_config \
               and 'use_ask' in AurmanConfig.aurman_config['miscellaneous']  # if to use --ask=4
 
@@ -522,8 +523,8 @@ def process(args):
         show_packages_info(pacman_args, packages_of_user_names)
 
     # show unread news from archlinux.org
-    if not aur and not ('miscellaneous' in AurmanConfig.aurman_config
-                        and 'arch_news_disable' in AurmanConfig.aurman_config['miscellaneous']):
+    if not skip_news and not aur and not ('miscellaneous' in AurmanConfig.aurman_config
+                                          and 'arch_news_disable' in AurmanConfig.aurman_config['miscellaneous']):
         try:
             show_unread_news()
         except InvalidInput:

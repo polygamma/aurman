@@ -114,6 +114,8 @@ but because the dependency solver of `aurman` may yield wrong results.
 
 - `--sort_by_popularity`: Sort `-Ss` AUR results by popularity.
 
+- `--skip_news`: Skips being shown unseen `archlinux.org` news.
+
 ## Config
 You may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback to `~/.config/aurman` in case of no `$XDG_CONFIG_HOME`) as config for aurman.
 
