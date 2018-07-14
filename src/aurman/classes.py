@@ -1086,7 +1086,7 @@ class Package:
                     else:
                         file = relevant_files[user_input - 1]
                         if run(
-                                [Package.default_editor_path, os.path.join(package_dir, file)]
+                                Package.default_editor_path.split() + [os.path.join(package_dir, file)]
                         ).returncode != 0:
                             logging.error("Editing {} of {} failed".format(file, self.name))
                             raise InvalidInput("Editing {} of {} failed".format(file, self.name))
