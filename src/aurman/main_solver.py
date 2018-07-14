@@ -331,19 +331,15 @@ def process(args):
 
     # calc solutions
     if only_unfulfilled_deps:
-        if not rebuild:
-            solutions = Package.dep_solving(concrete_packages_to_install, installed_system, upstream_system)
-        # if --rebuild, assume that the packages to rebuild are not installed, to ensure to correct order of rebuilding
-        else:
-            installed_system_no_rebuild_packages = System(
-                [
-                    package for package in installed_system.all_packages_dict.values()
-                    if package.name not in sanitized_names
-                ]
-            )
-            solutions = Package.dep_solving(
-                concrete_packages_to_install, installed_system_no_rebuild_packages, upstream_system
-            )
+        installed_system_no_rebuild_packages = System(
+            [
+                package for package in installed_system.all_packages_dict.values()
+                if package.name not in sanitized_names
+            ]
+        )
+        solutions = Package.dep_solving(
+            concrete_packages_to_install, installed_system_no_rebuild_packages, upstream_system
+        )
     else:
         solutions = Package.dep_solving(concrete_packages_to_install, System(()), upstream_system)
 
