@@ -1229,12 +1229,14 @@ class Package:
             else:
                 makepkg(["-cfA", "--noconfirm"], False, package_dir)
 
-    def install(self, args_as_list: List[str], use_ask: bool = False):
+    def install(self, args_as_list: List[str], use_ask: bool = False, do_not_execute: bool = False) -> Tuple[str, str]:
         """
         Install this package
 
         :param args_as_list:    Args for pacman
         :param use_ask:         Use --ask=4 when calling pacman, see: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
+        :param do_not_execute:  If only to return the relevant paramters, without executing
+        :return:                Tuple containing two items: build_dir, package_install_file
         """
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
         args_as_list = args_as_list[:]
@@ -1251,7 +1253,10 @@ class Package:
             args_as_list = ["--ask=4"] + args_as_list
 
         # install
-        pacman(args_as_list + [package_install_file], False, dir_to_execute=build_dir)
+        if not do_not_execute:
+            pacman(args_as_list + [package_install_file], False, dir_to_execute=build_dir)
+
+        return build_dir, package_install_file
 
 
 class System:
@@ -1539,7 +1544,7 @@ class System:
     def calc_install_chunks(packages_to_chunk: Sequence['Package']) -> List[List['Package']]:
         """
         Calculates the chunks in which the given packages would be installed.
-        Repo packages are installed at once, AUR packages one by one.
+        Repo packages are installed at once, AUR packages in chunks if they are split packages.
         e.g. AUR1, Repo1, Repo2, AUR2 yields: AUR1, Repo1 AND Repo2, AUR2
 
         :param packages_to_chunk:   The packages to calc the chunks of
@@ -1549,8 +1554,9 @@ class System:
         return_list: List[List['Package']] = [current_list]
 
         for package in packages_to_chunk:
-            if current_list and (package.type_of is not PossibleTypes.REPO_PACKAGE
-                                 or current_list[0].type_of is not package.type_of):
+            if current_list and (current_list[0].type_of is not package.type_of
+                                 or package.type_of is not PossibleTypes.REPO_PACKAGE
+                                 and package.pkgbase != current_list[0].pkgbase):
 
                 current_list = [package]
                 return_list.append(current_list)

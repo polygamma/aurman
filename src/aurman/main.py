@@ -854,26 +854,55 @@ def process(args):
 
             if as_explicit_container:
                 pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
-        # aur chunks always consist of one package
+        # aur chunks may consist of more than one package in case of split packages to be installed
         else:
-            package = package_chunk[0]
-            try:
-                package.build(ignore_arch, rebuild)
-                if package.name in sanitized_names \
-                        and package.name not in sanitized_not_to_be_removed \
-                        and package.name not in replaces_dict \
-                        or (package.name in installed_system.all_packages_dict
-                            and installed_system.all_packages_dict[package.name].install_reason
-                            == 'explicit') \
-                        or (package.name in replaces_dict
-                            and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
-                            == 'explicit'):
+            if len(package_chunk) == 1:
+                package = package_chunk[0]
+                try:
+                    package.build(ignore_arch, rebuild)
+                    if package.name in sanitized_names \
+                            and package.name not in sanitized_not_to_be_removed \
+                            and package.name not in replaces_dict \
+                            or (package.name in installed_system.all_packages_dict
+                                and installed_system.all_packages_dict[package.name].install_reason
+                                == 'explicit') \
+                            or (package.name in replaces_dict
+                                and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
+                                == 'explicit'):
 
-                    package.install(args_for_explicit, use_ask=use_ask)
-                else:
-                    package.install(args_for_dependency, use_ask=use_ask)
-            except InvalidInput:
-                sys.exit(1)
+                        package.install(args_for_explicit, use_ask=use_ask)
+                    else:
+                        package.install(args_for_dependency, use_ask=use_ask)
+                except InvalidInput:
+                    sys.exit(1)
+            else:
+                build_dir: str = None
+                args_as_list: List[str] = args_for_dependency[:]
+                if use_ask:
+                    args_as_list = ["--ask=4"] + args_as_list
+
+                as_explicit_container = set()
+                for package in package_chunk:
+                    if build_dir is None:
+                        package.build(ignore_arch, rebuild)
+                    build_dir, current_install_file = package.install(args_for_dependency, do_not_execute=True)
+                    args_as_list += [current_install_file]
+
+                    if package.name in sanitized_names \
+                            and package.name not in sanitized_not_to_be_removed \
+                            and package.name not in replaces_dict \
+                            or (package.name in installed_system.all_packages_dict
+                                and installed_system.all_packages_dict[package.name].install_reason
+                                == 'explicit') \
+                            or (package.name in replaces_dict
+                                and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
+                                == 'explicit'):
+                        as_explicit_container.add(package.name)
+
+                pacman(args_as_list, False, dir_to_execute=build_dir)
+
+                if as_explicit_container:
+                    pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
 
 
 def main():
