@@ -307,7 +307,7 @@ to unintended removal of package(s).
 All in all it comes down to: "redundant" confirmations of actions (less prone to errors)
 or "not redundant" confirmations of actions (more prone to errors).
 
-#### Disable showing of `archlinux.org` news when using `-u`
+#### Disable showing of `archlinux.org` news when not using `--aur`
 Create a key called `arch_news_disable` in the section `[miscellaneous]`.
 
 Example:
