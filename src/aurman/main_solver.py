@@ -326,8 +326,13 @@ def process(args):
                                 upstream_system.all_packages_dict[package_to_replace.name]
                             )
 
-    # chunks packages by pkgbase
-    concrete_packages_to_install.sort(key=lambda pkg: pkg.pkgbase)
+    # chunk and sort packages
+    concrete_packages_to_install_repo = [package for package in concrete_packages_to_install
+                                         if package.type_of is PossibleTypes.REPO_PACKAGE]
+    concrete_packages_to_install_aur = [package for package in concrete_packages_to_install
+                                        if package.type_of is not PossibleTypes.REPO_PACKAGE]
+    concrete_packages_to_install_aur.sort(key=lambda pkg: pkg.pkgbase)
+    concrete_packages_to_install = concrete_packages_to_install_repo + concrete_packages_to_install_aur
 
     # calc solutions
     if only_unfulfilled_deps:
