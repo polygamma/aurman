@@ -327,7 +327,7 @@ def process(args):
                             )
 
     # chunks packages by pkgbase
-    concrete_packages_to_install = list(sorted(concrete_packages_to_install, key=lambda pkg: pkg.pkgbase))
+    concrete_packages_to_install.sort(key=lambda pkg: pkg.pkgbase)
 
     # calc solutions
     if only_unfulfilled_deps:
