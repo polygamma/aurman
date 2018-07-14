@@ -40,5 +40,5 @@ setup(
         ]
     },
 
-    install_requires=['requests', 'regex', 'pyalpm', 'python-dateutil']
+    install_requires=['requests', 'regex', 'pyalpm', 'python_dateutil', 'feedparser']
 )
