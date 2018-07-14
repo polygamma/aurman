@@ -342,9 +342,9 @@ def show_unread_news():
         seen_ids: Set[str] = set([line for line in seenidsfile.read().strip().splitlines()])
 
     # fetch current news and filter unseen news
-    news_to_show = list(filter(
+    news_to_show = list(reversed(list(filter(
         lambda entry: entry['id'] not in seen_ids, feedparser.parse("https://www.archlinux.org/feeds/news/").entries
-    ))
+    ))))
 
     # if no unread news, return
     if not news_to_show:
@@ -355,7 +355,9 @@ def show_unread_news():
         "There are {} unseen news on archlinux.org".format(Colors.BOLD(Colors.LIGHT_MAGENTA(len(news_to_show))))
     )
     for entry in news_to_show:
-        aurman_note(Colors.BOLD(Colors.LIGHT_MAGENTA(entry['title'])), new_line=True)
+        aurman_note(
+            "{} [{}]".format(Colors.BOLD(Colors.LIGHT_MAGENTA(entry['title'])), entry['published']), new_line=True
+        )
         print(re.sub('<[^<]+?>', '', entry['summary']))
 
     if ask_user("Have you read the news?", False, True):
