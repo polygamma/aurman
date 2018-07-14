@@ -326,6 +326,9 @@ def process(args):
                                 upstream_system.all_packages_dict[package_to_replace.name]
                             )
 
+    # chunks packages by pkgbase
+    concrete_packages_to_install.sort(key=lambda pkg: pkg.pkgbase)
+
     # calc solutions
     if only_unfulfilled_deps:
         if not rebuild:

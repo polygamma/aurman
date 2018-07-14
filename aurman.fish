@@ -143,6 +143,7 @@ complete -c $progname -n $sync -l rebuild               -d 'Always rebuild packa
 complete -c $progname -n $sync -l sort_by_name          -d 'Sort AUR search results by name'
 complete -c $progname -n $sync -l sort_by_votes         -d 'Sort AUR search results by votes'
 complete -c $progname -n $sync -l sort_by_popularity    -d 'Sort AUR search results by popularity'
+complete -c $progname -n $sync -l skip_news             -d 'Skips being shown unseen archlinux.org news'
 
 # Database options
 set -l has_db_opt '__fish_contains_opt asdeps asexplicit'

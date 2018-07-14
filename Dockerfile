@@ -17,15 +17,15 @@ RUN sudo sh -c "sed -i '/MAKEFLAGS=/s/^.*$/MAKEFLAGS=\"-j\$(nproc)\"/' /etc/make
 RUN sudo sh -c "sed -i '/PKGEXT=/s/^.*$/PKGEXT=\".pkg.tar\"/' /etc/makepkg.conf"
 
 # aurman requirements and sysupgrade
-RUN sudo pacman --needed --noconfirm -Syu python reflector python-requests git python-regex expac pyalpm
+RUN sudo pacman --needed --noconfirm -Syu python reflector python-requests git python-regex expac pyalpm python-dateutil python-feedparser
 
 # new mirrors
 RUN sudo reflector --save /etc/pacman.d/mirrorlist --sort rate --age 1 --latest 10 --score 10 --number 5 --protocol http
 RUN sudo pacman --noconfirm -Syu
 
-# make use of --ask=4
+# make use of --ask=4 and disable showing of archlinux.org news
 RUN mkdir -p "/home/aurman/.config/aurman/"
-RUN printf "[miscellaneous]\nuse_ask\n" > "/home/aurman/.config/aurman/aurman_config"
+RUN printf "[miscellaneous]\nuse_ask\narch_news_disable" > "/home/aurman/.config/aurman/aurman_config"
 
 # add files of the current branch
 ADD . /home/aurman/aurman-git

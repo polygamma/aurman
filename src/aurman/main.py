@@ -1,12 +1,14 @@
 import logging
 import os
+import re
 import sys
 from copy import deepcopy
 from datetime import datetime
 from subprocess import run, DEVNULL
 from sys import argv, stdout
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 
+import feedparser
 from dateutil.tz import tzlocal
 from pycman.config import PacmanConfig
 
@@ -327,6 +329,51 @@ def pacman_beginning_routine(pacman_args: 'PacmanArgs', groups_chosen: List[str]
     return sudo_acquired, pacman_called
 
 
+def show_unread_news():
+    """
+    Shows unread news from archlinux.org
+    """
+    # load list of already seen news
+    try:
+        os.makedirs(Package.cache_dir, mode=0o700, exist_ok=True)
+    except OSError:
+        logging.error("Creating cache dir {} failed".format(Package.cache_dir))
+        raise InvalidInput("Creating cache dir {} failed".format(Package.cache_dir))
+
+    seen_ids_file = os.path.join(Package.cache_dir, "seen_news_ids")
+    if not os.path.isfile(seen_ids_file):
+        open(seen_ids_file, 'a').close()
+
+    with open(seen_ids_file, 'r') as seenidsfile:
+        seen_ids: Set[str] = set([line for line in seenidsfile.read().strip().splitlines()])
+
+    # fetch current news and filter unseen news
+    news_to_show = list(reversed(list(filter(
+        lambda entry: entry['id'] not in seen_ids, feedparser.parse("https://www.archlinux.org/feeds/news/").entries
+    ))))
+
+    # if no unread news, return
+    if not news_to_show:
+        return
+
+    # show unseen news
+    aurman_status(
+        "There are {} unseen news on archlinux.org".format(Colors.BOLD(Colors.LIGHT_MAGENTA(len(news_to_show))))
+    )
+    for entry in news_to_show:
+        aurman_note(
+            "{} [{}]".format(Colors.BOLD(Colors.LIGHT_MAGENTA(entry['title'])), entry['published']), new_line=True
+        )
+        print(re.sub('<[^<]+?>', '', entry['summary']))
+
+    if ask_user("Have you read the news?", False, True):
+        with open(seen_ids_file, 'a') as seenidsfile:
+            seenidsfile.write('\n'.join([entry['id'] for entry in news_to_show]) + '\n')
+    else:
+        logging.error("User did not read the unseen news, but wanted to install packages on the system")
+        raise InvalidInput("User did not read the unseen news, but wanted to install packages on the system")
+
+
 def process(args):
     readconfig()
     check_privileges()
@@ -383,6 +430,7 @@ def process(args):
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
+    skip_news = pacman_args.skip_news  # if --skip_news
     use_ask = 'miscellaneous' in AurmanConfig.aurman_config \
               and 'use_ask' in AurmanConfig.aurman_config['miscellaneous']  # if to use --ask=4
 
@@ -473,6 +521,14 @@ def process(args):
     # if user just wants to see info of packages
     if info:
         show_packages_info(pacman_args, packages_of_user_names)
+
+    # show unread news from archlinux.org
+    if not skip_news and not aur and not ('miscellaneous' in AurmanConfig.aurman_config
+                                          and 'arch_news_disable' in AurmanConfig.aurman_config['miscellaneous']):
+        try:
+            show_unread_news()
+        except InvalidInput:
+            sys.exit(1)
 
     # groups are for pacman
     # removes found groups from packages_of_user_names
@@ -685,6 +741,9 @@ def process(args):
                                     upstream_system.all_packages_dict[package_to_replace.name]
                                 )
 
+    # chunks packages by pkgbase
+    concrete_packages_to_install.sort(key=lambda pkg: pkg.pkgbase)
+
     # start calculating solutions
     aurman_status("calculating solutions...")
     if only_unfulfilled_deps:
@@ -805,24 +864,58 @@ def process(args):
 
             if as_explicit_container:
                 pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
-        # aur chunks always consist of one package
-        else:
-            package = package_chunk[0]
-            try:
-                package.build(ignore_arch, rebuild)
-                if package.name in sanitized_names \
-                        and package.name not in sanitized_not_to_be_removed \
-                        and package.name not in replaces_dict \
-                        or (package.name in installed_system.all_packages_dict
-                            and installed_system.all_packages_dict[package.name].install_reason
-                            == 'explicit') \
-                        or (package.name in replaces_dict
-                            and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
-                            == 'explicit'):
 
-                    package.install(args_for_explicit, use_ask=use_ask)
+        # aur chunks may consist of more than one package in case of split packages to be installed
+        else:
+            try:
+                # no split packages, single package
+                if len(package_chunk) == 1:
+                    package = package_chunk[0]
+                    package.build(ignore_arch, rebuild)
+                    if package.name in sanitized_names \
+                            and package.name not in sanitized_not_to_be_removed \
+                            and package.name not in replaces_dict \
+                            or (package.name in installed_system.all_packages_dict
+                                and installed_system.all_packages_dict[package.name].install_reason
+                                == 'explicit') \
+                            or (package.name in replaces_dict
+                                and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
+                                == 'explicit'):
+
+                        package.install(args_for_explicit, use_ask=use_ask)
+                    else:
+                        package.install(args_for_dependency, use_ask=use_ask)
+                # split packages, multiple packages
                 else:
-                    package.install(args_for_dependency, use_ask=use_ask)
+                    build_dir: str = None
+                    args_as_list: List[str] = args_for_dependency[:]
+                    if use_ask:
+                        args_as_list = ["--ask=4"] + args_as_list
+
+                    as_explicit_container = set()
+                    for package in package_chunk:
+                        # building only needed once
+                        if build_dir is None:
+                            package.build(ignore_arch, rebuild)
+                        build_dir, current_install_file = package.install(args_for_dependency, do_not_execute=True)
+                        args_as_list += [current_install_file]
+
+                        if package.name in sanitized_names \
+                                and package.name not in sanitized_not_to_be_removed \
+                                and package.name not in replaces_dict \
+                                or (package.name in installed_system.all_packages_dict
+                                    and installed_system.all_packages_dict[package.name].install_reason
+                                    == 'explicit') \
+                                or (package.name in replaces_dict
+                                    and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
+                                    == 'explicit'):
+                            as_explicit_container.add(package.name)
+
+                    pacman(args_as_list, False, dir_to_execute=build_dir)
+
+                    if as_explicit_container:
+                        pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
+
             except InvalidInput:
                 sys.exit(1)
 

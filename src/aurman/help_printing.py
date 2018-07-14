@@ -172,6 +172,14 @@ only_aurman_points.append(HelpOption(["--optimistic_versioning"],
                                      "assume that the dependency is fulfilled"))
 only_aurman_points.append(HelpOption(["--rebuild"],
                                      "Always rebuild packages before installing them"))
+only_aurman_points.append(HelpOption(["--sort_by_name"],
+                                     "Sort -Ss AUR results by name"))
+only_aurman_points.append(HelpOption(["--sort_by_votes"],
+                                     "Sort -Ss AUR results by votes"))
+only_aurman_points.append(HelpOption(["--sort_by_popularity"],
+                                     "Sort -Ss AUR results by popularity"))
+only_aurman_points.append(HelpOption(["--skip_news"],
+                                     "Skips being shown unseen archlinux.org news"))
 # aurmansolver help
 aurmansolver_help = Help([])
 
