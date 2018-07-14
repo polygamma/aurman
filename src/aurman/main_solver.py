@@ -331,7 +331,10 @@ def process(args):
                                          if package.type_of is PossibleTypes.REPO_PACKAGE]
     concrete_packages_to_install_aur = [package for package in concrete_packages_to_install
                                         if package.type_of is not PossibleTypes.REPO_PACKAGE]
+
     concrete_packages_to_install_aur.sort(key=lambda pkg: pkg.pkgbase)
+    concrete_packages_to_install_repo.sort(key=lambda pkg: pkg.name)
+
     concrete_packages_to_install = concrete_packages_to_install_repo + concrete_packages_to_install_aur
 
     # calc solutions

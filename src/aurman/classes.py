@@ -1617,7 +1617,7 @@ class System:
 
     def hypothetical_append_packages_to_system(self, packages: List['Package'],
                                                packages_names_print_reason: Iterable[str] = None,
-                                               print_way: bool = False) -> 'System':
+                                               print_way: bool = False, check_if_possible: bool = False) -> 'System':
         """
         hypothetically appends packages to this system (only makes sense for the installed system)
         and removes all conflicting packages and packages whose deps are not fulfilled anymore.
@@ -1626,12 +1626,16 @@ class System:
         :param packages_names_print_reason: print the uninstall reasons for packages
                                             with names in this iterable
         :param print_way:                   Prints the way of appending packages
+        :param check_if_possible:           checks if the appending to the system is actually possible
+                                            informs to rerun with --solution_way in case it is not
         :return:                            the new system
         """
 
         new_system = System(list(self.all_packages_dict.values()))
         if not packages:
             return new_system
+
+        informed_about_not_possible: bool = False
 
         chunked_packages = System.calc_install_chunks(packages)
         last_index = len(chunked_packages) - 1
@@ -1775,19 +1779,29 @@ class System:
                     if not to_delete_packages:
                         break
 
+                    if not informed_about_not_possible and not print_way and check_if_possible:
+                        aurman_error(
+                            "It is not possible to install the found solution without manual user intervention\n"
+                            "   please rerun aurman with --solution_way to see the reason", new_line=True
+                        )
+                        informed_about_not_possible = True
+
                     # print what will be done
                     if print_way:
                         packages_names_to_del = set([package.name for package in to_delete_packages])
 
                         print(
-                            "   {}    : {}".format(
+                            "   {}    : {} - {}".format(
                                 Colors.BOLD(Colors.LIGHT_RED("Remove")),
                                 ", ".join(
                                     [
                                         Colors.BOLD(Colors.LIGHT_MAGENTA(name))
                                         for name in sorted(packages_names_to_del)
                                     ]
-                                )
+                                ),
+                                Colors.BOLD(Colors.LIGHT_MAGENTA(
+                                    "because of dependency breakage, needs manual intervention"
+                                ))
                             )
                         )
 
@@ -2154,6 +2168,10 @@ class System:
 
             # print why those packages have to be uninstalled
             self.hypothetical_append_packages_to_system(solution, packages_names_print_reason=to_uninstall_names)
+
+        # check if no dependency breakage happens
+        if not solution_way:
+            self.hypothetical_append_packages_to_system(solution, check_if_possible=True)
 
         if solution_way:
             aurman_status("The following will be done:", new_line=True)
