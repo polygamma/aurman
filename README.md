@@ -11,10 +11,10 @@
 > **Notice**: Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
 > `aurman` is targeted at **advanced** users, who are familiar with `pacman`, `makepkg` and most of all with the `AUR`.
 > `aurman` is an AUR **helper**, it can not and will never be a replacement for the sometimes needed human interaction.
-> If you **ever** encounter a problem, at which `aurman` e.g. is not able to find a dependency solution and you do not know **either**
+> If you **ever** encounter a problem, at which `aurman` e.g. is not able to find a dependency solution, and you do not know **either**
 > how to solve the problem, you should **not** use an AUR helper. Even though the specific problem may be a bug in the `aurman`
 > implementation, it is **always** expected, that you as user will know what to do. If you do not, do not use `aurman`.
-> Also: If you already failed to install `aurman` because you do not know something like how to import PGP keys or how to fulfill `aurman`
+> Also: If you already failed to install `aurman`, because you do not know something like how to import PGP keys or how to fulfill `aurman`
 > dependencies manually, you should **not** use `aurman`.
 > Last but not least: The GitHub issues are **not** for support, they are **only** for feature requests, bug reports or general discussions.
 > To reduce the noise by users, who should not use `aurman`, but still do, users may be banned from this repository without further warning
@@ -307,6 +307,15 @@ to unintended removal of package(s).
 All in all it comes down to: "redundant" confirmations of actions (less prone to errors)
 or "not redundant" confirmations of actions (more prone to errors).
 
+#### Disable showing of `archlinux.org` news when not using `--aur`
+Create a key called `arch_news_disable` in the section `[miscellaneous]`.
+
+Example:
+```ini
+[miscellaneous]
+arch_news_disable
+```
+
 
 ## Features
 
@@ -322,6 +331,7 @@ or "not redundant" confirmations of actions (more prone to errors).
   - Search function supports regex for searching the AUR the first span of at least two consecutive non-regex
   characters being used. These results will be filtered by the regex expression afterwards.
   - Differentiate between the sources of packages in case of identical names in different known repos and/or the AUR.
+  - Show unread news from `archlinux.org`
 
 ## Dependency solving description including benchmarks
 https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-solving
@@ -340,7 +350,7 @@ See https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver f
 `aurman` wants to remove packages that should not be removed - what's the matter?
 
 #### Answer
-Please check if the problem arises because `aurman` assumes `.so` dependencies to be unfulfilled.
+Please check, if the problem arises, because `aurman` assumes `.so` dependencies to be unfulfilled.
 *E.g.* `libavcodec.so=57-64` which requires a specific version of the mentioned `.so`.
 This may be the case because a providing AUR package only lists `libavcodec.so` as being provided
 without specifying the version. Hence `aurman` cannot be sure if the version will match,
