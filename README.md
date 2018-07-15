@@ -10,15 +10,15 @@
 
 > **Notice**: Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
 > `aurman` is targeted at **advanced** users, who are familiar with `pacman`, `makepkg` and most of all with the `AUR`.
-> `aurman` is an AUR **helper**, it can't and will never be a replacement for the sometimes needed human interaction.
-> If you **ever** encounter a problem, at which `aurman` e.g. is not able to find a dependency solution, and you do not know **either**
-> how to solve the problem, you should **not** use an AUR helper. Even though the specific problem may be a bug in the `aurman`
-> implementation, it is **always** expected, that you as user know what to do. If you do not, do not use `aurman`.
-> Also: If you already fail to install `aurman`, because you do not know e. g. how to import PGP keys or how to fulfill `aurman`
+> `aurman` is an AUR **helper**, it can't and will never be a replacement for the sometimes needed concept of "human interaction".
+> If you **ever** encounter an issue whereby `aurman` e.g. is not able to find a dependency solution, and you do not know
+> how to solve the problem  **either**, you should **not** use an AUR helper. Even though the specific problem may be a bug in the `aurman`
+> implementation, it is **always** expected that you as a [Turing-complete user](http://contemporary-home-computing.org/turing-complete-user/) know what to do. If you do not, do not use `aurman`.
+> Also: If you are already failing to install `aurman`, because you do not know e. g. how to import PGP keys or how to fulfill `aurman`
 > dependencies manually, you should **not** use `aurman`.
 > Last but not least: The GitHub issues are **not** for support, they are **only** for feature requests, bug reports or general discussions.
-> To reduce the noise by users, who should not use `aurman`, but still do, users may be banned from this repository without further warning,
-> if they fill out issues in a non sensible way.
+> To reduce the noise by users who should not use `aurman`, but still do, users who fill out issues in a non-sensible way
+> may be banned from this repository without further warning
 
 ## Syntax
 
@@ -55,7 +55,7 @@ All pacman operations are supported, and calling aurman with an operation beside
 
 ##### Native pacman options for `--sync` or `-S` that are also used by aurman:
 
-- `--color` - Notice: `aurman` respects by default, if `Color` is set in the `pacman.conf` or not.
+- `--color` - Note: By default, `aurman` respects the presence of the `Color` option in `pacman.conf`.
 - `--noconfirm`
 - `--needed`
 - `--ignore`
@@ -116,14 +116,32 @@ but because the dependency solver of `aurman` may yield wrong results.
 
 - `--skip_news`: Skips being shown unseen `archlinux.org` news.
 
-## Config
-You may use the file `aurman_config` under `$XDG_CONFIG_HOME/aurman` (fallback to `~/.config/aurman` in case of no `$XDG_CONFIG_HOME`) as config for aurman.
+## Config and cache directory
+aurman conforms to the [XDG Base Directory Specification](https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html):
+- The configuration file is `$XDG_CONFIG_HOME/aurman/aurman_config`
+- The cache directory used to remember internal state and to store downloaded AUR package sources is `$XDG_CACHE_HOME/aurman/`
 
 ### Config Options
+#### Command-line defaults
+A number of `aurman`'s command-line flags can be enabled by default, by listing them with the leading `--` removed in the `[miscellaneous]` section. In a case of conflict between a command-line flag and a config option, the command-line flag always wins.
+
+Available (example) defaults:
+```ini
+[miscellaneous]
+keyserver=hkp://ipv4.pool.sks-keyservers.net:11371
+show_changes
+solution_way
+do_everything
+optimistic_versioning
+```
+
+> **Notice**: Use of `do_everything` is **not** recommended since the usage of this flag is in general not recommended.
+> **Notice**: Use of `optimistic_versioning` is **not** recommended since this flag should only be used when needed.
+
 #### Choose between multiple package sources
-By default `aurman` assumes the following priorities in case of multiple available packages with the same names (high to low):
+By default `aurman` assumes the following priorities in a case where multiple packages with the same names are available (high to low):
 - Repository package as listed in the pacman.conf - see https://www.archlinux.org/pacman/pacman.conf.5.html#_repository_sections
-> The order of repositories in the configuration files matters; repositories listed first will take precedence over those listed later in the file when packages in two repositories have identical names, regardless of version number.
+> The order of repositories in the configuration file matters; repositories listed first will take precedence over those listed later in the file when packages in two repositories have identical names, regardless of version number.
 - AUR packages
 
 Overriding this priority has to be done via the aurman config.
@@ -144,19 +162,6 @@ other_aur_package_name
 [repo_packages]
 repo_package_name=repo_one
 other_repo_package_name=repo_two
-```
-
-#### PGP fetching keyserver
-You may specify the keyserver for PGP fetching in the config instead of yielding it via commandline.
-
-> **Notice**: Commandline overrides config.
-
-Create a key called `keyserver` in the section `[miscellaneous]`.
-
-Example:
-```ini
-[miscellaneous]
-keyserver=hkp://ipv4.pool.sks-keyservers.net:11371
 ```
 
 #### Disable notifications about packages that are not in known repos or the AUR
@@ -219,10 +224,8 @@ package_name1
 package_name2
 ```
 
-#### Specify the folder to save `aurman` cache files
+#### Specify a non-default folder to save `aurman` cache files
 Create a key called `cache_dir` in the section `[miscellaneous]`.
-
-default: `$XDG_CACHE_HOME/aurman` (fallback to `~/.cache/aurman` in case of no `$XDG_CACHE_HOME`).
 
 Example:
 ```ini
@@ -238,46 +241,6 @@ Example:
 [miscellaneous]
 aur_timeout=10
 ```
-
-#### Use `--show_changes` persistently without specifying via commandline
-Create a key called `show_changes` in the section `[miscellaneous]`.
-
-Example:
-```ini
-[miscellaneous]
-show_changes
-```
-
-#### Use `--solution_way` persistently without specifying via commandline
-Create a key called `solution_way` in the section `[miscellaneous]`.
-
-Example:
-```ini
-[miscellaneous]
-solution_way
-```
-
-#### Use `--do_everything` persistently without specifying via commandline
-Create a key called `do_everything` in the section `[miscellaneous]`.
-
-Example:
-```ini
-[miscellaneous]
-do_everything
-```
-
-> **Notice**: This is **not** recommended since the usage of this flag is in general not recommended.
-
-#### Use `--optimistic_versioning` persistently without specifying via commandline
-Create a key called `optimistic_versioning` in the section `[miscellaneous]`.
-
-Example:
-```ini
-[miscellaneous]
-optimistic_versioning
-```
-
-> **Notice**: This is **not** recommended since that flag should only be used when needed.
 
 #### Set interval in which to call `sudo -v` (sudo loop) (in seconds) (default is 120)
 Create a key called `sudo_timeout` in the section `[miscellaneous]`.
@@ -303,7 +266,7 @@ Explanation: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c1
 You will not have to confirm things like the installation of packages or the removal of conflicting packages again.
 "Again" - meaning again for `pacman`.
 You will still see the overview of `aurman`, which only predicts what will happen, and you will have to confirm unless `--noconfirm` was set.
-To make clear: `aurman` only predicts what will happen in every case.
+To be clear: `aurman` only predicts what will happen in every case.
 When using `--ask=4`, it may be possible that a conflict will not be detected by `aurman`. Hence, using `--ask=4` may lead
 to unintended removal of package(s).
 All in all it comes down to: "redundant" confirmations of actions (less prone to errors)
@@ -352,15 +315,15 @@ See https://github.com/polygamma/aurman/wiki/Using-aurman-as-dependency-solver f
 `aurman` wants to remove packages that should not be removed - what's the matter?
 
 #### Answer
-Please check, if the problem arises, because `aurman` assumes `.so` dependencies to be unfulfilled.
+Please check if the problem arises because `aurman` has assumed `.so` dependencies to be unfulfilled.
 *E.g.* `libavcodec.so=57-64` which requires a specific version of the mentioned `.so`.
 This may be the case because a providing AUR package only lists `libavcodec.so` as being provided
 without specifying the version. Hence `aurman` cannot be sure if the version will match,
-since this can only be known after building the package, thus assuming that the dependency is not fulfilled.
+since this can only be known after building the package, and thus assumes that the dependency is not fulfilled.
 You may change this behavior by yielding `--optimistic_versioning` via the commandline.
-Now, `aurman` assumes the dependency will be fulfilled.
-However, you should make sure that the version is going to be the needed one, otherwise
-the behavior of installing the packages will be undefined.
+Now, `aurman` (optimistically!) assumes the dependency will be fulfilled.
+However, you should make sure that the version in the built package is going to be the needed one,
+otherwise the optimism was misplaced and `aurman`'s behavior when installing the packages will be undefined.
 
 This behavior may also occur when there are no `.so` dependencies involved.
 Check if the dependencies are *really* fulfilled.
@@ -387,10 +350,11 @@ else `aurman` resorts to `/usr/bin/nano`.
 How to install packages whose names are saved in a file with `aurman`?
 
 #### Answer
-You may run commands like: `aurman -S $(cat ~/packages_names.txt | xargs)`.
+`aurman` does not implement this functionality. Instead you may use standard shell command sustitution.
+*e.g.*: `aurman -S $(cat ~/packages_names.txt)`.
 
 #### Question
-Does `aurman` support ignoring packages and groups via the `pacman.conf`?
+Does `aurman` support ignoring packages and groups via `pacman.conf`?
 
 #### Answer
 Yes.
@@ -413,7 +377,7 @@ tl;dr - install the latest `expac-git` version from the AUR and everything works
 How to achieve `full batch interaction` with `aurman`?
 
 #### Answer
-Use `--do_everything` and `--ask` via the `aurman config`.
+Use `--do_everything` and `--ask` via the `aurman` config file.
 
 `--do_everything` for `2*` and `--ask` for `3*` as listed [here](https://wiki.archlinux.org/index.php/AUR_helpers#Active)
 
@@ -424,9 +388,9 @@ and the description of `--ask` [here](https://github.com/polygamma/aurman#make-u
 If I want to run `aurman` from scripts, which settings should I use?
 
 #### Answer
-Activate the usage of `--ask` in the `aurman` config.
+See the answer to the previous question.
 
-Also yield `--do_everything`, `--noedit`, `--pgp_fetch`, `--skip_news` and `--noconfirm` via the commandline.
+Also use the options `--noedit`, `--pgp_fetch`, `--skip_news` and `--noconfirm`.
 
 ## Screenshots
 
