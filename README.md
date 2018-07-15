@@ -420,6 +420,14 @@ Use `--do_everything` and `--ask` via the `aurman config`.
 But there are downsides to this. See the description of `--do_everything` [here](https://github.com/polygamma/aurman#options-for---sync-or--s-exclusive-to-aurman)
 and the description of `--ask` [here](https://github.com/polygamma/aurman#make-use-of-the-undocumented---ask-flag-of-pacman).
 
+#### Question
+If I want to run `aurman` from scripts, which settings should I use?
+
+#### Answer
+Activate the usage of `--ask` in the `aurman` config.
+
+Also yield `--do_everything`, `--noedit`, `--pgp_fetch`, `--skip_news` and `--noconfirm` via the commandline.
+
 ## Screenshots
 
 ![](https://i.imgur.com/Q80aK61.png)
