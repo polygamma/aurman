@@ -358,16 +358,15 @@ def show_unread_news():
         return
 
     # show unseen news
-    aurman_status(
-        "There are {} unseen news on archlinux.org".format(Colors.BOLD(Colors.LIGHT_MAGENTA(len(news_to_show))))
-    )
     for entry in news_to_show:
         aurman_note(
             "{} [{}]".format(Colors.BOLD(Colors.LIGHT_MAGENTA(entry['title'])), entry['published']), new_line=True
         )
         print(re.sub('<[^<]+?>', '', entry['summary']))
 
-    if ask_user("Have you read the news?", False, True):
+    if ask_user("Have you read the {} unread article(s) from archlinux.org?".format(
+            Colors.BOLD(Colors.LIGHT_MAGENTA(len(news_to_show)))
+    ), False, True):
         with open(seen_ids_file, 'a') as seenidsfile:
             seenidsfile.write('\n'.join([entry['id'] for entry in news_to_show]) + '\n')
     else:
