@@ -1799,9 +1799,9 @@ class System:
                                         for name in sorted(packages_names_to_del)
                                     ]
                                 ),
-                                Colors.BOLD(Colors.LIGHT_MAGENTA(
+                                Colors.BOLD(
                                     "because of dependency breakage, needs manual intervention"
-                                ))
+                                )
                             )
                         )
 
