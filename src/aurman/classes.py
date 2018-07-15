@@ -1781,8 +1781,11 @@ class System:
 
                     if not informed_about_not_possible and not print_way and check_if_possible:
                         aurman_error(
-                            "It is not possible to install the found solution without manual user intervention\n"
-                            "   please rerun aurman with --solution_way to see the reason", new_line=True
+                            "It is not possible to install the found solution without manual user intervention.\n"
+                            "   Please rerun aurman with {} to see the reason".format(
+                                Colors.BOLD(Colors.LIGHT_MAGENTA("--solution_way"))
+                            ),
+                            new_line=True
                         )
                         informed_about_not_possible = True
 
