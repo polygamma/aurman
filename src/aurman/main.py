@@ -1,3 +1,4 @@
+import fnmatch
 import logging
 import os
 import re
@@ -563,8 +564,13 @@ def process(args):
         sys.exit(1)
 
     # print unknown packages for the user
-    packages_to_show = [package for package in installed_system.not_repo_not_aur_packages_list
-                        if package.name not in concrete_no_notification_packages]
+    packages_not_show_names = set(fnmatch.filter(
+        [package.name for package in installed_system.not_repo_not_aur_packages_list], concrete_no_notification_packages
+    ))
+    packages_to_show = [
+        package for package in installed_system.not_repo_not_aur_packages_list
+        if package.name not in packages_not_show_names
+    ]
 
     if packages_to_show and not no_notification_unknown_packages:
         aurman_status("the following packages are neither in known repos nor in the aur")

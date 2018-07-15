@@ -1,3 +1,4 @@
+import fnmatch
 import json
 import logging
 import os
@@ -121,14 +122,18 @@ def process(args):
     packages_of_user_names = list(set(pacman_args.targets))  # targets of the aurman command without duplicates
     sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
     sysupgrade_force = sysupgrade and not isinstance(sysupgrade, bool)  # if -u -u or --sysupgrade --sysupgrade
-    no_notification_unknown_packages = 'miscellaneous' in AurmanConfig.aurman_config \
-                                       and 'no_notification_unknown_packages' in AurmanConfig.aurman_config[
-                                           'miscellaneous'
-                                       ]
-    concrete_no_notification_packages = set()
+
+    # packages to not notify about being unknown in either repos or the aur
+    # global
+    no_notification_unknown_packages = 'miscellaneous' in AurmanConfig.aurman_config and \
+                                       'no_notification_unknown_packages' in AurmanConfig.aurman_config['miscellaneous']
+    # single packages
     if 'no_notification_unknown_packages' in AurmanConfig.aurman_config:
-        for package_name in AurmanConfig.aurman_config['no_notification_unknown_packages']:
-            concrete_no_notification_packages.add(package_name)
+        concrete_no_notification_packages = set(
+            [package_name for package_name in AurmanConfig.aurman_config['no_notification_unknown_packages']]
+        )
+    else:
+        concrete_no_notification_packages = set()
 
     # nothing to do for us
     if not sysupgrade and not packages_of_user_names:
@@ -166,8 +171,15 @@ def process(args):
     except InvalidInput:
         sys.exit(1)
 
-    packages_to_show = [package for package in installed_system.not_repo_not_aur_packages_list
-                        if package.name not in concrete_no_notification_packages]
+    # print unknown packages for the user
+    packages_not_show_names = set(fnmatch.filter(
+        [package.name for package in installed_system.not_repo_not_aur_packages_list], concrete_no_notification_packages
+    ))
+    packages_to_show = [
+        package for package in installed_system.not_repo_not_aur_packages_list
+        if package.name not in packages_not_show_names
+    ]
+
     if packages_to_show and not no_notification_unknown_packages:
         if not pacman_args.show_unknown:
             logging.debug("the following packages are neither in known repos nor in the aur")
