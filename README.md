@@ -117,7 +117,7 @@ but because the dependency solver of `aurman` may yield wrong results.
 - `--skip_news`: Skips being shown unseen `archlinux.org` news.
 
 ## Config and cache directory
-aurman conforms to the [XDG Base Directory Specification](https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html):
+`aurman` conforms to the [XDG Base Directory Specification](https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html):
 - The configuration file is `$XDG_CONFIG_HOME/aurman/aurman_config`
 - The cache directory used to remember internal state and to store downloaded AUR package sources is `$XDG_CACHE_HOME/aurman/`
 
@@ -136,6 +136,7 @@ optimistic_versioning
 ```
 
 > **Notice**: Use of `do_everything` is **not** recommended since the usage of this flag is in general not recommended.
+
 > **Notice**: Use of `optimistic_versioning` is **not** recommended since this flag should only be used when needed.
 
 #### Choose between multiple package sources
