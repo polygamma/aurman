@@ -172,9 +172,12 @@ def process(args):
         sys.exit(1)
 
     # print unknown packages for the user
-    packages_not_show_names = set(fnmatch.filter(
-        [package.name for package in installed_system.not_repo_not_aur_packages_list], concrete_no_notification_packages
-    ))
+    packages_not_show_names = set()
+    for possible_glob in concrete_no_notification_packages:
+        packages_not_show_names |= set(fnmatch.filter(
+            [package.name for package in installed_system.not_repo_not_aur_packages_list], possible_glob
+        ))
+
     packages_to_show = [
         package for package in installed_system.not_repo_not_aur_packages_list
         if package.name not in packages_not_show_names
