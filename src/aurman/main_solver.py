@@ -173,9 +173,10 @@ def process(args):
 
     # print unknown packages for the user
     packages_not_show_names = set()
+    not_repo_not_aur_packages_names = [package.name for package in installed_system.not_repo_not_aur_packages_list]
     for possible_glob in concrete_no_notification_packages:
         packages_not_show_names |= set(fnmatch.filter(
-            [package.name for package in installed_system.not_repo_not_aur_packages_list], possible_glob
+            not_repo_not_aur_packages_names, possible_glob
         ))
 
     packages_to_show = [
