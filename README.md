@@ -397,6 +397,6 @@ Also use the options `--noedit`, `--pgp_fetch`, `--skip_news` and `--noconfirm`.
 
 ![](https://i.imgur.com/Q80aK61.png)
 ![](https://i.imgur.com/37SGzAe.png)
-![](https://i.imgur.com/Ej6y0Tu.png)
+![](https://i.imgur.com/Ou3S9m8.png)
 ![](https://i.imgur.com/7v24k19.png)
 ![](https://i.imgur.com/8Xu9oHc.png)
