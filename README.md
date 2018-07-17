@@ -1,6 +1,10 @@
 # aurman - AUR helper with almost pacman syntax
 
-![](https://travis-ci.org/polygamma/aurman.svg?branch=master)
+[![Build Status](https://travis-ci.org/polygamma/aurman.svg?branch=master)](https://travis-ci.org/polygamma/aurman)
+[![aurman](https://img.shields.io/aur/version/aurman.svg?label=aurman)](https://aur.archlinux.org/packages/aurman/)
+[![aurman-git](https://img.shields.io/aur/version/aurman-git.svg?label=aurman-git)](https://aur.archlinux.org/packages/aurman-git/)
+[![GitHub license](https://img.shields.io/github/license/polygamma/aurman.svg)](https://github.com/polygamma/aurman/blob/master/LICENSE)
+
 
 ## aurman in the AUR
 
