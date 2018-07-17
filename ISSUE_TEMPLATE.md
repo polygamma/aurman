@@ -10,6 +10,9 @@ MAKE NEVERTHELESS SURE, THAT THE FEATURE REQUEST IS WORDED IN A MEANINGFUL WAY
 
 ## Expected Behavior
 <!-- _Tell what should happen_ -->
+<!-- _Also provide reason, why the behavior you expect is actually correct.
+Do not simply assume things, prove them.
+Not proving the assumptions behind expectations is the same as not filling out the expected behavior at all_ -->
 
 ## Current Behavior
 <!-- _Tell what happens instead of the expected behavior_ -->
