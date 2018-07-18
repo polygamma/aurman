@@ -120,7 +120,7 @@ but because the dependency solver of `aurman` may yield wrong results.
 
 - `--skip_news`: Skips being shown unseen `archlinux.org` news.
 
-- `--skip_new_locations`: Skips being shown new locations of packages
+- `--skip_new_locations`: Skips being shown new locations of packages.
 
 ## Config and cache directory
 `aurman` conforms to the [XDG Base Directory Specification](https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html):
