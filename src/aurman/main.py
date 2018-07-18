@@ -429,10 +429,7 @@ def show_changed_package_repos(installed_system: 'System', upstream_system: 'Sys
                     "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(old_package_information[2]))),
                     "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(upstream_package.repo)))
                 ))
-
-                continue
-
-            if not old_package_information[0]:
+            elif not old_package_information[0]:
                 packages_with_changes.append((
                     package_name,
                     Colors.BOLD(Colors.LIGHT_MAGENTA("not known")),
