@@ -732,9 +732,12 @@ def process(args):
 
                         not_known_in_repo = package_to_replace.type_of is not PossibleTypes.REPO_PACKAGE
 
-                        repo_order_allows_replacing = known_repo_names.index(
-                            possible_replacing_package.repo
-                        ) <= known_repo_names.index(upstream_system.all_packages_dict[package_to_replace.name].repo)
+                        try:
+                            repo_order_allows_replacing = known_repo_names.index(
+                                possible_replacing_package.repo
+                            ) <= known_repo_names.index(upstream_system.all_packages_dict[package_to_replace.name].repo)
+                        except ValueError:
+                            repo_order_allows_replacing = not_known_in_repo
 
                         # implement pacman logic to decide whether to replace or not
                         if not_ignored and not_same_name and (not_known_in_repo or repo_order_allows_replacing):
