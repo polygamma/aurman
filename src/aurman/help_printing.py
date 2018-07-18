@@ -151,9 +151,9 @@ only_aurman_points.append(HelpOption(["--pgp_fetch"],
 only_aurman_points.append(HelpOption(["--keyserver"],
                                      "You may specify a keyserver to fetch the pgp keys from"))
 only_aurman_points.append(HelpOption(["--aur"],
-                                     "Do things only for aur"))
+                                     "-Ss restricted to AUR packages and -Sc restricted to aurman cache"))
 only_aurman_points.append(HelpOption(["--repo"],
-                                     "Do things only for regular repos"))
+                                     "-Ss restricted to repo packages and -Sc restricted to pacman cache"))
 only_aurman_points.append(HelpOption(["--domain"],
                                      "Change the base url for aur requests (https://aur.archlinux.org is the default)"))
 only_aurman_points.append(HelpOption(["--solution_way"],

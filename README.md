@@ -87,9 +87,9 @@ It could take some time to find a solution.
 
 - `--keyserver`: Specify a keyserver to fetch the PGP keys from.
 
-- `--aur`: Act on AUR packages only.
+- `--aur`: `-Ss` just searches for AUR packages and `-Sc` cleans only the `aurman` cache.
 
-- `--repo`: Act on regular repo packages only.
+- `--repo`: `-Ss` just searches for repo packages and `-Sc` cleans only the `pacman` cache.
 
 - `--domain`: Change the base URL for AUR requests *(https://aur.archlinux.org is the default)*.
 
