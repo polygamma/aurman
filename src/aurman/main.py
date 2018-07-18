@@ -374,6 +374,12 @@ def show_unread_news():
 
 
 def show_changed_package_repos(installed_system: 'System', upstream_system: 'System'):
+    """
+    Shows changed places of installed packages
+
+    :param installed_system:    The installed system
+    :param upstream_system:     The system containing the known upstream packages
+    """
     # load list of the last known places of the packages
     known_places_file = os.path.join(Package.cache_dir, "known_package_places")
     if not os.path.isfile(known_places_file):
@@ -486,6 +492,34 @@ def show_changed_package_repos(installed_system: 'System', upstream_system: 'Sys
                            "but wanted to install packages on the system")
 
 
+def save_packages_repos(installed_system: 'System', upstream_system: 'System'):
+    """
+    Saves the current places of the installed packages
+
+    :param installed_system:    The installed system
+    :param upstream_system:     The system containing the known upstream packages
+    """
+    try:
+        os.makedirs(Package.cache_dir, mode=0o700, exist_ok=True)
+    except OSError:
+        logging.error("Creating cache dir {} failed".format(Package.cache_dir))
+        raise InvalidInput("Creating cache dir {} failed".format(Package.cache_dir))
+
+    known_places_file = os.path.join(Package.cache_dir, "known_package_places")
+    to_dump = {}
+
+    for package_name, package in installed_system.all_packages_dict.items():
+        if package.type_of is PossibleTypes.PACKAGE_NOT_REPO_NOT_AUR:
+            to_dump[package_name] = (False, False, "")
+        elif package.type_of is PossibleTypes.REPO_PACKAGE:
+            to_dump[package_name] = (True, True, upstream_system.all_packages_dict[package_name].repo)
+        else:
+            to_dump[package_name] = (True, False, "")
+
+    with open(known_places_file, 'w') as f:
+        f.write(json.dumps(to_dump))
+
+
 def process(args):
     readconfig()
     check_privileges()
@@ -544,6 +578,9 @@ def process(args):
     repo = pacman_args.repo  # do only repo things
     skip_news = pacman_args.skip_news  # if --skip_news
     skip_new_locations = pacman_args.skip_new_locations  # if --skip_new_locations
+    show_new_locations = not skip_new_locations and not ('miscellaneous' in AurmanConfig.aurman_config
+                                                         and 'skip_new_locations' in AurmanConfig.aurman_config[
+                                                             'miscellaneous'])
     use_ask = 'miscellaneous' in AurmanConfig.aurman_config \
               and 'use_ask' in AurmanConfig.aurman_config['miscellaneous']  # if to use --ask=4
 
@@ -706,12 +743,15 @@ def process(args):
     upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
     # show changes of places of installed packages
-    if not skip_new_locations and not ('miscellaneous' in AurmanConfig.aurman_config
-                                       and 'skip_new_locations' in AurmanConfig.aurman_config['miscellaneous']):
+    if show_new_locations:
         try:
             show_changed_package_repos(installed_system, upstream_system)
+            save_packages_repos(installed_system, upstream_system)
         except InvalidInput:
             sys.exit(1)
+
+    # needed for later usage of save_packages_repos
+    upstream_system_copy = System(upstream_system.all_packages_dict.values())
 
     # sanitize user input
     try:
@@ -998,6 +1038,8 @@ def process(args):
             try:
                 pacman(pacman_args_copy.args_as_list(), False, use_ask=use_ask)
             except InvalidInput:
+                if show_new_locations:
+                    save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
                 sys.exit(1)
 
             if as_explicit_container:
@@ -1055,7 +1097,13 @@ def process(args):
                         pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
 
             except InvalidInput:
+                if show_new_locations:
+                    save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
                 sys.exit(1)
+
+    # save current repos of installed packages
+    if show_new_locations:
+        save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
 
 
 def main():

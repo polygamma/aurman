@@ -25,7 +25,7 @@ RUN sudo pacman --noconfirm -Syu
 
 # make use of --ask=4 and disable showing of archlinux.org news
 RUN mkdir -p "/home/aurman/.config/aurman/"
-RUN printf "[miscellaneous]\nuse_ask\nskip_news" > "/home/aurman/.config/aurman/aurman_config"
+RUN printf "[miscellaneous]\nuse_ask\nskip_news\nskip_new_locations" > "/home/aurman/.config/aurman/aurman_config"
 
 # add files of the current branch
 ADD . /home/aurman/aurman-git

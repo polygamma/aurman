@@ -390,7 +390,7 @@ If I want to run `aurman` from scripts, which settings should I use?
 #### Answer
 See the answer to the previous question.
 
-Also use the options `--noedit`, `--pgp_fetch`, `--skip_news` and `--noconfirm`.
+Also use the options `--noedit`, `--pgp_fetch`, `--skip_news`, `--noconfirm` and `--skip_new_locations`.
 
 ## Screenshots
 
