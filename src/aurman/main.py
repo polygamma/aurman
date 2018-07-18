@@ -475,7 +475,7 @@ def show_changed_package_repos(installed_system: 'System', upstream_system: 'Sys
 
     aurman_status("the following installed packages are found at new locations")
     for new_place_info in packages_with_changes:
-        print("{} moved from {} to {}".format(
+        aurman_note("{} moved from {} to {}".format(
             Colors.BOLD(Colors.LIGHT_MAGENTA(new_place_info[0].ljust(max_name_length))),
             new_place_info[1].ljust(max_old_place_length),
             new_place_info[2])
@@ -518,6 +518,50 @@ def save_packages_repos(installed_system: 'System', upstream_system: 'System'):
 
     with open(known_places_file, 'w') as f:
         f.write(json.dumps(to_dump))
+
+
+def save_orphans():
+    """
+    saves the current orphans - pacman -Qtdq
+    """
+    try:
+        os.makedirs(Package.cache_dir, mode=0o700, exist_ok=True)
+    except OSError:
+        logging.error("Creating cache dir {} failed".format(Package.cache_dir))
+        raise InvalidInput("Creating cache dir {} failed".format(Package.cache_dir))
+
+    with open(os.path.join(Package.cache_dir, "current_orphans"), 'w') as f:
+        f.write('\n'.join(pacman(["-Qtdq"], True, sudo=False)))
+
+
+def delete_orphans():
+    """
+    deletes the current orphans - pacman -Qtdq
+    """
+    orphans_file = os.path.join(Package.cache_dir, "current_orphans")
+
+    if os.path.isfile(orphans_file):
+        os.remove(orphans_file)
+
+
+def show_orphans(upstream_system: 'System'):
+    """
+    shows new orphans to the user - pacman -Qtdq
+    :param upstream_system:     System containing the known upstream packages
+    """
+    current_orphans = set(pacman(["-Qtdq"], True, sudo=False))
+    with open(os.path.join(Package.cache_dir, "current_orphans"), 'r') as f:
+        saved_orphans = set(f.read().strip().splitlines())
+
+    orphans_to_show = current_orphans - saved_orphans
+    if not orphans_to_show:
+        delete_orphans()
+        return
+
+    aurman_status("the following packages are now orphans")
+    aurman_note(", ".join([upstream_system.repo_of_package(orphan) for orphan in orphans_to_show]))
+
+    delete_orphans()
 
 
 def process(args):
@@ -752,6 +796,9 @@ def process(args):
 
     # needed for later usage of save_packages_repos
     upstream_system_copy = System(upstream_system.all_packages_dict.values())
+
+    # save current orphans
+    save_orphans()
 
     # sanitize user input
     try:
@@ -1038,6 +1085,7 @@ def process(args):
             try:
                 pacman(pacman_args_copy.args_as_list(), False, use_ask=use_ask)
             except InvalidInput:
+                show_orphans(upstream_system_copy)
                 if show_new_locations:
                     save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
                 sys.exit(1)
@@ -1097,9 +1145,13 @@ def process(args):
                         pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
 
             except InvalidInput:
+                show_orphans(upstream_system_copy)
                 if show_new_locations:
                     save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
                 sys.exit(1)
+
+    # show new orphans
+    show_orphans(upstream_system_copy)
 
     # save current repos of installed packages
     if show_new_locations:
