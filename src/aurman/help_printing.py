@@ -180,6 +180,8 @@ only_aurman_points.append(HelpOption(["--sort_by_popularity"],
                                      "Sort -Ss AUR results by popularity"))
 only_aurman_points.append(HelpOption(["--skip_news"],
                                      "Skips being shown unseen archlinux.org news"))
+only_aurman_points.append(HelpOption(["--skip_new_locations"],
+                                     "Skips being shown new locations of packages"))
 # aurmansolver help
 aurmansolver_help = Help([])
 

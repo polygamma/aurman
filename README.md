@@ -120,6 +120,8 @@ but because the dependency solver of `aurman` may yield wrong results.
 
 - `--skip_news`: Skips being shown unseen `archlinux.org` news.
 
+- `--skip_new_locations`: Skips being shown new locations of packages
+
 ## Config and cache directory
 `aurman` conforms to the [XDG Base Directory Specification](https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html):
 - The configuration file is `$XDG_CONFIG_HOME/aurman/aurman_config`
@@ -137,6 +139,8 @@ show_changes
 solution_way
 do_everything
 optimistic_versioning
+skip_news
+skip_new_locations
 ```
 
 > **Notice**: Use of `do_everything` is **not** recommended since the usage of this flag is in general not recommended.
@@ -276,15 +280,6 @@ When using `--ask=4`, it may be possible that a conflict will not be detected by
 to unintended removal of package(s).
 All in all it comes down to: "redundant" confirmations of actions (less prone to errors)
 or "not redundant" confirmations of actions (more prone to errors).
-
-#### Disable showing of `archlinux.org` news when not using `--aur`
-Create a key called `arch_news_disable` in the section `[miscellaneous]`.
-
-Example:
-```ini
-[miscellaneous]
-arch_news_disable
-```
 
 
 ## Features

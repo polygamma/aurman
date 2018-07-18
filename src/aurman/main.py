@@ -1,4 +1,5 @@
 import fnmatch
+import json
 import logging
 import os
 import re
@@ -372,6 +373,120 @@ def show_unread_news():
         raise InvalidInput("User did not read the unseen news, but wanted to install packages on the system")
 
 
+def show_changed_package_repos(installed_system: 'System', upstream_system: 'System'):
+    # load list of the last known places of the packages
+    known_places_file = os.path.join(Package.cache_dir, "known_package_places")
+    if not os.path.isfile(known_places_file):
+        # nothing to compare
+        return
+
+    with open(known_places_file, 'r') as f:
+        # Dict.
+        # Keys: names of packages, values: tuple
+        #   Every tuple contains three items:
+        #       1: bool: known in repo or aur
+        #       2: bool: known in repo
+        #       3: str:  if known in repo, name of repo
+        known_package_places: Dict[str, Tuple[bool, bool, str]] = json.loads(f.read())
+
+    # List containing the messages to print for the user.
+    # Every tuple contains the name of the package, the old place and the new place
+    packages_with_changes: List[Tuple[str, str, str]] = []
+    for package_name, package in installed_system.all_packages_dict.items():
+        if package_name not in known_package_places:
+            continue
+
+        old_package_information = known_package_places[package_name]
+
+        if package.type_of is PossibleTypes.PACKAGE_NOT_REPO_NOT_AUR:
+            if not old_package_information[0]:
+                continue
+
+            if old_package_information[1]:
+                packages_with_changes.append((
+                    package_name,
+                    "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(old_package_information[2]))),
+                    Colors.BOLD(Colors.LIGHT_MAGENTA("not known"))
+                ))
+            else:
+                packages_with_changes.append((
+                    package_name,
+                    Colors.BOLD(Colors.LIGHT_MAGENTA("AUR")),
+                    Colors.BOLD(Colors.LIGHT_MAGENTA("not known"))
+                ))
+
+            continue
+
+        upstream_package = upstream_system.all_packages_dict[package_name]
+
+        if package.type_of is PossibleTypes.REPO_PACKAGE:
+            if old_package_information[1]:
+                if old_package_information[2] == upstream_package.repo:
+                    continue
+
+                packages_with_changes.append((
+                    package_name,
+                    "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(old_package_information[2]))),
+                    "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(upstream_package.repo)))
+                ))
+
+            if not old_package_information[0]:
+                packages_with_changes.append((
+                    package_name,
+                    Colors.BOLD(Colors.LIGHT_MAGENTA("not known")),
+                    "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(upstream_package.repo)))
+                ))
+            else:
+                packages_with_changes.append((
+                    package_name,
+                    Colors.BOLD(Colors.LIGHT_MAGENTA("AUR")),
+                    "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(upstream_package.repo)))
+                ))
+
+            continue
+
+        # AUR package
+        if old_package_information[0] and not old_package_information[1]:
+            continue
+
+        if not old_package_information[0]:
+            packages_with_changes.append((
+                package_name,
+                Colors.BOLD(Colors.LIGHT_MAGENTA("not known")),
+                Colors.BOLD(Colors.LIGHT_MAGENTA("AUR"))
+            ))
+        else:
+            packages_with_changes.append((
+                package_name,
+                "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(old_package_information[2]))),
+                Colors.BOLD(Colors.LIGHT_MAGENTA("AUR"))
+            ))
+
+    if not packages_with_changes:
+        return
+
+    max_name_length = max([len(name) for name in [entry[0] for entry in packages_with_changes]])
+    max_old_place_length = max([len(old_place) for old_place in [entry[1] for entry in packages_with_changes]])
+
+    aurman_status("the following installed packages are found at new locations")
+    for new_place_info in packages_with_changes:
+        print("{} moved from {} to {}".format(
+            Colors.BOLD(Colors.LIGHT_MAGENTA(new_place_info[0].ljust(max_name_length))),
+            new_place_info[1].ljust(max_old_place_length),
+            new_place_info[2])
+        )
+
+    if not ask_user(
+            "Do you acknowledge the {} of the mentioned packages?".format(
+                Colors.BOLD(Colors.LIGHT_MAGENTA("new locations"))
+            ), False
+    ):
+        logging.error("User did not read about the changed packages locations, "
+                      "but wanted to install packages on the system")
+        raise InvalidInput("User did not read about the changed packages locations, "
+                           "but wanted to install packages on the system")
+
+
 def process(args):
     readconfig()
     check_privileges()
@@ -429,6 +544,7 @@ def process(args):
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
     skip_news = pacman_args.skip_news  # if --skip_news
+    skip_new_locations = pacman_args.skip_new_locations  # if --skip_new_locations
     use_ask = 'miscellaneous' in AurmanConfig.aurman_config \
               and 'use_ask' in AurmanConfig.aurman_config['miscellaneous']  # if to use --ask=4
 
@@ -522,7 +638,7 @@ def process(args):
 
     # show unread news from archlinux.org
     if not skip_news and not ('miscellaneous' in AurmanConfig.aurman_config
-                              and 'arch_news_disable' in AurmanConfig.aurman_config['miscellaneous']):
+                              and 'skip_news' in AurmanConfig.aurman_config['miscellaneous']):
         try:
             show_unread_news()
         except InvalidInput:
@@ -589,6 +705,14 @@ def process(args):
     names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
     names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
     upstream_system.append_packages_by_name(names_of_installed_aur_packages)
+
+    # show changes of places of installed packages
+    if not skip_new_locations and not ('miscellaneous' in AurmanConfig.aurman_config
+                                       and 'skip_new_locations' in AurmanConfig.aurman_config['miscellaneous']):
+        try:
+            show_changed_package_repos(installed_system, upstream_system)
+        except InvalidInput:
+            sys.exit(1)
 
     # sanitize user input
     try:
