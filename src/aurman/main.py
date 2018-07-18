@@ -280,21 +280,19 @@ def show_packages_info(pacman_args: 'PacmanArgs', packages_of_user_names: List[s
     sys.exit(0)
 
 
-def get_groups_to_install(packages_of_user_names: List[str], aur: bool) -> List[str]:
+def get_groups_to_install(packages_of_user_names: List[str]) -> List[str]:
     """
     gets groups the user wants to install
     :param packages_of_user_names: the targets entered by the user
-    :param aur: if --aur
     :return: the groups entered by the user
     """
     groups_chosen = []
-    if not aur:
-        groups = pacman(["-Sg"], True, sudo=False)
-        for name in packages_of_user_names[:]:
-            if name in groups:
-                groups_chosen.append(name)
-                # groups entered by the user must not be treated as packages
-                packages_of_user_names.remove(name)
+    groups = pacman(["-Sg"], True, sudo=False)
+    for name in packages_of_user_names[:]:
+        if name in groups:
+            groups_chosen.append(name)
+            # groups entered by the user must not be treated as packages
+            packages_of_user_names.remove(name)
 
     return groups_chosen
 
@@ -523,8 +521,8 @@ def process(args):
         show_packages_info(pacman_args, packages_of_user_names)
 
     # show unread news from archlinux.org
-    if not skip_news and not aur and not ('miscellaneous' in AurmanConfig.aurman_config
-                                          and 'arch_news_disable' in AurmanConfig.aurman_config['miscellaneous']):
+    if not skip_news and not ('miscellaneous' in AurmanConfig.aurman_config
+                              and 'arch_news_disable' in AurmanConfig.aurman_config['miscellaneous']):
         try:
             show_unread_news()
         except InvalidInput:
@@ -532,11 +530,10 @@ def process(args):
 
     # groups are for pacman
     # removes found groups from packages_of_user_names
-    groups_chosen = get_groups_to_install(packages_of_user_names, aur)
+    groups_chosen = get_groups_to_install(packages_of_user_names)
 
     # pacman call in the beginning of the routine
-    if not aur and \
-            (sysupgrade and (not do_everything or pacman_args.refresh) or groups_chosen):
+    if sysupgrade and (not do_everything or pacman_args.refresh) or groups_chosen:
         sudo_acquired, pacman_called = pacman_beginning_routine(
             pacman_args, groups_chosen, sudo_acquired, do_everything
         )
@@ -587,18 +584,11 @@ def process(args):
         sys.exit(1)
 
     # fetching needed aur packages
-    if not repo:
-        upstream_system.append_packages_by_name(packages_of_user_names)
-        # fetch info for all installed aur packages, too
-        names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
-        names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
-        upstream_system.append_packages_by_name(names_of_installed_aur_packages)
-
-    # remove known repo packages in case of --aur
-    if aur:
-        for package in upstream_system.repo_packages_list:
-            del upstream_system.all_packages_dict[package.name]
-        upstream_system = System(list(upstream_system.all_packages_dict.values()))
+    upstream_system.append_packages_by_name(packages_of_user_names)
+    # fetch info for all installed aur packages, too
+    names_of_installed_aur_packages = [package.name for package in installed_system.aur_packages_list]
+    names_of_installed_aur_packages.extend([package.name for package in installed_system.devel_packages_list])
+    upstream_system.append_packages_by_name(names_of_installed_aur_packages)
 
     # sanitize user input
     try:
@@ -666,8 +656,8 @@ def process(args):
     if ignored_packages_names:
         upstream_system = System(list(upstream_system.all_packages_dict.values()))
 
-    # if user entered --devel and not --repo, fetch all needed pkgbuilds etc. for the devel packages
-    if devel and not repo:
+    # if user entered --devel, fetch all needed pkgbuilds etc. for the devel packages
+    if devel:
         aurman_status("looking for new pkgbuilds of devel packages and fetching them...")
         for package in upstream_system.devel_packages_list:
             if package.name not in ignored_packages_names:
@@ -703,11 +693,9 @@ def process(args):
     # in case of sysupgrade fetch all installed packages, of which newer versions are available
     if sysupgrade:
         installed_packages = []
-        if not repo:
-            installed_packages.extend([package for package in installed_system.aur_packages_list])
-            installed_packages.extend([package for package in installed_system.devel_packages_list])
-        if not aur:
-            installed_packages.extend([package for package in installed_system.repo_packages_list])
+        installed_packages.extend([package for package in installed_system.aur_packages_list])
+        installed_packages.extend([package for package in installed_system.devel_packages_list])
+        installed_packages.extend([package for package in installed_system.repo_packages_list])
         for package in installed_packages:
             # must not be that we have not received the upstream information
             assert package.name in upstream_system.all_packages_dict
@@ -806,21 +794,20 @@ def process(args):
         sys.exit(1)
 
     # fetch pkgbuilds
-    if not repo:
-        aurman_status("looking for new pkgbuilds and fetching them...")
+    aurman_status("looking for new pkgbuilds and fetching them...")
+    for package in chosen_solution:
+        if package.type_of is PossibleTypes.REPO_PACKAGE \
+                or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
+            continue
+        package.fetch_pkgbuild()
+    try:
         for package in chosen_solution:
             if package.type_of is PossibleTypes.REPO_PACKAGE \
                     or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
                 continue
-            package.fetch_pkgbuild()
-        try:
-            for package in chosen_solution:
-                if package.type_of is PossibleTypes.REPO_PACKAGE \
-                        or devel and package.type_of is PossibleTypes.DEVEL_PACKAGE:
-                    continue
-                package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit, default_show_changes)
-        except InvalidInput:
-            sys.exit(1)
+            package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit, default_show_changes)
+    except InvalidInput:
+        sys.exit(1)
 
     # install packages
     if not sudo_acquired:
