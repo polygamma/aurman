@@ -296,7 +296,9 @@ or "not redundant" confirmations of actions (more prone to errors).
   - Search function supports regex for searching the AUR the first span of at least two consecutive non-regex
   characters being used. These results will be filtered by the regex expression afterwards.
   - Differentiate between the sources of packages in case of identical names in different known repos and/or the AUR.
-  - Show unread news from `archlinux.org`
+  - Show unread news from `archlinux.org`.
+  - Be notified about new locations of packages, e.g. moving from AUR to a known repository.
+  - Be notified about orphans after installation of packages has finished.
 
 ## Dependency solving description including benchmarks
 https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-solving
