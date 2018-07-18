@@ -531,17 +531,10 @@ def save_orphans():
         raise InvalidInput("Creating cache dir {} failed".format(Package.cache_dir))
 
     with open(os.path.join(Package.cache_dir, "current_orphans"), 'w') as f:
-        f.write('\n'.join(pacman(["-Qtdq"], True, sudo=False)))
-
-
-def delete_orphans():
-    """
-    deletes the current orphans - pacman -Qtdq
-    """
-    orphans_file = os.path.join(Package.cache_dir, "current_orphans")
-
-    if os.path.isfile(orphans_file):
-        os.remove(orphans_file)
+        try:
+            f.write('\n'.join(pacman(["-Qtdq"], True, sudo=False)))
+        except InvalidInput:
+            f.write('')
 
 
 def show_orphans(upstream_system: 'System'):
@@ -549,19 +542,19 @@ def show_orphans(upstream_system: 'System'):
     shows new orphans to the user - pacman -Qtdq
     :param upstream_system:     System containing the known upstream packages
     """
-    current_orphans = set(pacman(["-Qtdq"], True, sudo=False))
+    try:
+        current_orphans = set(pacman(["-Qtdq"], True, sudo=False))
+    except InvalidInput:
+        current_orphans = set()
     with open(os.path.join(Package.cache_dir, "current_orphans"), 'r') as f:
         saved_orphans = set(f.read().strip().splitlines())
 
     orphans_to_show = current_orphans - saved_orphans
     if not orphans_to_show:
-        delete_orphans()
         return
 
     aurman_status("the following packages are now orphans")
     aurman_note(", ".join([upstream_system.repo_of_package(orphan) for orphan in orphans_to_show]))
-
-    delete_orphans()
 
 
 def process(args):
