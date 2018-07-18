@@ -430,6 +430,8 @@ def show_changed_package_repos(installed_system: 'System', upstream_system: 'Sys
                     "{} repo".format(Colors.BOLD(Colors.LIGHT_MAGENTA(upstream_package.repo)))
                 ))
 
+                continue
+
             if not old_package_information[0]:
                 packages_with_changes.append((
                     package_name,
