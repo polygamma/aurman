@@ -713,6 +713,8 @@ def process(args):
 
         # fetch packages to replace
         if do_everything:
+            known_repo_names = Package.get_known_repos()
+
             for possible_replacing_package in upstream_system.repo_packages_list:
                 for replaces in possible_replacing_package.replaces:
                     replace_name = strip_versioning_from_name(replaces)
@@ -722,10 +724,20 @@ def process(args):
                     if installed_to_replace:
                         assert len(installed_to_replace) == 1
                         package_to_replace = installed_to_replace[0]
-                        # do not let packages replaces itself, e.g. mesa replaces "ati-dri" and provides "ati-dri"
-                        if possible_replacing_package.name not in ignored_packages_names \
-                                and package_to_replace.name not in ignored_packages_names \
-                                and possible_replacing_package.name != package_to_replace.name:
+
+                        not_ignored = possible_replacing_package.name not in ignored_packages_names \
+                                      and package_to_replace.name not in ignored_packages_names
+
+                        not_same_name = possible_replacing_package.name != package_to_replace.name
+
+                        not_known_in_repo = package_to_replace.type_of is not PossibleTypes.REPO_PACKAGE
+
+                        repo_order_allows_replacing = known_repo_names.index(
+                            possible_replacing_package.repo
+                        ) <= known_repo_names.index(upstream_system.all_packages_dict[package_to_replace.name].repo)
+
+                        # implement pacman logic to decide whether to replace or not
+                        if not_ignored and not_same_name and (not_known_in_repo or repo_order_allows_replacing):
 
                             replaces_dict[possible_replacing_package.name] = package_to_replace.name
                             if possible_replacing_package not in concrete_packages_to_install:
