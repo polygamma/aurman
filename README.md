@@ -242,7 +242,7 @@ Example:
 cache_dir=/tmp/aurman
 ```
 
-#### Specify the timeout for AUR RPC requests (in seconds)
+#### Specify the timeout for AUR RPC and archlinux.org feed requests (in seconds) (default is 5)
 Create a key called `aur_timeout` in the section `[miscellaneous]`.
 
 Example:
