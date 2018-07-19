@@ -72,7 +72,7 @@ def expac(option: str, formatting: Sequence[str], targets: Sequence[str]) -> Lis
 
 
 def pacman(options_as_list: List[str], fetch_output: bool, dir_to_execute: str = None, sudo: bool = True,
-           use_ask: bool = False) -> List[str]:
+           use_ask: bool = False, log_error: bool = True) -> List[str]:
     """
     pacman wrapper. see: https://www.archlinux.org/pacman/pacman.8.html
     provide the pacman options as string via "options_as_string".
@@ -83,6 +83,7 @@ def pacman(options_as_list: List[str], fetch_output: bool, dir_to_execute: str =
     :param dir_to_execute:      if you want to execute the pacman command in a specific directory, provide the directory
     :param sudo:                True if you want to execute pacman with sudo, False otherwise
     :param use_ask:             Use --ask=4 when calling pacman, see: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
+    :param log_error:           Whether to log an error or not
     :return:                    empty list in case of "fetch_output"=False, otherwise the lines of the pacman output as list.
                                 one line of output is one item in the list.
     """
@@ -103,7 +104,8 @@ def pacman(options_as_list: List[str], fetch_output: bool, dir_to_execute: str =
     pacman_return = run(pacman_query, **kwargs)
 
     if pacman_return.returncode != 0:
-        logging.error("pacman query {} failed".format(pacman_query))
+        if log_error:
+            logging.error("pacman query {} failed".format(pacman_query))
         raise InvalidInput("pacman query {} failed".format(pacman_query))
 
     if fetch_output:

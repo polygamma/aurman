@@ -532,7 +532,7 @@ def save_orphans():
 
     with open(os.path.join(Package.cache_dir, "current_orphans"), 'w') as f:
         try:
-            f.write('\n'.join(pacman(["-Qtdq"], True, sudo=False)))
+            f.write('\n'.join(pacman(["-Qtdq"], True, sudo=False, log_error=False)))
         except InvalidInput:
             f.write('')
 
@@ -543,7 +543,7 @@ def show_orphans(upstream_system: 'System'):
     :param upstream_system:     System containing the known upstream packages
     """
     try:
-        current_orphans = set(pacman(["-Qtdq"], True, sudo=False))
+        current_orphans = set(pacman(["-Qtdq"], True, sudo=False, log_error=False))
     except InvalidInput:
         current_orphans = set()
     with open(os.path.join(Package.cache_dir, "current_orphans"), 'r') as f:
