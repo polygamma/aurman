@@ -565,6 +565,34 @@ def show_orphans(upstream_system: 'System'):
     aurman_note(", ".join([upstream_system.repo_of_package(orphan) for orphan in orphans_to_show]))
 
 
+def package_as_explicit(package: 'Package', installed_system: 'System',
+                        asdeps: bool, asexplicit: bool, replaces_dict: Dict[str, str],
+                        sanitized_names: Set[str]) -> bool:
+    """
+    Whether an package has to be installed explicitly or not
+
+    :param package:                         the package to install
+    :param installed_system:                the system containing the installed packages
+    :param asdeps:                          if --asdeps
+    :param asexplicit:                      if --asexplicit
+    :param replaces_dict:                   the dict containing the package replacements
+    :param sanitized_names:                 the names of the packages explicitly wanted by the user
+    :return:                                True if to be installed explicitly, False otherwise
+    """
+    if asdeps:
+        return False
+    elif asexplicit:
+        return True
+
+    if package.name in installed_system.all_packages_dict:
+        return installed_system.all_packages_dict[package.name].install_reason == 'explicit'
+
+    if package.name in replaces_dict:
+        return installed_system.all_packages_dict[replaces_dict[package.name]].install_reason == 'explicit'
+
+    return package.name in sanitized_names
+
+
 def process(args):
     readconfig()
     check_privileges()
@@ -621,6 +649,8 @@ def process(args):
     clean_force = clean and not isinstance(clean, bool)  # if --clean --clean
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
+    asdeps = pacman_args.asdeps  # if --asdeps
+    asexplicit = pacman_args.asexplicit  # if --asexplicit
     skip_news = pacman_args.skip_news  # if --skip_news
     skip_new_locations = pacman_args.skip_new_locations  # if --skip_new_locations
     show_new_locations = not skip_new_locations and not ('miscellaneous' in AurmanConfig.aurman_config
@@ -654,6 +684,10 @@ def process(args):
 
     if repo and aur:
         aurman_error("--repo and --aur is not what you want")
+        sys.exit(1)
+
+    if asdeps and asexplicit:
+        aurman_error("--asdeps and --asexplicit is not what you want")
         sys.exit(1)
 
     # do not allow -y without -u
@@ -1048,7 +1082,10 @@ def process(args):
     pacman_args_copy.operation = PacmanOperations.UPGRADE
     pacman_args_copy.targets = []
 
+    pacman_args_copy.asdeps = False
+    pacman_args_copy.asexplicit = True
     args_for_explicit = pacman_args_copy.args_as_list()
+
     pacman_args_copy.asdeps = True
     pacman_args_copy.asexplicit = False
     args_for_dependency = pacman_args_copy.args_as_list()
@@ -1064,15 +1101,9 @@ def process(args):
                 # container for explicit repo deps
                 as_explicit_container = set()
                 for package in package_chunk:
-                    if package.name in sanitized_names \
-                            and package.name not in sanitized_not_to_be_removed \
-                            and package.name not in replaces_dict \
-                            or (package.name in installed_system.all_packages_dict
-                                and installed_system.all_packages_dict[package.name].install_reason
-                                == 'explicit') \
-                            or (package.name in replaces_dict
-                                and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
-                                == 'explicit'):
+                    if package_as_explicit(
+                            package, installed_system, asdeps, asexplicit, replaces_dict, sanitized_names
+                    ):
                         as_explicit_container.add(package.name)
 
                 pacman_args_copy = deepcopy(pacman_args)
@@ -1096,16 +1127,9 @@ def process(args):
                 if len(package_chunk) == 1:
                     package = package_chunk[0]
                     package.build(ignore_arch, rebuild)
-                    if package.name in sanitized_names \
-                            and package.name not in sanitized_not_to_be_removed \
-                            and package.name not in replaces_dict \
-                            or (package.name in installed_system.all_packages_dict
-                                and installed_system.all_packages_dict[package.name].install_reason
-                                == 'explicit') \
-                            or (package.name in replaces_dict
-                                and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
-                                == 'explicit'):
-
+                    if package_as_explicit(
+                            package, installed_system, asdeps, asexplicit, replaces_dict, sanitized_names
+                    ):
                         package.install(args_for_explicit, use_ask=use_ask)
                     else:
                         package.install(args_for_dependency, use_ask=use_ask)
@@ -1124,15 +1148,9 @@ def process(args):
                         build_dir, current_install_file = package.install(args_for_dependency, do_not_execute=True)
                         args_as_list += [current_install_file]
 
-                        if package.name in sanitized_names \
-                                and package.name not in sanitized_not_to_be_removed \
-                                and package.name not in replaces_dict \
-                                or (package.name in installed_system.all_packages_dict
-                                    and installed_system.all_packages_dict[package.name].install_reason
-                                    == 'explicit') \
-                                or (package.name in replaces_dict
-                                    and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
-                                    == 'explicit'):
+                        if package_as_explicit(
+                                package, installed_system, asdeps, asexplicit, replaces_dict, sanitized_names
+                        ):
                             as_explicit_container.add(package.name)
 
                     pacman(args_as_list, False, dir_to_execute=build_dir)
