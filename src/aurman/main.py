@@ -1056,47 +1056,42 @@ def process(args):
     # calc chunks to install
     solution_packages_chunks = System.calc_install_chunks(chosen_solution)
 
-    # install the chunks
-    for package_chunk in solution_packages_chunks:
-        # repo chunk
-        if package_chunk[0].type_of is PossibleTypes.REPO_PACKAGE:
-            # container for explicit repo deps
-            as_explicit_container = set()
-            for package in package_chunk:
-                if package.name in sanitized_names \
-                        and package.name not in sanitized_not_to_be_removed \
-                        and package.name not in replaces_dict \
-                        or (package.name in installed_system.all_packages_dict
-                            and installed_system.all_packages_dict[package.name].install_reason
-                            == 'explicit') \
-                        or (package.name in replaces_dict
-                            and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
-                            == 'explicit'):
-                    as_explicit_container.add(package.name)
+    try:
+        # install the chunks
+        for package_chunk in solution_packages_chunks:
+            # repo chunk
+            if package_chunk[0].type_of is PossibleTypes.REPO_PACKAGE:
+                # container for explicit repo deps
+                as_explicit_container = set()
+                for package in package_chunk:
+                    if package.name in sanitized_names \
+                            and package.name not in sanitized_not_to_be_removed \
+                            and package.name not in replaces_dict \
+                            or (package.name in installed_system.all_packages_dict
+                                and installed_system.all_packages_dict[package.name].install_reason
+                                == 'explicit') \
+                            or (package.name in replaces_dict
+                                and installed_system.all_packages_dict[replaces_dict[package.name]].install_reason
+                                == 'explicit'):
+                        as_explicit_container.add(package.name)
 
-            pacman_args_copy = deepcopy(pacman_args)
-            pacman_args_copy.targets = [
-                package.name for package in package_chunk if package.name not in repo_packages_dict
-            ]
+                pacman_args_copy = deepcopy(pacman_args)
+                pacman_args_copy.targets = [
+                    package.name for package in package_chunk if package.name not in repo_packages_dict
+                ]
 
-            pacman_args_copy.targets.extend(["{}/".format(repo_packages_dict[package.name]) + package.name
-                                             for package in package_chunk if package.name in repo_packages_dict])
-            pacman_args_copy.asdeps = True
-            pacman_args_copy.asexplicit = False
-            try:
+                pacman_args_copy.targets.extend(["{}/".format(repo_packages_dict[package.name]) + package.name
+                                                 for package in package_chunk if package.name in repo_packages_dict])
+                pacman_args_copy.asdeps = True
+                pacman_args_copy.asexplicit = False
+
                 pacman(pacman_args_copy.args_as_list(), False, use_ask=use_ask)
-            except InvalidInput:
-                show_orphans(upstream_system_copy)
-                if show_new_locations:
-                    save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
-                sys.exit(1)
 
-            if as_explicit_container:
-                pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
+                if as_explicit_container:
+                    pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
 
-        # aur chunks may consist of more than one package in case of split packages to be installed
-        else:
-            try:
+            # aur chunks may consist of more than one package in case of split packages to be installed
+            else:
                 # no split packages, single package
                 if len(package_chunk) == 1:
                     package = package_chunk[0]
@@ -1145,11 +1140,11 @@ def process(args):
                     if as_explicit_container:
                         pacman(["-D", "--asexplicit"] + list(as_explicit_container), True, sudo=True)
 
-            except InvalidInput:
-                show_orphans(upstream_system_copy)
-                if show_new_locations:
-                    save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
-                sys.exit(1)
+    except InvalidInput:
+        show_orphans(upstream_system_copy)
+        if show_new_locations:
+            save_packages_repos(System(System.get_installed_packages()), upstream_system_copy)
+        sys.exit(1)
 
     # show new orphans
     show_orphans(upstream_system_copy)
