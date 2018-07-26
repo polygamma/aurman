@@ -631,7 +631,8 @@ def process(args):
     always_edit = pacman_args.always_edit  # if --always_edit
     show_changes = pacman_args.show_changes \
                    or 'miscellaneous' in AurmanConfig.aurman_config \
-                   and 'show_changes' in AurmanConfig.aurman_config['miscellaneous']  # if --show_changes
+                   and 'show_changes' in AurmanConfig.aurman_config['miscellaneous'] \
+                   and not noedit  # if --show_changes
     devel = pacman_args.devel  # if --devel
     only_unfulfilled_deps = not pacman_args.deep_search  # if not --deep_search
     pgp_fetch = pacman_args.pgp_fetch  # if --pgp_fetch
