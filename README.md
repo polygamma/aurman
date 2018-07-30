@@ -306,7 +306,7 @@ https://github.com/polygamma/aurman/wiki/Description-of-the-aurman-dependency-so
 ## Using aurman just as a dependency solver
 In order to discover available updates, search for potential packages to install and more, it is useful to get machine-readable descriptions of the potential sync/install/update transactions aurman can propose.
 
-`aurmansolver [options]` answers this need, by providing a json *desciption* of the equivalent `aurman [options]` transaction, but without carrying out any changes.
+`aurmansolver [options]` answers this need, by providing a json *description* of the equivalent `aurman [options]` transaction, but without carrying out any changes.
 
 One example use is with `-Su`, in order to list packages which have updates available.
 
@@ -352,7 +352,7 @@ else `aurman` resorts to `/usr/bin/nano`.
 How to install packages whose names are saved in a file with `aurman`?
 
 #### Answer
-`aurman` does not implement this functionality. Instead you may use standard shell command sustitution.
+`aurman` does not implement this functionality. Instead you may use standard shell command substitution.
 *e.g.*: `aurman -S $(cat ~/packages_names.txt)`.
 
 #### Question

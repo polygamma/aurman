@@ -1235,7 +1235,7 @@ class Package:
 
         :param args_as_list:    Args for pacman
         :param use_ask:         Use --ask=4 when calling pacman, see: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
-        :param do_not_execute:  If only to return the relevant paramters, without executing
+        :param do_not_execute:  If only to return the relevant parameters, without executing
         :return:                Tuple containing two items: build_dir, package_install_file
         """
         build_dir = Package.get_build_dir(os.path.join(Package.cache_dir, self.pkgbase))
