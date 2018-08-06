@@ -84,6 +84,52 @@ def show_help() -> None:
     sys.exit(0)
 
 
+def group_by_function_sort_by_deps(packages_to_sort: List['Package'], key_function) -> List['Package']:
+    """
+    Groups packages by the given key_function and sorts the packages, so that dependencies come first
+
+    :param packages_to_sort:    the packages to sort
+    :param key_function:        the function to group the packages by
+    :return:                    the grouped and sorted packages
+    """
+    packages_to_sort.sort(key=key_function)
+    current_group = []
+    packages_groups = [current_group]
+
+    for package in packages_to_sort:
+        if not current_group or key_function(package) == key_function(current_group[0]):
+            current_group.append(package)
+        else:
+            current_group = [package]
+            packages_groups.append(current_group)
+
+    ordered_package_groups = []
+    for package_group in packages_groups:
+        for i in range(0, len(ordered_package_groups)):
+            package_group_to_compare = ordered_package_groups[i]
+            deps_to_check = []
+            for package in package_group_to_compare:
+                deps_to_check.extend(package.relevant_deps())
+
+            current_system = System(package_group)
+            for dep in deps_to_check:
+                if current_system.provided_by(dep):
+                    ordered_package_groups.insert(i, package_group)
+                    break
+            else:
+                continue
+
+            break
+
+        else:
+            ordered_package_groups.append(package_group)
+
+    return_list = []
+    for package_group in ordered_package_groups:
+        return_list.extend(package_group)
+    return return_list
+
+
 class SolutionEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, PossibleTypes):
@@ -348,10 +394,18 @@ def process(args):
     concrete_packages_to_install_aur = [package for package in concrete_packages_to_install
                                         if package.type_of is not PossibleTypes.REPO_PACKAGE]
 
-    concrete_packages_to_install_aur.sort(key=lambda pkg: pkg.pkgbase)
-    concrete_packages_to_install_repo.sort(key=lambda pkg: pkg.name)
-
-    concrete_packages_to_install = concrete_packages_to_install_repo + concrete_packages_to_install_aur
+    # if not --rebuild, handle repo packages first
+    if not rebuild:
+        concrete_packages_to_install = group_by_function_sort_by_deps(
+            concrete_packages_to_install_repo, lambda pkg: pkg.pkgbase
+        ) + group_by_function_sort_by_deps(
+            concrete_packages_to_install_aur, lambda pkg: pkg.pkgbase
+        )
+    # if --rebuild, aur packages may be in front of repo packages
+    else:
+        concrete_packages_to_install = group_by_function_sort_by_deps(
+            concrete_packages_to_install_repo + concrete_packages_to_install_aur, lambda pkg: pkg.pkgbase
+        )
 
     # calc solutions
     if only_unfulfilled_deps:
