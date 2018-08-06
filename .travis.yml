@@ -14,6 +14,5 @@ script:
 - docker run aurman_docker docker_tests.build_dir_tests
 - docker run aurman_docker docker_tests.testing_repo_tests
 - docker run aurman_docker docker_tests.pkgdest_tests
-- docker run aurman_docker docker_tests.archive_tests
 notifications:
   email: false
