@@ -1,7 +1,7 @@
 sudo: required
 language: python
 python:
-- "3.7"
+- "3.6"
 services:
 - docker
 before_install:
