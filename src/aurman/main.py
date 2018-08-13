@@ -953,9 +953,10 @@ def process(args):
     if devel:
         if not devel_skip_deps:
             missing_deps_dict: Dict[str, List[str]] = {}
-            for package in upstream_system.devel_packages_list:
-                current_deps = package.relevant_deps()
-                for dep in current_deps:
+            for package in [
+                package for package in upstream_system.devel_packages_list if package.name not in ignored_packages_names
+            ]:
+                for dep in package.relevant_deps():
                     if not installed_system.provided_by(dep):
                         current_missing_deps = missing_deps_dict.get(package.name, [])
                         if not current_missing_deps:
