@@ -1176,9 +1176,9 @@ class Package:
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
         if not ignore_arch:
-            makepkg(["-odc", "--noprepare", "--skipinteg"], False, package_dir)
+            makepkg(["-odc"], False, package_dir)
         else:
-            makepkg(["-odcA", "--noprepare", "--skipinteg"], False, package_dir)
+            makepkg(["-odcA"], False, package_dir)
 
         self.version = self.version_from_srcinfo()
 

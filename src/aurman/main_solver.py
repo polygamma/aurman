@@ -199,6 +199,10 @@ def process(args):
     aur = pacman_args.aur  # do only aur things
     repo = pacman_args.repo  # do only repo things
     rebuild = pacman_args.rebuild  # if --rebuild
+    # if to pass -A to makepkg
+    ignore_arch = 'miscellaneous' in AurmanConfig.aurman_config and \
+                  'ignore_arch' in AurmanConfig.aurman_config['miscellaneous']
+
     if repo and aur:
         aurman_error("--repo and --aur is not what you want")
         sys.exit(1)
@@ -317,7 +321,10 @@ def process(args):
             if not os.path.isdir(package_dir):
                 aurman_error("Package dir of {} not found".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package.name))))
                 sys.exit(1)
-            makepkg(["-odc", "--noprepare", "--skipinteg"], True, package_dir)
+            if not ignore_arch:
+                makepkg(["-odc"], True, package_dir)
+            else:
+                makepkg(["-odcA"], True, package_dir)
 
             package.version = package.version_from_srcinfo()
 
