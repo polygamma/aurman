@@ -182,6 +182,8 @@ only_aurman_points.append(HelpOption(["--skip_news"],
                                      "Skips being shown unseen archlinux.org news"))
 only_aurman_points.append(HelpOption(["--skip_new_locations"],
                                      "Skips being shown new locations of packages"))
+only_aurman_points.append(HelpOption(["--devel_skip_deps"],
+                                     "Skips dependency checks when determining development packages versions"))
 # aurmansolver help
 aurmansolver_help = Help([])
 

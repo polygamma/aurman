@@ -82,7 +82,8 @@ pacman_options = {
     "optimistic_versioning": ("optimistic_versioning", 0, (PacmanOperations.AURMAN,), False, False),
     "rebuild": ("rebuild", 0, (PacmanOperations.AURMAN,), False, False),
     "skip_news": ("skip_news", 0, (PacmanOperations.AURMAN,), False, False),
-    "skip_new_locations": ("skip_new_locations", 0, (PacmanOperations.AURMAN,), False, False)
+    "skip_new_locations": ("skip_new_locations", 0, (PacmanOperations.AURMAN,), False, False),
+    "devel_skip_deps": ("devel_skip_deps", 0, (PacmanOperations.AURMAN,), False, False)
 }
 
 pacman_operations = {

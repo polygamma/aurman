@@ -1165,20 +1165,24 @@ class Package:
 
         return version
 
-    def get_devel_version(self, ignore_arch: bool = False):
+    def get_devel_version(self, ignore_arch: bool = False, ignore_deps: bool = False):
         """
         Fetches the current sources of this package.
         devel packages only!
 
         :param ignore_arch: If True, pass -A to makepkg, thus allows building packages for architectures,
                             not mentioned in the PKGBUILD
+        :param ignore_deps: If True, pass -d to makepkg, thus allows ignoring unfulfilled dependencies
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
-        if not ignore_arch:
-            makepkg(["-odc"], False, package_dir)
-        else:
-            makepkg(["-odcA"], False, package_dir)
+        to_execute = ["-o", "-c"]
+        if ignore_arch:
+            to_execute += ["-A"]
+        if ignore_deps:
+            to_execute += ["-d"]
+
+        makepkg(to_execute, False, package_dir)
 
         self.version = self.version_from_srcinfo()
 

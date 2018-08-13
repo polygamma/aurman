@@ -700,6 +700,7 @@ def process(args):
     asexplicit = pacman_args.asexplicit  # if --asexplicit
     skip_news = pacman_args.skip_news  # if --skip_news
     skip_new_locations = pacman_args.skip_new_locations  # if --skip_new_locations
+    devel_skip_deps = pacman_args.devel_skip_deps  # if --devel_skip_deps
     show_new_locations = not skip_new_locations and not ('miscellaneous' in AurmanConfig.aurman_config
                                                          and 'skip_new_locations' in AurmanConfig.aurman_config[
                                                              'miscellaneous'])
@@ -950,6 +951,39 @@ def process(args):
 
     # if user entered --devel, fetch all needed pkgbuilds etc. for the devel packages
     if devel:
+        if not devel_skip_deps:
+            missing_deps_dict: Dict[str, List[str]] = {}
+            for package in upstream_system.devel_packages_list:
+                current_deps = package.relevant_deps()
+                for dep in current_deps:
+                    if not installed_system.provided_by(dep):
+                        current_missing_deps = missing_deps_dict.get(package.name, [])
+                        if not current_missing_deps:
+                            missing_deps_dict[package.name] = [dep]
+                        else:
+                            current_missing_deps.append(dep)
+
+            if missing_deps_dict:
+                aurman_error(
+                    "There are unfulfilled dependencies of development packages.\n"
+                    "   Please fulfill them first\n"
+                    "   or use {}\n"
+                    "   or do not use {}\n"
+                    "   or use {} to ignore regarding packages".format(
+                        Colors.BOLD(Colors.LIGHT_MAGENTA("--devel_skip_deps")),
+                        Colors.BOLD(Colors.LIGHT_MAGENTA("--devel")),
+                        Colors.BOLD(Colors.LIGHT_MAGENTA("--ignore"))
+                    )
+                )
+
+                for package_name in missing_deps_dict:
+                    aurman_note("{} misses {}".format(
+                        upstream_system.repo_of_package(package_name),
+                        ", ".join([Colors.BOLD(Colors.LIGHT_MAGENTA(dep)) for dep in missing_deps_dict[package_name]])
+                    ))
+
+                sys.exit(1)
+
         aurman_status("looking for new pkgbuilds of devel packages and fetching them...")
         for package in upstream_system.devel_packages_list:
             if package.name not in ignored_packages_names:
@@ -962,7 +996,7 @@ def process(args):
             sys.exit(1)
         for package in upstream_system.devel_packages_list:
             if package.name not in ignored_packages_names:
-                package.get_devel_version(ignore_arch)
+                package.get_devel_version(ignore_arch, devel_skip_deps)
 
     # checking which packages need to be installed
     if not needed:

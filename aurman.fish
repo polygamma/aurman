@@ -145,6 +145,7 @@ complete -c $progname -n $sync -l sort_by_votes         -d 'Sort AUR search resu
 complete -c $progname -n $sync -l sort_by_popularity    -d 'Sort AUR search results by popularity'
 complete -c $progname -n $sync -l skip_news             -d 'Skips being shown unseen archlinux.org news'
 complete -c $progname -n $sync -l skip_new_locations    -d 'Skips being shown new locations of packages'
+complete -c $progname -n $sync -l devel_skip_deps       -d 'Skips dependency checks when determining development packages versions'
 
 # Database options
 set -l has_db_opt '__fish_contains_opt asdeps asexplicit'
