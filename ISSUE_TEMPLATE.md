@@ -20,7 +20,7 @@ Not proving the assumptions behind expectations is the same as not filling out t
 ## Possible Solution
 <!-- _Not obligatory, but suggest a fix/reason for the bug_ -->
 
-## Version of aurman you are using
+## Version of `aurman` you are using
 <!-- _Output of `aurman -V` or `aurman --version`_ -->
 
 ## Content of `aurman` config
