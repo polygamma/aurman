@@ -23,6 +23,9 @@ Not proving the assumptions behind expectations is the same as not filling out t
 ## Version of aurman you are using
 <!-- _Output of `aurman -V` or `aurman --version`_ -->
 
+## Content of `aurman` config
+<!-- _The content of your `aurman` config, if it is not empty_ -->
+
 ## Steps to Reproduce
 <!-- _Provide an unambiguous set of steps to reproduce this bug_ -->
 
