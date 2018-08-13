@@ -970,7 +970,7 @@ def process(args):
                     "   Please fulfill them first\n"
                     "   or use {}\n"
                     "   or do not use {}\n"
-                    "   or use {} to ignore regarding packages".format(
+                    "   or use {} to ignore respective packages".format(
                         Colors.BOLD(Colors.LIGHT_MAGENTA("--devel_skip_deps")),
                         Colors.BOLD(Colors.LIGHT_MAGENTA("--devel")),
                         Colors.BOLD(Colors.LIGHT_MAGENTA("--ignore"))
