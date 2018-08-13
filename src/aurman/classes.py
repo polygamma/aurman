@@ -2,6 +2,7 @@ import fnmatch
 import logging
 import os
 import re
+import sys
 from enum import Enum, auto
 from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List, Tuple, Set, Union, Dict, Iterable
@@ -1175,10 +1176,19 @@ class Package:
         """
 
         package_dir = os.path.join(Package.cache_dir, self.pkgbase)
-        if not ignore_arch:
-            makepkg(["-odc"], False, package_dir)
-        else:
-            makepkg(["-odcA"], False, package_dir)
+        try:
+            if not ignore_arch:
+                makepkg(["-odc"], False, package_dir)
+            else:
+                makepkg(["-odcA"], False, package_dir)
+        except InvalidInput:
+            aurman_error(
+                "Check if the makepkg command failed due to missing dependencies.\n"
+                "   If so, install the missing dependencies manually and try again.\n"
+                "   Consult the README of aurman for a more detailed explanation.",
+                new_line=True
+            )
+            sys.exit(1)
 
         self.version = self.version_from_srcinfo()
 
