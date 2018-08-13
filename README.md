@@ -394,6 +394,14 @@ See the answer to the previous question.
 
 Also use the options `--noedit`, `--pgp_fetch`, `--skip_news`, `--noconfirm` and `--skip_new_locations`.
 
+#### Question
+`aurman` crashes when using `--devel` while it tries to run `makepkg -odc` or `makepkg -odcA`, fix it please?
+
+#### Answer
+Most of the dependencies of packages are not needed for running `prepare()` and `pkgver()` of PKGBUILDs.
+It is not possible for `aurman` to detect which ones are needed in order to run `makepkg -oc`, on the other hand would it be unneeded overhead to install all dependencies, just to be sure.
+`aurman` thus runs `makepkg -odc` and installs no dependencies, you may install the needed dependencies manually in order to be able to use `--devel`.
+
 ## Screenshots
 
 ![](https://i.imgur.com/Q80aK61.png)
