@@ -973,9 +973,12 @@ def process(args):
                     "There are unfulfilled dependencies of development packages.\n"
                     "   Please fulfill them first\n"
                     "   or use {}\n"
+                    "   or use {} or {}\n"
                     "   or do not use {}\n"
                     "   or use {} to ignore respective packages".format(
                         Colors.BOLD(Colors.LIGHT_MAGENTA("--devel_skip_deps")),
+                        Colors.BOLD(Colors.LIGHT_MAGENTA("--optimistic_versioning")),
+                        Colors.BOLD(Colors.LIGHT_MAGENTA("--ignore_versioning")),
                         Colors.BOLD(Colors.LIGHT_MAGENTA("--devel")),
                         Colors.BOLD(Colors.LIGHT_MAGENTA("--ignore"))
                     )

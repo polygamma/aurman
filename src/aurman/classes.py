@@ -1407,6 +1407,9 @@ class System:
                 return_list.append(package)
             elif version_comparison(package.version, dep_cmp, dep_version):
                 return_list.append(package)
+            # https://github.com/polygamma/aurman/issues/246
+            elif Package.ignore_versioning:
+                return_list.append(package)
 
         if dep_name in self.provides_dict:
             possible_packages = self.provides_dict[dep_name]
