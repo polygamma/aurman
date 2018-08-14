@@ -1,6 +1,6 @@
 # Maintainer: Jonni Westphalen <jonny.westphalen@googlemail.com>
 pkgname=aurman-git
-pkgver=2.17.5
+pkgver=2.17.6
 pkgrel=1
 pkgdesc="AUR helper with almost pacman syntax"
 arch=('any')
