@@ -139,6 +139,7 @@ complete -c $progname -n $sync -l repo                  -d '-Ss restricted to re
 complete -c $progname -n $sync -l domain             -x -d 'Point at a domain other than the default aur.archlinux.org'
 complete -c $progname -n $sync -l solution_way          -d 'Print pending actions in order'
 complete -c $progname -n $sync -l optimistic_versioning -d 'In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled'
+complete -c $progname -n $sync -l ignore_versioning     -d 'Assume all versioned dependencies to be fulfilled'
 complete -c $progname -n $sync -l rebuild               -d 'Always rebuild packages before installing them'
 complete -c $progname -n $sync -l sort_by_name          -d 'Sort AUR search results by name'
 complete -c $progname -n $sync -l sort_by_votes         -d 'Sort AUR search results by votes'

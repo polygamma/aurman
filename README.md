@@ -110,6 +110,8 @@ but because the dependency solver of `aurman` may yield wrong results.
 
 - `--optimistic_versioning`: In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled.
 
+- `--ignore_versioning`: Assume all versioned dependencies to be fulfilled.
+
 - `--rebuild`: Always rebuild packages before installing them.
 
 - `--sort_by_name`: Sort `-Ss` AUR results by name.
@@ -141,6 +143,7 @@ show_changes
 solution_way
 do_everything
 optimistic_versioning
+ignore_versioning
 skip_news
 skip_new_locations
 ```
@@ -148,6 +151,8 @@ skip_new_locations
 > **Notice**: Use of `do_everything` is **not** recommended since the usage of this flag is in general not recommended.
 
 > **Notice**: Use of `optimistic_versioning` is **not** recommended since this flag should only be used when needed.
+
+> **Notice**: Use of `ignore_versioning` is **not** recommended since this flag should only be used when needed.
 
 #### Choose between multiple package sources
 By default `aurman` assumes the following priorities in a case where multiple packages with the same names are available (high to low):

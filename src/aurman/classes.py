@@ -166,6 +166,9 @@ class Package:
     # but a specific version is needed
     # default is FALSE, may be set to TRUE via a command line flag
     optimistic_versioning: bool = False
+    # ignore all versioned dependencies
+    # default is FALSE, may be set to TRUE via a command line flag
+    ignore_versioning: bool = False
 
     @staticmethod
     def get_packages_from_aur(packages_names: Sequence[str]) -> List['Package']:
@@ -1400,7 +1403,7 @@ class System:
 
         if dep_name in self.all_packages_dict:
             package = self.all_packages_dict[dep_name]
-            if dep_cmp == "":
+            if not dep_cmp:
                 return_list.append(package)
             elif version_comparison(package.version, dep_cmp, dep_version):
                 return_list.append(package)
@@ -1418,15 +1421,15 @@ class System:
                     if provide_name != dep_name:
                         continue
 
-                    if dep_cmp == "":
+                    if not dep_cmp:
                         return_list.append(package)
-                    elif (provide_cmp == "=" or provide_cmp == "==") and version_comparison(provide_version, dep_cmp,
-                                                                                            dep_version):
-                        return_list.append(package)
-                    elif (provide_cmp == "") and version_comparison(package.version, dep_cmp, dep_version):
+                    elif provide_cmp == "=" and version_comparison(provide_version, dep_cmp, dep_version):
                         return_list.append(package)
                     # https://github.com/polygamma/aurman/issues/67
-                    elif (provide_cmp == "") and Package.optimistic_versioning:
+                    elif not provide_cmp and Package.optimistic_versioning:
+                        return_list.append(package)
+                    # https://github.com/polygamma/aurman/issues/246
+                    elif Package.ignore_versioning:
                         return_list.append(package)
 
         return return_list
@@ -1471,10 +1474,9 @@ class System:
                         if conflict_name != prov_name:
                             continue
 
-                        if conflict_cmp == "":
+                        if not conflict_cmp:
                             return_list.append(possible_conflict_package)
-                        elif (prov_cmp == "=" or prov_cmp == "==") \
-                                and version_comparison(prov_version, conflict_cmp, conflict_version):
+                        elif prov_cmp == "=" and version_comparison(prov_version, conflict_cmp, conflict_version):
                             return_list.append(possible_conflict_package)
 
         return return_list

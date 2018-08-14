@@ -165,6 +165,10 @@ def process(args):
                                     or 'miscellaneous' in AurmanConfig.aurman_config \
                                     and 'optimistic_versioning' \
                                     in AurmanConfig.aurman_config['miscellaneous']  # if --optimistic_versioning
+    Package.ignore_versioning = pacman_args.ignore_versioning \
+                                or 'miscellaneous' in AurmanConfig.aurman_config \
+                                and 'ignore_versioning' \
+                                in AurmanConfig.aurman_config['miscellaneous']  # if --ignore_versioning
     packages_of_user_names = list(set(pacman_args.targets))  # targets of the aurman command without duplicates
     sysupgrade = pacman_args.sysupgrade  # if -u or --sysupgrade
     sysupgrade_force = sysupgrade and not isinstance(sysupgrade, bool)  # if -u -u or --sysupgrade --sysupgrade

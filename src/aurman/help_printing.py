@@ -170,6 +170,8 @@ only_aurman_points.append(HelpOption(["--do_everything"],
 only_aurman_points.append(HelpOption(["--optimistic_versioning"],
                                      "In case of an unknown version of a provider for a versioned dependency, "
                                      "assume that the dependency is fulfilled"))
+only_aurman_points.append(HelpOption(["--ignore_versioning"],
+                                     "Assume all versioned dependencies to be fulfilled"))
 only_aurman_points.append(HelpOption(["--rebuild"],
                                      "Always rebuild packages before installing them"))
 only_aurman_points.append(HelpOption(["--sort_by_name"],
