@@ -373,6 +373,10 @@ def process(args):
                     if upstream_package not in concrete_packages_to_install:
                         concrete_packages_to_install.append(upstream_package)
 
+        # ignoring versioning has to be deactivated while checking for replaces
+        ignore_versioning_copy = Package.ignore_versioning
+        Package.ignore_versioning = False
+
         # fetch packages to replace
         for possible_replacing_package in upstream_system.repo_packages_list:
             for replaces in possible_replacing_package.replaces:
@@ -398,6 +402,9 @@ def process(args):
                             concrete_packages_to_install.remove(
                                 upstream_system.all_packages_dict[package_to_replace.name]
                             )
+
+        # reset ignoring of versioning
+        Package.ignore_versioning = ignore_versioning_copy
 
     # chunk and sort packages
     concrete_packages_to_install_repo = [package for package in concrete_packages_to_install
