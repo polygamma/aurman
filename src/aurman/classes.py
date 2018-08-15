@@ -1447,6 +1447,10 @@ class System:
 
         return_list = []
 
+        # ignoring versioning has to be deactivated while checking for conflicts
+        ignore_versioning_copy = Package.ignore_versioning
+        Package.ignore_versioning = False
+
         if package.name in self.all_packages_dict:
             return_list.append(self.all_packages_dict[package.name])
 
@@ -1481,6 +1485,9 @@ class System:
                             return_list.append(possible_conflict_package)
                         elif prov_cmp == "=" and version_comparison(prov_version, conflict_cmp, conflict_version):
                             return_list.append(possible_conflict_package)
+
+        # reset ignoring of versioning
+        Package.ignore_versioning = ignore_versioning_copy
 
         return return_list
 
