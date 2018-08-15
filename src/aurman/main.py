@@ -1002,9 +1002,15 @@ def process(args):
                     package.show_pkgbuild(noedit, show_changes, pgp_fetch, keyserver, always_edit, default_show_changes)
         except InvalidInput:
             sys.exit(1)
+
+        new_versions_dict: Dict[str, str] = {}
         for package in upstream_system.devel_packages_list:
             if package.name not in ignored_packages_names:
-                package.get_devel_version(ignore_arch, devel_skip_deps)
+                if package.pkgbase in new_versions_dict:
+                    package.version = new_versions_dict[package.pkgbase]
+                else:
+                    package.get_devel_version(ignore_arch, devel_skip_deps)
+                    new_versions_dict[package.pkgbase] = package.version
 
     # checking which packages need to be installed
     if not needed:
