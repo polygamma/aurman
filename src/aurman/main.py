@@ -1079,7 +1079,7 @@ def process(args):
                             repo_order_allows_replacing = known_repo_names.index(
                                 possible_replacing_package.repo
                             ) <= known_repo_names.index(upstream_system.all_packages_dict[package_to_replace.name].repo)
-                        except ValueError:
+                        except (ValueError, KeyError):
                             repo_order_allows_replacing = not_known_in_repo
 
                         # implement pacman logic to decide whether to replace or not
