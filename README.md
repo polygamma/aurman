@@ -401,6 +401,12 @@ See the answer to the previous question.
 
 Also use the options `--noedit`, `--pgp_fetch`, `--skip_news`, `--noconfirm` and `--skip_new_locations`.
 
+#### Question
+I changed dependencies in a `PKGBUILD`, `aurman` does not respect the changes. Why?
+
+#### Answer
+`aurman` relies on the AUR RPC for dependency solving. `.SRCINFO` and `PKGBUILD` files are not taken into account.
+
 ## Screenshots
 
 ![](https://i.imgur.com/Q80aK61.png)
