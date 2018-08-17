@@ -968,6 +968,19 @@ def process(args):
                         else:
                             current_missing_deps.append(dep)
 
+            # check if deps are provided by split packages from the same package base
+            for package_name in list(missing_deps_dict.keys()):
+                curr_pkgbase = upstream_system.all_packages_dict[package_name].pkgbase
+                same_split_packages = [
+                    package for package in upstream_system.all_packages_dict.values() if package.pkgbase == curr_pkgbase
+                ]
+                split_packages_system = System(same_split_packages)
+                for dep in missing_deps_dict[package_name]:
+                    if not split_packages_system.provided_by(dep):
+                        break
+                else:
+                    del missing_deps_dict[package_name]
+
             if missing_deps_dict:
                 aurman_error(
                     "There are unfulfilled dependencies of development packages.\n"
