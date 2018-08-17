@@ -24,6 +24,14 @@
 > To reduce the noise by users who should not use `aurman`, but still do, users who fill out issues in a non-sensible way
 > may be banned from this repository without further warning
 
+## How to install
+- https://wiki.archlinux.org/index.php/Arch_User_Repository
+- https://wiki.archlinux.org/index.php/Makepkg
+- https://wiki.archlinux.org/index.php/Pacman
+
+> **Notice**: The **only** supported way to install `aurman`, is to install it from the AUR.
+> There are linux distributions, shipping prebuilt `aurman` versions, that is **not** supported in any way.
+
 ## Syntax
 
 ##### Usage
