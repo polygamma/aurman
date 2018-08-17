@@ -6,6 +6,18 @@
 [![GitHub license](https://img.shields.io/github/license/polygamma/aurman.svg)](https://github.com/polygamma/aurman/blob/master/LICENSE)
 
 
+
+## Install
+```
+git clone --recursive https://aur.archlinux.org/aurman-git.git
+cd aurman-git
+makepkg -si
+```
+
+
+
+
+
 ## aurman in the AUR
 
 **aurman-git** *(https://aur.archlinux.org/packages/aurman-git)* - **development version**
