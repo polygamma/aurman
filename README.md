@@ -314,8 +314,7 @@ or "not redundant" confirmations of actions (more prone to errors).
   - Lets you see and edit all needed PKGBUILDs before starting AUR package building.
   - Fetching of needed PGP keys for package building.
   - Pacman --search for repo and AUR packages (results sorted by popularity).
-  - Search function supports regex for searching the AUR the first span of at least two consecutive non-regex
-  characters being used. These results will be filtered by the regex expression afterwards.
+  - Search function supports regex for searching the AUR. The first span of at least two consecutive non-regex characters is being used. These results will be filtered by the regex expression afterwards.
   - Differentiate between the sources of packages in case of identical names in different known repos and/or the AUR.
   - Show unread news from `archlinux.org`.
   - Be notified about new locations of packages, e.g. moving from AUR to a known repository.
