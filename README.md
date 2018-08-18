@@ -93,6 +93,8 @@ All pacman operations are supported, and calling aurman with an operation beside
 
 - `--devel`: Fetch current development versions of packages to check if a new version is available.
 
+- `--devel_skip_deps`: Skips dependency checks when determining development packages versions (`makepkg -odc` instead of `makepkg -oc`) - see: https://github.com/polygamma/aurman/issues/245
+
 - `--deep_search`: Dependency solving will ignore currently fulfilled dependencies and try to solve the problem for systems with zero packages installed.
 If aurman is not able to find a solution, try re-running with this flag.
 It could take some time to find a solution.
@@ -122,9 +124,9 @@ order: split to `-Sy`, do calculations, and upgrade the system.
 With `aurman` handling `-u`, it still may result in a partial upgrade, not just because of splitting `-Syu`,
 but because the dependency solver of `aurman` may yield wrong results.
 
-- `--optimistic_versioning`: In case of an unknown version of a provider for a versioned dependency, assume that the dependency is fulfilled.
+- `--optimistic_versioning`: In case of an **unknown** version of a provider for a versioned dependency, assume that the dependency is fulfilled.
 
-- `--ignore_versioning`: Assume all versioned dependencies to be fulfilled.
+- `--ignore_versioning`: Assume all versioned dependencies to be fulfilled, even if the versions are known and they do not match.
 
 - `--rebuild`: Always rebuild packages before installing them.
 
@@ -137,8 +139,6 @@ but because the dependency solver of `aurman` may yield wrong results.
 - `--skip_news`: Skips being shown unseen `archlinux.org` news.
 
 - `--skip_new_locations`: Skips being shown new locations of packages.
-
-- `--devel_skip_deps`: Skips dependency checks when determining development packages versions (`makepkg -odc` instead of `makepkg -oc`)
 
 ## Config and cache directory
 `aurman` conforms to the [XDG Base Directory Specification](https://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html):
