@@ -12,17 +12,20 @@
 
 **aurman** *(https://aur.archlinux.org/packages/aurman)* - **release version**
 
-> **Notice**: Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
-> `aurman` is targeted at **advanced** users, who are familiar with `pacman`, `makepkg` and most of all with the `AUR`.
-> `aurman` is an AUR **helper**, it can't and will never be a replacement for the sometimes needed concept of "human interaction".
-> If you **ever** encounter an issue whereby `aurman` e.g. is not able to find a dependency solution, and you do not know
-> how to solve the problem  **either**, you should **not** use an AUR helper. Even though the specific problem may be a bug in the `aurman`
-> implementation, it is **always** expected that you as a [Turing-complete user](http://contemporary-home-computing.org/turing-complete-user/) know what to do. If you do not, do not use `aurman`.
-> Also: If you are already failing to install `aurman`, because you do not know e. g. how to import PGP keys or how to fulfill `aurman`
-> dependencies manually, you should **not** use `aurman`.
-> Last but not least: The GitHub issues are **not** for support, they are **only** for feature requests, bug reports or general discussions.
-> To reduce the noise by users who should not use `aurman`, but still do, users who fill out issues in a non-sensible way
-> may be banned from this repository without further warning
+> **Notice**: If you want to test new features and enhancements before they are considered *stable* and do not mind to encounter bugs, feel free to use the development version.
+> When encountering wrong behavior, consider opening issues in the GitHub repository to help improving the overall stability of `aurman`.
+
+## Warning
+
+Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
+`aurman` is targeted at **advanced** users, who are familiar with `pacman`, `makepkg` and most of all with the `AUR`.
+`aurman` is an AUR **helper**, it can't and will never be a replacement for the sometimes needed concept of "human interaction".
+If you **ever** encounter an issue whereby `aurman` e.g. is not able to find a dependency solution, and you do not know how to solve the problem  **either**, you should **not** use an AUR helper.
+Even though the specific problem may be a bug in the `aurman` implementation, it is **always** expected that you as a [Turing-complete user](http://contemporary-home-computing.org/turing-complete-user/) know what to do.
+If you do not, do not use `aurman`.
+Also: If you are already failing to install `aurman`, because you do not know e. g. how to import PGP keys or how to fulfill `aurman` dependencies manually, you should **not** use `aurman`.
+Last but not least: The GitHub issues are **not** for support, they are **only** for feature requests, bug reports or general discussions.
+To reduce the noise by users who should not use `aurman`, but still do, users who fill out issues in a non-sensible way may be banned from this repository without further warning
 
 ## How to install
 - https://wiki.archlinux.org/index.php/Arch_User_Repository
