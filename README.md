@@ -15,6 +15,12 @@
 > **Notice**: If you want to test new features and enhancements before they are considered *stable* and do not mind to encounter bugs, feel free to use the development version.
 > When encountering wrong behavior, consider opening issues in the GitHub repository to help improving the overall stability of `aurman`.
 
+## Stopped development for public use
+
+I am not willing to continue developing `aurman` for public use.
+The GitHub issues are closed, I am not interested in feedback, feature requests or bug reports anymore.
+`aurman` is going to be developed for myself only from now on, I suggest migrating to `yay`.
+
 ## Warning
 
 Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
