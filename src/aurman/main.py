@@ -1299,8 +1299,13 @@ def process(args):
 
 
 def main():
-    from locale import setlocale, LC_ALL
-    setlocale(LC_ALL, '')  # initialize locales because python doesn't
+    from locale import setlocale, LC_ALL, Error
+    try:
+        # initialize locales because python doesn't
+        setlocale(LC_ALL, '')
+    except Error:
+        # Remain at the default 'C' locale on failure
+        logging.warning('Failed to set locale; using default locale.')
 
     try:
         # auto completion
