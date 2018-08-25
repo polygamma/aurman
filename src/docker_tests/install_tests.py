@@ -22,9 +22,9 @@ if __name__ == '__main__':
     test_command("aurmansolver -S mingw-w64-gcc")
     test_command("aurmansolver -S mingw-w64-gcc --deep_search")
 
-    # search solutions to install ros-indigo-desktop-full
-    test_command("aurmansolver -S ros-indigo-desktop-full")
-    test_command("aurmansolver -S ros-indigo-desktop-full --deep_search")
+    # search solutions to install ros-lunar-desktop-full
+    test_command("aurmansolver -S ros-lunar-desktop-full")
+    test_command("aurmansolver -S ros-lunar-desktop-full --deep_search")
 
     # install fprintd and libfprint-vfs0090-git
     test_command("aurman -S fprintd libfprint-vfs0090-git --noedit --noconfirm")
