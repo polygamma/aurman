@@ -21,6 +21,16 @@ I am not willing to continue developing `aurman` for public use.
 The GitHub issues are closed, I am not interested in feedback, feature requests or bug reports anymore.
 `aurman` is going to be developed for myself only from now on, I suggest migrating to `yay`.
 
+For people interested in the **why**, see: https://www.reddit.com/r/archlinux/comments/9aotjr/aurman_no_longer_being_maintained_publicly/
+
+And also a clarification about the `yay` recommendation:
+
+I am recommending `yay` instead of `aurman`, because from a users point of view, it may be nicer to have the possibility to give feedback.
+From a pure technical point of view, there is no need to switch, if you are happy with `aurman` as of now.
+Since I need an AUR helper myself, `aurman` development will continue. Do not expect frequent updates however, because current `aurman` fulfills all of my needs.
+If I do not encounter bugs, or other changes are needed in order for `aurman` to work properly, there is nothing to be done for me.
+In case that this situation changes, the README in the GitHub repository will inform about it.
+
 ## Warning
 
 Even though it may seem like an AUR helper is targeted at inexperienced users, the opposite is the case.
