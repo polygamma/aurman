@@ -722,27 +722,25 @@ class Package:
             else:
                 is_possible = True
 
-            # these deps have to remain provided,
-            # since they are needed for a package which
-            # has not been installed yet
-            # e.g. A needs B and C, B has been solved with this algo
-            # but C not, hence B must remain provided
-            # otherwise A cannot be installed
-            for dep in solution.not_to_delete_deps:
-                if not is_possible:
-                    break
-                if not new_system.provided_by(dep):
-                    additional_message = "While trying to install {}, the needed dependency {} has been removed".format(
-                        Colors.BOLD(Colors.LIGHT_MAGENTA(self.name)),
-                        Colors.BOLD(Colors.LIGHT_MAGENTA(dep))
-                    )
-                    is_possible = False
-                    break
-
-            # same for packages which have to remain installed
             for package in installed_packages:
                 if not is_possible:
                     break
+
+                # these packages have to remain provided,
+                # since they are needed for a package which
+                # has not been installed yet
+                # e.g. A needs B and C, B has been solved with this algo
+                # but C not, hence B must remain provided
+                # otherwise A cannot be installed
+                if package.name in solution.not_to_delete_deps \
+                        and not new_system.provided_by(package.name):
+                    additional_message = "While trying to install {}, " \
+                                         "the needed dependency {} has been removed" \
+                                         "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(self.name)),
+                                                   Colors.BOLD(Colors.LIGHT_MAGENTA(package.name)))
+                    break
+
+                # same for packages which have to remain installed
                 if solution.dict_call_as_needed.get(package.name, False) \
                         and package.name not in new_system.all_packages_dict:
                     additional_message = "The package {} had to remain installed, " \
@@ -750,7 +748,6 @@ class Package:
                                          "The package which lead to the removal is {}" \
                                          "".format(Colors.BOLD(Colors.LIGHT_MAGENTA(package.name)),
                                                    Colors.BOLD(Colors.LIGHT_MAGENTA(self.name)))
-
                     break
 
             # solution possible at this point if there are no installed packages
