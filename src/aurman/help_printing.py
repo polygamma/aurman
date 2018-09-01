@@ -137,7 +137,7 @@ aurman_help.points.append(HelpPoint(only_aurman, only_aurman_points))
 
 only_aurman_points.append(HelpOption(["--noedit"],
                                      "Will not show changes of PKGBUILDs, .install and other relevant files"))
-only_aurman_points.append(HelpOption(["--always_edit"],
+only_aurman_points.append(HelpOption(["-e", "--always_edit"],
                                      "Lets the user edit the files of packages, even if there are no new changes"))
 only_aurman_points.append(HelpOption(["--show_changes"],
                                      "Will show changes of PKGBUILDs, .install and other relevant files without asking"))
@@ -150,7 +150,7 @@ only_aurman_points.append(HelpOption(["--pgp_fetch"],
                                      "Fetches needed pgp keys without asking the user"))
 only_aurman_points.append(HelpOption(["--keyserver"],
                                      "You may specify a keyserver to fetch the pgp keys from"))
-only_aurman_points.append(HelpOption(["--aur"],
+only_aurman_points.append(HelpOption(["-a", "--aur"],
                                      "-Ss restricted to AUR packages and -Sc restricted to aurman cache"))
 only_aurman_points.append(HelpOption(["--repo"],
                                      "-Ss restricted to repo packages and -Sc restricted to pacman cache"))
@@ -172,7 +172,7 @@ only_aurman_points.append(HelpOption(["--optimistic_versioning"],
                                      "assume that the dependency is fulfilled"))
 only_aurman_points.append(HelpOption(["--ignore_versioning"],
                                      "Assume all versioned dependencies to be fulfilled"))
-only_aurman_points.append(HelpOption(["--rebuild"],
+only_aurman_points.append(HelpOption(["-r", "--rebuild"],
                                      "Always rebuild packages before installing them"))
 only_aurman_points.append(HelpOption(["--sort_by_name"],
                                      "Sort -Ss AUR results by name"))

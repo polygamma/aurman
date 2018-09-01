@@ -114,7 +114,10 @@ def get_holdpkgs(pacman_args: 'PacmanArgs') -> List[str]:
     not_remove = pacman_args.holdpkg  # list containing the specified packages for --holdpkg
     # if --holdpkg_conf append holdpkg from pacman.conf
     if pacman_args.holdpkg_conf:
-        not_remove.extend(PacmanConfig(conf="/etc/pacman.conf").options['HoldPkg'])
+        try:
+            not_remove.extend(PacmanConfig(conf="/etc/pacman.conf").options['HoldPkg'])
+        except KeyError:
+            pass #pacmanconf does not contain "HoldPkg" or it is a nullstr
     # remove duplicates
     return list(set(not_remove))
 
