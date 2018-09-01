@@ -61,30 +61,48 @@ pacman_options = {
 
     # to sort -Ss results
     "sort_by_name": ("sort_by_name", 0, (PacmanOperations.AURMAN,), False, False),
+    "sort-by-name": ("sort_by_name", 0, (PacmanOperations.AURMAN,), False, False),
     "sort_by_votes": ("sort_by_votes", 0, (PacmanOperations.AURMAN,), False, False),
+    "sort-by-votes": ("sort_by_votes", 0, (PacmanOperations.AURMAN,), False, False),
     "sort_by_popularity": ("sort_by_popularity", 0, (PacmanOperations.AURMAN,), False, False),
+    "sort-by-popularity": ("sort_by_popularity", 0, (PacmanOperations.AURMAN,), False, False),
 
     # regular aurman params
     "noedit": ("noedit", 0, (PacmanOperations.AURMAN,), False, False),
     "always_edit": ("always_edit", 0, (PacmanOperations.AURMAN,), False, False),
+    "always-edit": ("always_edit", 0, (PacmanOperations.AURMAN,), False, False),
+    "e": ("always_edit", 0, (PacmanOperations.AURMAN,), False, False), #as in pacaur
     "show_changes": ("show_changes", 0, (PacmanOperations.AURMAN,), False, False),
+    "show-changes": ("show_changes", 0, (PacmanOperations.AURMAN,), False, False),
     "devel": ("devel", 0, (PacmanOperations.AURMAN,), False, False),
     "deep_search": ("deep_search", 0, (PacmanOperations.AURMAN,), False, False),
+    "deep-search": ("deep_search", 0, (PacmanOperations.AURMAN,), False, False),
     "pgp_fetch": ("pgp_fetch", 0, (PacmanOperations.AURMAN,), False, False),
+    "pgp-fetch": ("pgp_fetch", 0, (PacmanOperations.AURMAN,), False, False),
     "keyserver": ("keyserver", 1, (PacmanOperations.AURMAN,), False, False),
     "aur": ("aur", 0, (PacmanOperations.AURMAN,), False, False),
+    "a": ("aur", 0, (PacmanOperations.AURMAN,), False, False), #akin to pacaur, not like yaourt
     "repo": ("repo", 0, (PacmanOperations.AURMAN,), False, False),
     "domain": ("domain", 1, (PacmanOperations.AURMAN,), False, False),
     "solution_way": ("solution_way", 0, (PacmanOperations.AURMAN,), False, False),
+    "solution-way": ("solution_way", 0, (PacmanOperations.AURMAN,), False, False),
     "holdpkg": ("holdpkg", 2, (PacmanOperations.AURMAN,), False, False),
     "holdpkg_conf": ("holdpkg_conf", 0, (PacmanOperations.AURMAN,), False, False),
+    "holdpkg-conf": ("holdpkg_conf", 0, (PacmanOperations.AURMAN,), False, False),
     "do_everything": ("do_everything", 0, (PacmanOperations.AURMAN,), False, False),
+    "do-everything": ("do_everything", 0, (PacmanOperations.AURMAN,), False, False),
     "optimistic_versioning": ("optimistic_versioning", 0, (PacmanOperations.AURMAN,), False, False),
+    "optimistic-versioning": ("optimistic_versioning", 0, (PacmanOperations.AURMAN,), False, False),
     "ignore_versioning": ("ignore_versioning", 0, (PacmanOperations.AURMAN,), False, False),
+    "ignore-versioning": ("ignore_versioning", 0, (PacmanOperations.AURMAN,), False, False),
     "rebuild": ("rebuild", 0, (PacmanOperations.AURMAN,), False, False),
+    "r": ("rebuild", 0, (PacmanOperations.AURMAN,), False, False),
     "skip_news": ("skip_news", 0, (PacmanOperations.AURMAN,), False, False),
+    "skip-news": ("skip_news", 0, (PacmanOperations.AURMAN,), False, False),
     "skip_new_locations": ("skip_new_locations", 0, (PacmanOperations.AURMAN,), False, False),
+    "skip-new-locations": ("skip_new_locations", 0, (PacmanOperations.AURMAN,), False, False),
     "devel_skip_deps": ("devel_skip_deps", 0, (PacmanOperations.AURMAN,), False, False)
+    "devel-skip-deps": ("devel_skip_deps", 0, (PacmanOperations.AURMAN,), False, False)
 }
 
 pacman_operations = {
