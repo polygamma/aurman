@@ -1,5 +1,5 @@
 # arch image with base-devel
-FROM base/devel
+FROM archlinux/base
 
 # create user and set sudo priv
 RUN useradd -m aurman -s /bin/bash
