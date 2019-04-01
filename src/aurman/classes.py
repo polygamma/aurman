@@ -231,7 +231,12 @@ class Package:
         if not validpgp_array:
             return []
 
-        return re.findall(r'[A-F0-9]{40}', validpgp_array[-1])
+        # dirty and not correct in combination with the used regex - but well, who cares? :)
+        to_return: List[str] = []
+        for possible_pgp_key in validpgp_array:
+            to_return += re.findall(r'[A-F0-9]{40}', possible_pgp_key)
+
+        return to_return
 
     @staticmethod
     def get_ignored_packages_names(ign_packages_names: Sequence[str], ign_groups_names: Sequence[str],
