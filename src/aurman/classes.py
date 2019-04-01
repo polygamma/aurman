@@ -227,7 +227,7 @@ class Package:
             pkgbuild_content: str = f.read().strip()
 
         pkgbuild_no_comments: str = re.sub(r'#.*$', '', pkgbuild_content, flags=re.MULTILINE)
-        validpgp_array: List[str] = re.findall(r'validpgpkeys[ ]*=[ ]*\([^)]*\)', pkgbuild_no_comments)
+        validpgp_array: List[str] = re.findall(r'validpgpkeys[ ]*[+]?=[ ]*\([^)]*\)', pkgbuild_no_comments)
         if not validpgp_array:
             return []
 
