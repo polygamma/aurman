@@ -16,7 +16,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 setup(
     name='aurman',
 
-    version='2.19',  # do not forget to change this
+    version='2.19.1',  # do not forget to change this
 
     python_requires='>=3.7',
 
