@@ -2,6 +2,7 @@ import json
 import logging
 from typing import Sequence, List, Dict
 from urllib.parse import quote_plus
+from urllib.request import urlopen
 
 import requests
 
@@ -46,17 +47,11 @@ def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bo
     results_list = []
     for query_parameters in queries_parameters:
         try:
-            results_list.extend(
-                json.loads(
-                    requests.get(
-                        "{}{}".format(
-                            query_url,
-                            ''.join(["{}{}".format(query_prefix, parameter) for parameter in query_parameters])
-                        ),
-                        timeout=AurVars.aur_timeout
-                    ).text
-                )['results']
-            )
+            url = "{}{}".format(
+                    query_url,
+                    ''.join(["{}{}".format(query_prefix, parameter) for parameter in query_parameters]))
+            with urlopen(url, timeout=AurVars.aur_timeout) as response:
+                results_list.extend(json.loads(response.read())['results'])
         except requests.exceptions.RequestException:
             logging.error("Connection problem while requesting AUR info for {}".format(package_names), exc_info=True)
             raise ConnectionProblem("Connection problem while requesting AUR info for {}".format(package_names))
