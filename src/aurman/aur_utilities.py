@@ -1,10 +1,9 @@
 import json
 import logging
 from typing import Sequence, List, Dict
+from urllib.error import URLError
 from urllib.parse import quote_plus
 from urllib.request import urlopen
-
-import requests
 
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
 from aurman.parsing_config import AurmanConfig
@@ -53,7 +52,7 @@ def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bo
             )
             with urlopen(url, timeout=AurVars.aur_timeout) as response:
                 results_list.extend(json.loads(response.read())['results'])
-        except requests.exceptions.RequestException:
+        except URLError:
             logging.error("Connection problem while requesting AUR info for {}".format(package_names), exc_info=True)
             raise ConnectionProblem("Connection problem while requesting AUR info for {}".format(package_names))
         except json.JSONDecodeError:
