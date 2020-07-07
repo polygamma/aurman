@@ -48,8 +48,9 @@ def get_aur_info(package_names: Sequence[str], search: bool = False, by_name: bo
     for query_parameters in queries_parameters:
         try:
             url = "{}{}".format(
-                    query_url,
-                    ''.join(["{}{}".format(query_prefix, parameter) for parameter in query_parameters]))
+                query_url,
+                ''.join(["{}{}".format(query_prefix, parameter) for parameter in query_parameters])
+            )
             with urlopen(url, timeout=AurVars.aur_timeout) as response:
                 results_list.extend(json.loads(response.read())['results'])
         except requests.exceptions.RequestException:
