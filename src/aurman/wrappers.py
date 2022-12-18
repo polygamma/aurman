@@ -4,6 +4,7 @@ from subprocess import run, PIPE, DEVNULL
 from typing import Sequence, List
 
 from aurman.own_exceptions import InvalidInput
+from aurman.utilities import get_sudo_method
 
 
 def split_query_helper(max_length: int, base_length_of_query: int, length_per_append: int, to_append: Sequence[str]) -> \
@@ -88,7 +89,7 @@ def pacman(options_as_list: List[str], fetch_output: bool, dir_to_execute: str =
                                 one line of output is one item in the list.
     """
     if sudo:
-        pacman_query = ["sudo", "pacman"]
+        pacman_query = [*get_sudo_method(), "pacman"]
     else:
         pacman_query = ["pacman"]
 

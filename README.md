@@ -155,6 +155,20 @@ optimistic_versioning
 ignore_versioning
 skip_news
 skip_new_locations
+[privilege_escalation]
+# sudo
+escalation_command=sudo
+noninterative_params=--non-interactive
+test_params=-v
+
+# doas
+escalation_command=doas
+noninterative_params=-n
+test_params=/bin/test
+
+# su
+escalation_command=su
+# noninterative_params and test_params are not supported therefore sudo_loop is not
 ```
 
 > **Notice**: Use of `do_everything` is **not** recommended since the usage of this flag is in general not recommended.

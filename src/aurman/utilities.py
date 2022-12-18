@@ -1,4 +1,5 @@
 import logging
+import shutil
 import sys
 import termios
 import threading
@@ -20,6 +21,10 @@ from aurman.parse_args import PacmanArgs
 class SudoLoop:
     # timeout for sudo loop
     timeout: int = 120
+    interactive_command: [str] = ['sudo']
+    noninteractive_command: [str] = ['sudo', '--non-interactive']
+    test_interative: [str] = ['sudo', '-v']
+    test_noninterative: [str] = ['sudo', '-v', '--non-interactive']
 
 
 class SearchSortBy(Enum):
@@ -27,6 +32,12 @@ class SearchSortBy(Enum):
     NAME = auto()
     POPULARITY = auto()
     VOTES = auto()
+
+
+def get_sudo_method():
+    if SudoLoop.noninteractive_command:
+        return SudoLoop.noninteractive_command
+    return SudoLoop.interactive_command
 
 
 def search_and_print(names: Sequence[str], installed_system, pacman_params: 'PacmanArgs',
@@ -196,14 +207,19 @@ def acquire_sudo():
     """
     sudo loop since we want sudo forever
     """
+    # prevent sudo_looping
+    if SudoLoop.noninteractive_command == None \
+            or SudoLoop.test_noninterative == None \
+            or SudoLoop.test_interative == None:
+        return
 
     def sudo_loop():
         while True:
-            if run(["sudo", "--non-interactive", "-v"]).returncode != 0:
+            if run(SudoLoop.test_noninterative).returncode != 0:
                 logging.error("acquire sudo failed")
             time.sleep(SudoLoop.timeout)
 
-    if run(["sudo", "-v"]).returncode != 0:
+    if run(SudoLoop.test_interative).returncode != 0:
         logging.error("acquire sudo failed")
         raise InvalidInput("acquire sudo failed")
     t = threading.Thread(target=sudo_loop)
