@@ -15,7 +15,7 @@ import requests
 from dateutil.tz import tzlocal
 from pycman.config import PacmanConfig
 
-from aurman.aur_utilities import get_aur_info, AurVars
+from aurman.aur_utilities import get_aur_info, search_and_print, AurVars
 from aurman.bash_completion import possible_completions
 from aurman.classes import System, Package, PossibleTypes
 from aurman.coloring import aurman_error, aurman_status, aurman_note, Colors
@@ -23,8 +23,8 @@ from aurman.help_printing import aurman_help
 from aurman.own_exceptions import InvalidInput, ConnectionProblem
 from aurman.parse_args import PacmanOperations, parse_pacman_args, PacmanArgs
 from aurman.parsing_config import read_config, packages_from_other_sources, AurmanConfig
-from aurman.utilities import acquire_sudo, version_comparison, search_and_print, ask_user, strip_versioning_from_name, \
-    get_sudo_method, SudoLoop, SearchSortBy
+from aurman.utilities import acquire_sudo, version_comparison, ask_user, strip_versioning_from_name, get_sudo_method, \
+    SudoLoop, SearchSortBy
 from aurman.wrappers import pacman, expac
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(module)s - %(funcName)s - %(levelname)s - %(message)s')
