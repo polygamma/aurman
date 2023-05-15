@@ -285,7 +285,7 @@ Example:
 use_ask
 ```
 
-Explanation: https://git.archlinux.org/pacman.git/commit/?id=90e3e026d1236ad89c142b427d7eeb842bbb7ff4
+Explanation: https://gitlab.archlinux.org/pacman/pacman/-/commit/90e3e026d1236ad89c142b427d7eeb842bbb7ff4
 
 `aurman` will use `--ask=4` if this config option is set.
 You will not have to confirm things like the installation of packages or the removal of conflicting packages again.
