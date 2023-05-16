@@ -391,23 +391,12 @@ see: https://github.com/polygamma/aurman/issues/200
 tl;dr - install the latest `expac-git` version from the AUR and everything works
 
 #### Question
-How to achieve `full batch interaction` with `aurman`?
-
-#### Answer
-Use `--do_everything` and `--ask` via the `aurman` config file.
-
-`--do_everything` for `2*` and `--ask` for `3*` as listed [here](https://wiki.archlinux.org/index.php/AUR_helpers#Active)
-
-But there are downsides to this. See the description of `--do_everything` [here](https://github.com/polygamma/aurman#options-for---sync-or--s-exclusive-to-aurman)
-and the description of `--ask` [here](https://github.com/polygamma/aurman#make-use-of-the-undocumented---ask-flag-of-pacman).
-
-#### Question
 If I want to run `aurman` from scripts, which settings should I use?
 
 #### Answer
-See the answer to the previous question.
+Use `--ask` ([description](https://github.com/polygamma/aurman#make-use-of-the-undocumented---ask-flag-of-pacman)) via the `aurman` config file.
 
-Also use the options `--noedit`, `--pgp_fetch`, `--skip_news`, `--noconfirm` and `--skip_new_locations`.
+And use the options `--noedit`, `--pgp_fetch`, `--skip_news`, `--noconfirm`, `--skip_new_locations` and `--overwrite \*`.
 
 #### Question
 I changed dependencies in a `PKGBUILD`, `aurman` does not respect the changes. Why?
