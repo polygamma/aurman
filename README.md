@@ -396,7 +396,7 @@ If I want to run `aurman` from scripts, which settings should I use?
 #### Answer
 Use `--ask` ([description](https://github.com/polygamma/aurman#make-use-of-the-undocumented---ask-flag-of-pacman)) via the `aurman` config file.
 
-And use the options `--noedit`, `--pgp_fetch`, `--skip_news`, `--noconfirm`, `--skip_new_locations` and `--overwrite \*`.
+And use the options `--noedit`, `--pgp_fetch`, `--skip_news`, `--noconfirm`, `--skip_new_locations` and `--overwrite \*`
 
 #### Question
 I changed dependencies in a `PKGBUILD`, `aurman` does not respect the changes. Why?
