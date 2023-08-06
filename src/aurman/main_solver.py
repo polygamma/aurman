@@ -148,7 +148,7 @@ def process(args):
         sys.exit(1)
 
     if os.getuid() == 0:
-        aurman_error("Do not run aurman with sudo")
+        aurman_error("Do not run aurman with root permissions, e.g. using sudo")
         sys.exit(1)
 
     # parse parameters of user

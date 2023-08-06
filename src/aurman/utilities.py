@@ -1,4 +1,5 @@
 import logging
+import shutil
 import sys
 import termios
 import threading
@@ -11,15 +12,17 @@ from typing import Tuple, Sequence
 
 import regex
 
-from aurman.aur_utilities import get_aur_info
-from aurman.coloring import Colors, aurman_error, aurman_question
+from aurman.coloring import aurman_error, aurman_question
 from aurman.own_exceptions import InvalidInput
-from aurman.parse_args import PacmanArgs
 
 
 class SudoLoop:
     # timeout for sudo loop
     timeout: int = 120
+    interactive_command: [str] = ['sudo']
+    noninteractive_command: [str] = ['sudo', '--non-interactive']
+    test_interative: [str] = ['sudo', '-v']
+    test_noninterative: [str] = ['sudo', '-v', '--non-interactive']
 
 
 class SearchSortBy(Enum):
@@ -29,109 +32,10 @@ class SearchSortBy(Enum):
     VOTES = auto()
 
 
-def search_and_print(names: Sequence[str], installed_system, pacman_params: 'PacmanArgs',
-                     repo: bool, aur: bool, sort_by: SearchSortBy):
-    """
-    Searches for something and prints the results
-
-    :param names:               The things to search for
-    :param installed_system:    A system containing the installed packages
-    :param pacman_params:       parameters for pacman as string
-    :param repo:                search only in repo
-    :param aur:                 search only in aur
-    :param sort_by:             according to which the results are to be sorted
-    """
-    if not names:
-        return
-
-    if not aur:
-        run(["pacman"] + pacman_params.args_as_list())
-
-    if not repo:
-        if sort_by is None:
-            sort_by = SearchSortBy.POPULARITY
-
-        # see: https://docs.python.org/3/howto/regex.html
-        regex_chars = list("^.+*?$[](){}\|")
-
-        regex_patterns = [regex.compile(name, regex.IGNORECASE) for name in names]
-        names_beginnings_without_regex = []
-        for name in names:
-            index_start = -1
-            index_end = len(name)
-            for i, char in enumerate(name):
-                if char not in regex_chars and index_start == -1:
-                    index_start = i
-                elif char in regex_chars and index_start != -1:
-                    # must be at least two consecutive non regex chars
-                    if i - index_start < 2:
-                        index_start = -1
-                        continue
-                    index_end = i
-                    break
-
-            if index_start == -1 or index_end - index_start < 2:
-                aurman_error(
-                    "Your query {} contains not enough non regex chars!".format(
-                        Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                    )
-                )
-                raise InvalidInput(
-                    "Your query {} contains not enough non regex chars!".format(
-                        Colors.BOLD(Colors.LIGHT_MAGENTA(name))
-                    )
-                )
-
-            names_beginnings_without_regex.append(name[index_start:index_end])
-
-        found_names = set(ret_dict['Name'] for ret_dict in get_aur_info([names_beginnings_without_regex[0]], True)
-                          if regex_patterns[0].findall(ret_dict['Name'])
-                          or isinstance(ret_dict['Description'], str)
-                          and regex_patterns[0].findall(ret_dict['Description']))
-
-        for i in range(1, len(names)):
-            found_names &= set(ret_dict['Name'] for ret_dict in get_aur_info([names_beginnings_without_regex[i]], True)
-                               if regex_patterns[i].findall(ret_dict['Name'])
-                               or isinstance(ret_dict['Description'], str)
-                               and regex_patterns[i].findall(ret_dict['Description']))
-
-        search_return = get_aur_info(found_names)
-
-        kwargs = {}
-        if sort_by in [SearchSortBy.POPULARITY, SearchSortBy.VOTES]:
-            kwargs.update(reverse=True)
-
-        if sort_by is SearchSortBy.POPULARITY:
-            kwargs.update(key=lambda x: float(x['Popularity']))
-        elif sort_by is SearchSortBy.VOTES:
-            kwargs.update(key=lambda x: int(x['NumVotes']))
-        elif sort_by is SearchSortBy.NAME:
-            kwargs.update(key=lambda x: str(x['Name']))
-
-        for ret_dict in sorted(search_return, **kwargs):
-            repo_with_slash = Colors.BOLD(Colors.LIGHT_MAGENTA("aur/"))
-            name = Colors.BOLD(ret_dict['Name'])
-            if ret_dict['OutOfDate'] is None:
-                version = Colors.BOLD(Colors.GREEN(ret_dict['Version']))
-            else:
-                version = Colors.BOLD(Colors.RED(ret_dict['Version']))
-
-            first_line = "{}{} {} ({}, {})".format(
-                repo_with_slash, name, version, ret_dict['NumVotes'], ret_dict['Popularity']
-            )
-            if ret_dict['Name'] in installed_system.all_packages_dict:
-                if version_comparison(
-                        ret_dict['Version'], "=", installed_system.all_packages_dict[ret_dict['Name']].version
-                ):
-                    first_line += " {}".format(Colors.BOLD(Colors.CYAN("[installed]")))
-                else:
-                    first_line += " {}".format(
-                        Colors.BOLD(Colors.CYAN("[installed: {}]".format(
-                            installed_system.all_packages_dict[ret_dict['Name']].version
-                        )))
-                    )
-            print(first_line)
-            print("    {}".format(ret_dict['Description']))
+def get_sudo_method():
+    if SudoLoop.noninteractive_command:
+        return SudoLoop.noninteractive_command
+    return SudoLoop.interactive_command
 
 
 def split_name_with_versioning(name: str) -> Tuple[str, str, str]:
@@ -196,14 +100,19 @@ def acquire_sudo():
     """
     sudo loop since we want sudo forever
     """
+    # prevent sudo_looping
+    if SudoLoop.noninteractive_command == None \
+            or SudoLoop.test_noninterative == None \
+            or SudoLoop.test_interative == None:
+        return
 
     def sudo_loop():
         while True:
-            if run(["sudo", "--non-interactive", "-v"]).returncode != 0:
+            if run(SudoLoop.test_noninterative).returncode != 0:
                 logging.error("acquire sudo failed")
             time.sleep(SudoLoop.timeout)
 
-    if run(["sudo", "-v"]).returncode != 0:
+    if run(SudoLoop.test_interative).returncode != 0:
         logging.error("acquire sudo failed")
         raise InvalidInput("acquire sudo failed")
     t = threading.Thread(target=sudo_loop)
