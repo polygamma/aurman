@@ -401,7 +401,13 @@ def show_changed_package_repos(installed_system: 'System', upstream_system: 'Sys
         #       1: bool: known in repo or aur
         #       2: bool: known in repo
         #       3: str:  if known in repo, name of repo
-        known_package_places: Dict[str, Tuple[bool, bool, str]] = json.loads(f.read())
+        try:
+            known_package_places: Dict[str, Tuple[bool, bool, str]] = json.loads(f.read())
+        except json.JSONDecodeError as e:
+            e.add_note("{} appears to be corrupted or otherwise malformed.".format(
+                Colors.BOLD(Colors.LIGHT_MAGENTA(known_places_file))
+            ))
+            raise
 
     # List containing the messages to print for the user.
     # Every tuple contains the name of the package, the old place and the new place
